@@ -6,11 +6,8 @@
 \details{\tabular{ll}{
 Package: \tab unmarked\cr
 Type: \tab Package\cr
-Version: \tab 0.8-3\cr
-Date: \tab 2010-03-02\cr
+Version: \tab 0.8-5\cr
 License: \tab GPL (>= 2)\cr
-LazyLoad: \tab yes\cr
-LazyData: \tab yes\cr
 }
 
 Unmarked estimates wildlife parameters for many popular sampling methods including occurrence and point count data.
