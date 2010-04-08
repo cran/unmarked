@@ -132,7 +132,7 @@ A predict method also exists.
 
 <<>>=
 newData <- data.frame(MinAfterSunset = 0, Temperature = -2:2)
-head(predict(fm2, type = 'det', newdata = newData, appendData = TRUE))
+predict(fm2, type = 'det', newdata = newData, appendData = TRUE)
 @
 
 
@@ -151,15 +151,15 @@ organinzing models using the fitList function.
 <<>>=
 fms <- fitList(Null = fm1, TimeTemp = fm2)
 modSel(fms, nullmod="Null")
-head(predict(fms, type='det', newdata = newData, appendData = TRUE))
+predict(fms, type='det', newdata = newData, appendData = TRUE)
 @
 
 
 Parametric bootstrapping can be used to check the adequacy of model fit.
 
 <<fig=TRUE>>=
-	pcru.pb <- parboot(fm2, nsim=50, report=5)
-	plot(pcru.pb)
+	pcru.pb <- parboot(fm2, statistic=SSE, nsim=50, report=5)
+	plot(pcru.pb, main="")
 @
 
 This example suggests an adequate fit.

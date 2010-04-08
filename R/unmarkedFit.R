@@ -115,10 +115,6 @@ setMethod("summary", "unmarkedFitDS",
             callNextMethod()
             cat("Survey design: ", object@data@survey, "-transect", sep="")
             cat("\nDetection function:", object@keyfun)
-            output <- object@output
-            if(output == "abund" & length(table(object@data@tlength)) > 1)
-              output <- "Abundance standardized by transect length"
-            cat("\nResponse:", output)    
             cat("\nUnitsIn:", object@data@unitsIn)
             cat("\nUnitsOut:", object@unitsOut, "\n\n")
           })
@@ -130,16 +126,16 @@ setMethod("summary", "unmarkedFitDS",
 
 setMethod("linearComb",
           signature(obj = "unmarkedFit", coefficients = "matrixOrVector"),
-          function(obj, coefficients, type) {
+          function(obj, coefficients, type, offset = NULL) {
             stopifnot(!missing(type))
             stopifnot(type %in% names(obj))
             estimate <- obj@estimates[type]
-            linearComb(estimate, coefficients)
+            linearComb(estimate, coefficients, offset)
           })
 
 setMethod("backTransform", "unmarkedFit",
-          function(obj, whichEstimate) {
-            est <- obj[whichEstimate]
+          function(obj, type) {
+            est <- obj[type]
             if(length(est@estimates) == 1) {
               lc <- linearComb(est, 1)
               return(backTransform(lc))
@@ -159,49 +155,59 @@ setMethod("names", "unmarkedFit",
             names(x@estimates)
           })
 
-                                        # Prediction
-                                        # TODO: make predict method for colext.
+# Prediction
+# TODO: make predict method for colext.
 setMethod("predict", "unmarkedFit", 
-          function(object, type, newdata, backTransform = TRUE, na.rm = TRUE, 
-                   appendData = FALSE, ...) 
-          {
-            if(class(object) == "unmarkedFitColExt")
-              stop("predict is not implemented for colext yet.")
-            if(missing(newdata) || is.null(newdata))
-              newdata <- getData(object)
-            formula <- object@formula
-            detformula <- as.formula(formula[[2]])
-            stateformula <- as.formula(paste("~", formula[3], sep=""))
-            if(inherits(newdata, "unmarkedFrame"))
-              class(newdata) <- "unmarkedFrame"
-            cls <- class(newdata)
-            switch(cls, 
-                   unmarkedFrame = {
-                     designMats <- getDesign2(formula, newdata, na.rm = na.rm)
-                     switch(type, 
-                            state = X <- designMats$X,
-                            det = X <- designMats$V)
-                   },
-                   data.frame = {
-                     switch(type, 
-                            state = {
-                              Terms <- delete.response(terms(stateformula))
-                              mf <- model.frame(Terms, newdata)
-                              X <- model.matrix(Terms, mf)
-                            },
-                            det = X <- model.matrix(detformula, newdata))
-                   })
-            out <- data.frame(matrix(NA, nrow(X), 2, 
-                                     dimnames=list(NULL, c("Predicted", "SE"))))
-            lc <- linearComb(object, X, type)
-            if(backTransform) lc <- backTransform(lc)
-            out$Predicted <- coef(lc)
-            out$SE <- SE(lc)
-            if(appendData)
-              out <- data.frame(out, newdata)
-            return(out)
-          }
-          )
+    function(object, type, newdata, backTransform = TRUE, na.rm = TRUE, 
+        appendData = FALSE, ...) 
+    {
+        if(class(object) == "unmarkedFitColExt")
+            stop("predict is not implemented for colext yet.")
+        if(missing(newdata) || is.null(newdata))
+            newdata <- getData(object)
+        formula <- object@formula
+        detformula <- as.formula(formula[[2]])
+        stateformula <- as.formula(paste("~", formula[3], sep=""))
+        if(inherits(newdata, "unmarkedFrame"))
+            class(newdata) <- "unmarkedFrame"
+        cls <- class(newdata)
+        switch(cls, 
+        unmarkedFrame = {
+            designMats <- getDesign(newdata, formula, na.rm = na.rm)
+            switch(type, 
+                state = {
+                  X <- designMats$X
+                  offset <- designMats$X.offset
+                },
+                det = {
+                  X <- designMats$V
+                  offset <- designMats$V.offset
+                })
+            },
+        data.frame = {
+            switch(type, 
+                state = {
+                  mf <- model.frame(stateformula, newdata)
+                  X <- model.matrix(stateformula, mf)
+                  offset <- model.offset(mf)
+                },
+                det = {
+                  mf <- model.frame(detformula, newdata)
+                  X <- model.matrix(detformula, mf)
+                  offset <- model.offset(mf)
+                })
+            })
+        out <- data.frame(matrix(NA, nrow(X), 2, 
+            dimnames=list(NULL, c("Predicted", "SE"))))
+        lc <- linearComb(object, X, type, offset = offset)
+        if(backTransform) lc <- backTransform(lc)
+        out$Predicted <- coef(lc)
+        out$SE <- SE(lc)
+        if(appendData)
+            out <- data.frame(out, as(newdata, "data.frame"))
+        return(out)
+        })
+
 
 setMethod("coef", "unmarkedFit",
           function(object, type, altNames = TRUE) {
@@ -293,11 +299,15 @@ setMethod("confint", "unmarkedFit",
 setMethod("fitted", "unmarkedFit",
           function(object, na.rm = FALSE) {
             data <- object@data
-            des <- getDesign2(object@formula, data, na.rm = na.rm)
-            X <- des$X; V <- des$V; a <- des$plotArea
+            des <- getDesign(data, object@formula, na.rm = na.rm)
+            X <- des$X
+            X.offset <- des$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
             state <- do.call(object['state']@invlink, 
-                             list(X %*% coef(object, 'state')))
-            state <- as.numeric(state) * a  ## E(X) for most models
+                             list(X %*% coef(object, 'state') + X.offset))
+            state <- as.numeric(state)  ## E(X) for most models
             p <- getP(object, na.rm = na.rm) # P(detection | presence)
             fitted <- state * p  # true for models with E[Y] = p * E[X]
             fitted
@@ -305,12 +315,38 @@ setMethod("fitted", "unmarkedFit",
 
 
 
+setMethod("fitted", "unmarkedFitDS", function(object, na.rm = FALSE) 
+{
+    data <- object@data
+    D <- getDesign(data, object@formula, na.rm = na.rm)
+    X <- D$X
+    X.offset <- D$X.offset
+    if (is.null(X.offset)) {
+      X.offset <- rep(0, nrow(X))
+    }
+    lambda <- drop(exp(X %*% coef(object, 'state') + X.offset))
+    a <- calcAreas(dist.breaks = data@dist.breaks, tlength = data@tlength, 
+	   survey = data@survey, output = object@output, M = numSites(data), 
+	   J = ncol(getY(data)), unitsIn = data@unitsIn, unitsOut = object@unitsOut)
+    if(length(D$removed.sites)>0)
+        a <- a[-D$removed.sites,]
+    p <- getP(object, na.rm = na.rm)
+    fitted <- lambda * p * a
+    fitted
+})		
+
+
+
 setMethod("fitted", "unmarkedFitOccu",
           function(object, na.rm = FALSE) {
             data <- object@data
-            des <- getDesign2(object@formula, data, na.rm = na.rm)
-            X <- des$X; V <- des$V; a <- des$plotArea
-            state <- plogis(X %*% coef(object, 'state'))
+            des <- getDesign(data, object@formula, na.rm = na.rm)
+            X <- des$X
+            X.offset <- des$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
+            state <- plogis(X %*% coef(object, 'state') + X.offset)
             state <- as.numeric(state)  ## E(X) for most models
             state[object@knownOcc] <- 1
             p <- getP(object, na.rm = na.rm) # P(detection | presence)
@@ -323,12 +359,16 @@ setMethod("fitted", "unmarkedFitOccu",
 setMethod("fitted", "unmarkedFitPCount",
           function(object, K, na.rm = FALSE) {
             data <- object@data
-            des <- getDesign2(object@formula, data, na.rm = na.rm)
-            X <- des$X; V <- des$V; a <- des$plotArea
+            des <- getDesign(data, object@formula, na.rm = na.rm)
+            X <- des$X
+            X.offset <- des$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
             y <- des$y	# getY(data) ... to be consistent w/NA handling?
             M <- nrow(X)
             J <- ncol(y)
-            state <- exp(X %*% coef(object, 'state')) * a
+            state <- exp(X %*% coef(object, 'state') + X.offset)
             p <- getP(object, na.rm = na.rm)
             mix <- object@mixture
             switch(mix,
@@ -355,14 +395,21 @@ setMethod("fitted", "unmarkedFitPCount",
 setMethod("fitted", "unmarkedFitOccuRN", 
           function(object, K, na.rm = FALSE) {
             data <- object@data
-            des <- getDesign2(object@formula, data, na.rm = na.rm)
-            X <- des$X; V <- des$V; a <- des$plotArea
+            des <- getDesign(data, object@formula, na.rm = na.rm)
+            X <- des$X; V <- des$V
+            X.offset <- des$X.offset; V.offset <- des$V.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
+            if (is.null(V.offset)) {
+              V.offset <- rep(0, nrow(V))
+            }
             y <- des$y	# getY(data) ... to be consistent w/NA handling?
             y <- truncateToBinary(y)
             M <- nrow(X)
             J <- ncol(y)
-            lam <- exp(X %*% coef(object, 'state')) * a
-            r <- plogis(V %*% coef(object, 'det'))
+            lam <- exp(X %*% coef(object, 'state') + X.offset)
+            r <- plogis(V %*% coef(object, 'det') + V.offset)
             if(missing(K)) K <- max(y, na.rm = TRUE) + 20 
             
             lam <- rep(lam, each = J)
@@ -371,21 +418,6 @@ setMethod("fitted", "unmarkedFitOccuRN",
             
             return(matrix(fitted, M, J, byrow = TRUE))
           })
-
-                                        #setMethod("fitted", "unmarkedFitMNmix",
-                                        #	function(object, na.rm = FALSE) {
-                                        #		data <- getData(object)
-                                        #		des <- getDesign2(object@formula, data, na.rm = na.rm)
-                                        #		X <- des$X; V <- des$V; a <- des$plotArea				
-                                        #		y <- des$y	# getY(data) ... to be consistent w/NA handling?
-                                        #		M <- nrow(X)
-                                        #		J <- ncol(y)
-                                        #		psi <- plogis(coef(object, type = 'state'))
-                                        #		psi <- c(1-psi, psi)
-                                        #		p <- getP(object, na.rm = na.rm) 	# Not yet written
-                                        #		## Needs to be finished
-                                        #	})
-
 
 setMethod("fitted", "unmarkedFitColExt", 
           function(object, na.rm = FALSE) {
@@ -401,9 +433,7 @@ setMethod("fitted", "unmarkedFitColExt",
                                 gammaformula=object@gamformula,
                                 epsilonformula=object@epsformula,
                                 pformula=object@detformula)
-            designMats <- getDesign3(formula = formulaList,
-                                     object@data)
-            designMats <- getDesign3(formula = formulaList, object@data)
+            designMats <- getDesign(object@data, formlist = formulaList)
             V.itj <- designMats$V
             X.it.gam <- designMats$X.gam
             X.it.eps <- designMats$X.eps
@@ -504,8 +534,9 @@ setMethod("update", "unmarkedFit",
               upDetformula <- update.formula(detformula, newDetformula)
               newStateformula <- as.formula(paste("~", formula.[3], sep=""))
               upStateformula <- update.formula(stateformula, newStateformula)
-              call$formula <- as.formula(paste(deparse(upDetformula), 
-                                               deparse(upStateformula)))
+              call$formula <- as.formula(paste(
+			  	deparse(upDetformula, width=500), 
+                deparse(upStateformula, width=500)))
             }
             if (length(extras) > 0) {
               existing <- !is.na(match(names(extras), names(call)))
@@ -612,8 +643,6 @@ setMethod("residuals", "unmarkedFitOccuRN", function(object, ...)
           })
 
 
-
-
 setMethod("plot", c(x = "unmarkedFit", y = "missing"), 
           function(x, y, ...)
           {
@@ -627,98 +656,94 @@ setMethod("plot", c(x = "unmarkedFit", y = "missing"),
 
 
 setMethod("hist", "unmarkedFitDS", 
-          function(x, lwd=1, lty=1, ...)
-          {
-            ymat <- getY(getData(x))
-            dbreaks <- getData(x)@dist.breaks
-            nb <- length(dbreaks)
-            mids <- (dbreaks[-1] - dbreaks[-nb]) / 2 + dbreaks[-nb]
-            distances <- unlist(mapply(rep, mids, each=colSums(ymat)))
-            h <- hist(distances, plot=F, breaks=dbreaks)
-            key <- x@keyfun
-            survey <- x@data@survey
-            switch(key, 
-                   halfnorm = {
-                     sigma <- exp(coef(x, type="det"))
-                     if(length(sigma) > 1)
-                       stop("This method only works when there are no detection covars")
-                     switch(survey, 
-                            line = {
-                              int <- 2 * integrate(dnorm, dbreaks[1], dbreaks[nb], 
-                                                   sd=sigma)$value
-                              h$density <- h$density * int
-                              plot(h, freq=F, ...)
-                              plot(function(x) 2 * dnorm(x, mean=0, sd=sigma), 
-                                   min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            },
-                            point = {
-                              int <- integrate(drhn, dbreaks[1], dbreaks[nb], 
-                                               sigma=sigma)$value
-                              h$density <- h$density * int
-                              plot(h, freq=F, ...)
-                              plot(function(r) drhn(r, sigma=sigma), 
-                                   min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            })
-                   },
-                   exp = {		# This doesn't work on example fm4
-                     rate <- exp(coef(x, type="det"))
-                     if(length(rate) > 1)
-                       stop("This method only works when there are no detection covars")
-                     switch(survey,
-                            line = {
-                              int <- integrate(dxexp, dbreaks[1], dbreaks[nb], 
-                                               rate=rate)$value
-                              h$density <- h$density * int
-                              plot(h, freq=F, ...)
-                              plot(function(x) dxexp(x, rate=rate), min(dbreaks), 
-                                   max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            },
-                            point = {
-                              int <- integrate(drexp, dbreaks[1], dbreaks[nb], 
-                                               rate=rate)$value
-                              h$density <- h$density * int
-                              plot(h, freq=F, ...)
-                              plot(function(r) drexp(r, rate=rate), min(dbreaks), 
-                                   max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            })
-                   },
-                   hazard = {
-                     shape <- exp(coef(x, type="det"))
-                     scale <- exp(coef(x, type="scale"))
-                     if(length(shape) > 1)
-                       stop("This method only works when there are no detection covars")
-                     switch(survey, 
-                            line = {
-                              int <- integrate(dxhaz, dbreaks[1], dbreaks[nb], 
-                                               shape=shape, scale=scale)$value
-                              h$density <- h$density * int
-                              plot(h, freq=F, ...)
-                              plot(function(x) dxhaz(x, shape=shape, scale=scale), 
-                                   min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            },
-                            point = {
-                              int <- integrate(drexp, dbreaks[1], dbreaks[nb], 
-                                               rate=rate)$value
-                              h$density <- h$density * int
-                              plot(h, freq=F, ...)
-                              plot(function(r) drhaz(r, shape=shape, scale=scale), 
-                                   min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            })
-                   },
-                   uniform = {
-                     switch(survey, 
-                            line = {
-                              plot(h, freq=F, ...)
-                              abline(h=1/max(dbreaks), lwd=lwd, lty=lty)
-                            },
-                            point = {
-                              plot(h, freq=F, ...)
-                              plot(function(r) (pi*r^2) / (pi*max(dbreaks)^2), 
-                                   min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
-                            }
-                            )}
-                   )
-          })
+    function(x, lwd=1, lty=1, ...) {
+        ymat <- getY(getData(x))
+        dbreaks <- getData(x)@dist.breaks
+        nb <- length(dbreaks)
+        mids <- (dbreaks[-1] - dbreaks[-nb]) / 2 + dbreaks[-nb]
+        distances <- unlist(mapply(rep, mids, each=colSums(ymat)))
+        h <- hist(distances, plot=F, breaks=dbreaks)
+        key <- x@keyfun
+        survey <- x@data@survey
+        switch(key, 
+        halfnorm = {
+            sigma <- exp(coef(x, type="det"))
+            if(length(sigma) > 1)
+                stop("This method only works when there are no detection covars")
+            switch(survey, 
+            line = {
+                int <- 2 * integrate(dnorm, dbreaks[1], dbreaks[nb], 
+                    sd=sigma)$value
+                h$density <- h$density * int
+                plot(h, freq=F, ...)
+                plot(function(x) 2 * dnorm(x, mean=0, sd=sigma), 
+                    min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
+                },
+            point = {
+                int <- integrate(drhn, dbreaks[1], dbreaks[nb], 
+                    sigma=sigma)$value
+                h$density <- h$density * int
+                plot(h, freq=F, ...)
+                plot(function(r) drhn(r, sigma=sigma), min(dbreaks), 
+                    max(dbreaks), add=T, lwd=lwd, lty=lty)
+                })
+            },
+        exp = {		# This doesn't work on example fm4
+            rate <- exp(coef(x, type="det"))
+            if(length(rate) > 1)
+                stop("This method only works when there are no detection covars")
+            switch(survey,
+            line = {
+                int <- integrate(dxexp, dbreaks[1], dbreaks[nb], rate=rate)$value
+                h$density <- h$density * int
+                plot(h, freq=F, ...)
+                plot(function(x) dxexp(x, rate=rate), min(dbreaks), 
+                    max(dbreaks), add=T, lwd=lwd, lty=lty)
+                },
+            point = {
+                int <- integrate(drexp, dbreaks[1], dbreaks[nb], rate=rate)$value
+                h$density <- h$density * int
+                plot(h, freq=F, ...)
+                plot(function(r) drexp(r, rate=rate), min(dbreaks), 
+                    max(dbreaks), add=T, lwd=lwd, lty=lty)
+                })
+            },
+        hazard = {
+            shape <- exp(coef(x, type="det"))
+            scale <- exp(coef(x, type="scale"))
+            if(length(shape) > 1)
+                stop("This method only works when there are no detection covars")
+            switch(survey, 
+            line = {
+                int <- integrate(dxhaz, dbreaks[1], dbreaks[nb], 
+                    shape=shape, scale=scale)$value
+                h$density <- h$density * int
+                plot(h, freq=F, ...)
+                plot(function(x) dxhaz(x, shape=shape, scale=scale), 
+                    min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
+                },
+            point = {
+                int <- integrate(drexp, dbreaks[1], dbreaks[nb], rate=rate)$value
+                    h$density <- h$density * int
+                    plot(h, freq=F, ...)
+                    plot(function(r) drhaz(r, shape=shape, scale=scale), 
+                        min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
+                })
+            },
+        uniform = {
+            switch(survey, 
+            line = {
+                plot(h, freq=F, ...)
+                abline(h=1/max(dbreaks), lwd=lwd, lty=lty)
+                },
+            point = {
+                plot(h, freq=F, ...)
+                plot(function(r) (pi*r^2) / (pi*max(dbreaks)^2), 
+                    min(dbreaks), max(dbreaks), add=T, lwd=lwd, lty=lty)
+                }
+            )}
+            )
+        })
 
 
 
@@ -734,13 +759,17 @@ setMethod("getP", "unmarkedFit", function(object, na.rm = TRUE)
             formula <- object@formula
             detformula <- as.formula(formula[[2]])
             umf <- object@data
-            designMats <- getDesign2(formula, umf, na.rm = na.rm)
+            designMats <- getDesign(umf, formula, na.rm = na.rm)
             y <- designMats$y
             V <- designMats$V
+            V.offset <- designMats$V.offset
+            if (is.null(V.offset)) {
+              V.offset <- rep(0, nrow(V))
+            }
             M <- nrow(y)
             J <- ncol(y)
             ppars <- coef(object, type = "det")
-            p <- plogis(V %*% ppars)
+            p <- plogis(V %*% ppars + V.offset)
             p <- matrix(p, M, J, byrow = TRUE)
             return(p)
           })
@@ -748,38 +777,43 @@ setMethod("getP", "unmarkedFit", function(object, na.rm = TRUE)
 
 
 
-setMethod("getP", "unmarkedFitDS", function(object, na.rm = TRUE) 
-          {
-            formula <- object@formula
-            detformula <- as.formula(formula[[2]])
-            umf <- object@data
-            designMats <- getDesign2(formula, umf, na.rm = na.rm)
-            y <- designMats$y
-            V <- designMats$V
-            M <- nrow(y)
-            J <- ncol(y)
-            ppars <- coef(object, type = "det")
-            d <- umf@dist.breaks
-            survey <- umf@survey
-            key <- object@keyfun
-            switch(key, 
-                   halfnorm = {
-                     sigma <- exp(V %*% ppars)
-                     p <- sapply(sigma, function(x) cp.hn(d = d, s = x, survey = survey))
-                   }, 
-                   exp = {
-                     rate <- exp(V %*% ppars)
-                     p <- sapply(rate, function(x) cp.exp(d = d, r = x, survey = survey))
-                   }, 
-                   hazard = {
-                     shape <- exp(V %*% ppars)
-                     scale <- exp(coef(object, type="scale"))
-                     p <- sapply(shape, function(x) cp.haz(d = d, shape = x, 
-                                                           scale = scale, survey = survey))
-                   })
-            p <- matrix(p, M, J, byrow = TRUE)
-            return(p)
-          })
+setMethod("getP", "unmarkedFitDS", 
+    function(object, na.rm = TRUE) {
+        formula <- object@formula
+        detformula <- as.formula(formula[[2]])
+        umf <- object@data
+        designMats <- getDesign(umf, formula, na.rm = na.rm)
+        y <- designMats$y
+        V <- designMats$V
+        V.offset <- designMats$V.offset
+        if (is.null(V.offset)) {
+          V.offset <- rep(0, nrow(V))
+        }
+        M <- nrow(y)
+        J <- ncol(y)
+        ppars <- coef(object, type = "det")
+        d <- umf@dist.breaks
+        survey <- umf@survey
+        key <- object@keyfun
+        switch(key, 
+        halfnorm = {
+            sigma <- exp(V %*% ppars + V.offset)
+            p <- sapply(sigma, function(x) cp.hn(d = d, s = x, survey = survey))
+            }, 
+        exp = {
+            rate <- exp(V %*% ppars + V.offset)
+            p <- sapply(rate, function(x) cp.exp(d = d, r = x, survey = survey))
+            }, 
+        hazard = {
+            shape <- exp(V %*% ppars + V.offset)
+            scale <- exp(coef(object, type="scale"))
+            p <- sapply(shape, function(x) cp.haz(d = d, shape = x, 
+            scale = scale, survey = survey))
+            },
+		uniform = p <-1)
+        p <- matrix(p, M, J, byrow = TRUE)
+        return(p)
+        })
 
 
 
@@ -792,13 +826,17 @@ setMethod("getP", "unmarkedFitMPois", function(object, na.rm = TRUE)
             detformula <- as.formula(formula[[2]])
             piFun <- object@data@piFun
             umf <- object@data
-            designMats <- getDesign2(formula, umf, na.rm = na.rm)
+            designMats <- getDesign(umf, formula, na.rm = na.rm)
             y <- designMats$y
             V <- designMats$V
+            V.offset <- designMats$V.offset
+            if (is.null(V.offset)) {
+              V.offset <- rep(0, nrow(V))
+            }
             M <- nrow(y)
             J <- ncol(y)
             ppars <- coef(object, type = "det")
-            p <- plogis(V %*% ppars)
+            p <- plogis(V %*% ppars + V.offset)
             p <- matrix(p, M, J, byrow = TRUE)
             pi <- do.call(piFun, list(p = p))
             return(pi)
@@ -808,45 +846,40 @@ setMethod("getP", "unmarkedFitMPois", function(object, na.rm = TRUE)
 setMethod("getP", "unmarkedFitColExt", function(object, na.rm = TRUE)
           {
             stop("getP is not yet implemented for colext fits.")
-### 		formula <- object@formula
-### 		detformula <- as.formula(formula[[2]])
-### 		data <- getData(object)	
-### 		designMats <- unmarked:::getDesign3(formula = formula, data, na.rm = na.rm)
-### 		y <- designMats$y
-### 		M <- nrow(y)
-### 		J <- ncol(y)
-### 		V.itjk <- designMats$V
-### 		ppars <- coef(object, type="det") 
-### 		p <- plogis(V.itjk %*% ppars)	
-### 		p <- matrix(p, M, J, byrow = TRUE)
-### 		return(p)
           })
 
 
 
 
 setMethod("simulate", "unmarkedFitDS", 
-          function(object, nsim = 1, seed = NULL, na.rm=TRUE)
-          {
-            formula <- object@formula
-            umf <- object@data
-            designMats <- getDesign2(formula, umf, na.rm = na.rm)
-            y <- designMats$y
-            X <- designMats$X
-            a <- designMats$plotArea
-            M <- nrow(y)
-            J <- ncol(y)
-            lamParms <- coef(object, type = "state")
-            lam <- as.numeric(exp(X %*% lamParms))
-            lamvec <- rep(lam, each = J) * a
-            pvec <- c(t(getP(object, na.rm = na.rm)))
-            simList <- list()
-            for(i in 1:nsim) {
-              yvec <- rpois(M * J, lamvec * pvec)
-              simList[[i]] <- matrix(yvec, M, J, byrow = TRUE)
-            }
-            return(simList)
-          })
+    function(object, nsim = 1, seed = NULL, na.rm=TRUE)
+    {
+    formula <- object@formula
+    umf <- object@data
+    designMats <- getDesign(umf, formula, na.rm = na.rm)
+    y <- designMats$y
+    X <- designMats$X
+    X.offset <- designMats$X.offset
+    if (is.null(X.offset)) {
+      X.offset <- rep(0, nrow(X))
+    }
+    a <- calcAreas(dist.breaks = umf@dist.breaks, tlength = umf@tlength, 
+	   survey = umf@survey, output = object@output, M = numSites(umf), 
+	   J = ncol(getY(umf)), unitsIn = umf@unitsIn, unitsOut = object@unitsOut)
+    if(length(designMats$removed.sites)>0)
+        a <- a[-designMats$removed.sites,]
+    M <- nrow(y)
+    J <- ncol(y)
+    lamParms <- coef(object, type = "state")
+    lam <- drop(exp(X %*% lamParms + X.offset))
+    pmat <- getP(object, na.rm = na.rm)
+    simList <- list()
+    for(i in 1:nsim) {
+        yvec <- rpois(M * J, lam * pmat * a)
+        simList[[i]] <- matrix(yvec, M, J)
+        }
+    return(simList)
+    })
 
 
 
@@ -856,15 +889,18 @@ setMethod("simulate", "unmarkedFitPCount",
           {
             formula <- object@formula
             umf <- object@data
-            designMats <- unmarked:::getDesign2(formula, umf, na.rm = na.rm)
+            designMats <- getDesign(umf, formula, na.rm = na.rm)
             y <- designMats$y
             X <- designMats$X
-            a <- designMats$plotArea
+            X.offset <- designMats$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
             M <- nrow(y)
             J <- ncol(y)
             allParms <- coef(object, altNames = FALSE)
             lamParms <- coef(object, type = "state")
-            lam <- as.numeric(exp(X %*% lamParms)) * a
+            lam <- as.numeric(exp(X %*% lamParms + X.offset)) 
             lamvec <- rep(lam, each = J)
             pvec <- c(t(getP(object, na.rm = na.rm)))
             mix <- object@mixture
@@ -889,15 +925,18 @@ setMethod("simulate", "unmarkedFitMPois",
           {
             formula <- object@formula
             umf <- object@data
-            designMats <- unmarked:::getDesign2(formula, umf, na.rm = na.rm)
+            designMats <- getDesign(umf, formula, na.rm = na.rm)
             y <- designMats$y
             X <- designMats$X
-            a <- designMats$plotArea
+            X.offset <- designMats$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
             M <- nrow(y)
             J <- ncol(y)
             lamParms <- coef(object, type = "state")
-            lam <- as.numeric(exp(X %*% lamParms))
-            lamvec <- rep(lam, each = J) * a
+            lam <- as.numeric(exp(X %*% lamParms + X.offset))
+            lamvec <- rep(lam, each = J)
             pivec <- as.vector(t(getP(object, na.rm = na.rm)))
             simList <- list()
             for(i in 1:nsim) {
@@ -915,14 +954,18 @@ setMethod("simulate", "unmarkedFitOccu",
           {
             formula <- object@formula
             umf <- object@data
-            designMats <- getDesign2(formula, umf, na.rm = na.rm)
+            designMats <- getDesign(umf, formula, na.rm = na.rm)
             y <- designMats$y
             X <- designMats$X
+            X.offset <- designMats$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
             M <- nrow(y)
             J <- ncol(y)
             allParms <- coef(object, altNames = FALSE)
             psiParms <- coef(object, type = "state")
-            psi <- as.numeric(plogis(X %*% psiParms))
+            psi <- as.numeric(plogis(X %*% psiParms + X.offset))
             p <- c(t(getP(object,na.rm = na.rm)))
             simList <- list()
             for(i in 1:nsim) {
@@ -946,7 +989,7 @@ setMethod("simulate", "unmarkedFitColExt",
                                 gammaformula=object@gamformula,
                                 epsilonformula=object@epsformula,
                                 pformula=object@detformula)
-            designMats <- getDesign3(formula = formulaList, object@data)
+            designMats <- getDesign(object@data, formlist = formulaList)
             V.itj <- designMats$V
             X.it.gam <- designMats$X.gam
             X.it.eps <- designMats$X.eps
@@ -1012,18 +1055,19 @@ setMethod("simulate", "unmarkedFitOccuRN",
           function(object, nsim = 1, seed = NULL, na.rm = TRUE) {
             formula <- object@formula
             umf <- object@data
-            designMats <- unmarked:::getDesign2(formula, umf, na.rm = na.rm)
+            designMats <- unmarked:::getDesign(umf, formula, na.rm = na.rm)
             y <- designMats$y; X <- designMats$X; V <- designMats$V
+            X.offset <- designMats$X.offset
+            if (is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
             M <- nrow(y)
             J <- ncol(y)
-            
             detParms <- coef(object, 'det')
             r.ij <- plogis(V %*% detParms)
             r <- matrix(r.ij, M, J, byrow = TRUE)
-            
             lamParms <- coef(object, 'state')
-            lambda <- exp(X %*% lamParms)
-
+            lambda <- exp(X %*% lamParms + X.offset)
             simList <- list()
             for(s in 1:nsim) {
               N.i <- rpois(M, lambda)
@@ -1048,55 +1092,46 @@ setGeneric("parboot",
 
 
 setClass("parboot",
-         representation(fitType = "character",
-                        call = "call",
+         representation(call = "call",
                         t0 = "numeric",
-                        t.star = "numeric")
-         )
+                        t.star = "matrix"))
+         
 
-
-                                        # Evaluate goodness-of-fit of a fitted model. 
-setMethod("parboot", "unmarkedFit", function(object, nsim=10, report=2, ...)  
-          {
-            call <- match.call(call = sys.call(-1))
-            formula <- object@formula
-            umf <- object@data
-            dataClass <- class(umf)
-            if(dataClass[1] == "unmarkedMultFrame") {
-              formulaList <- list(psiformula=object@psiformula,
-                                  gammaformula=object@gamformula,
-                                  epsilonformula=object@epsformula,
-                                  pformula=object@detformula)
-              designMats <- getDesign3(formulaList, umf, na.rm = FALSE)
-            } else	
-            designMats <- getDesign2(formula, umf, na.rm = FALSE)
-            y <- designMats$y
-            if(class(object) %in% c("unmarkedFitOccu", "unmarkedFitOccuRN", 
-                                    "unmarkedFitColExt"))
-              y <- truncateToBinary(y)
-            yvec0 <- c(t(y))
-            ests <- as.numeric(coef(object, altNames = TRUE))
-            expected0 <- as.vector(t(fitted(object, na.rm = FALSE))) 
-            rmse0 <- sqrt(sum((sqrt(yvec0) - sqrt(expected0))^2, na.rm = TRUE))
-            cat("t0 =", rmse0, "\n")      
-            rmse <- numeric(nsim)
-            fits <- list()
-            simdata <- umf
-            simList <- simulate(object, nsim = nsim, na.rm = FALSE)
-            for(i in 1:nsim) {
-              y.sim <- simList[[i]]
-              is.na(y.sim) <- is.na(y)
-              yvec <- c(t(y.sim))
-              simdata@y <- y.sim
-              fits[[i]] <- update(object, data = simdata, starts = ests, se = F, ...)
-              expected <- as.vector(t(fitted(fits[[i]], na.rm = FALSE)))
-              rmse[i] <- sqrt(sum((sqrt(yvec) - sqrt(expected))^2, na.rm = TRUE))
-              if(nsim > report && i %in% seq(report, nsim, by=report))
-                cat(paste(round(rmse[(i-(report-1)):i], 1), collapse=", "), fill=T)
-            }
-            out <- new("parboot", call=call, t0 = rmse0, t.star = rmse)
-            return(out)
-          })
+setMethod("parboot", "unmarkedFit", 
+    function(object, statistic=SSE, nsim=10, report=2, ...) 
+    {
+    statistic <- match.fun(statistic)
+    call <- match.call(call = sys.call(-1))
+    formula <- object@formula
+    umf <- getData(object)
+    y <- getY(umf)
+    if(class(object) %in% c("unmarkedFitOccu", "unmarkedFitOccuRN", 
+        "unmarkedFitColExt"))
+            y <- truncateToBinary(y)
+    ests <- as.numeric(coef(object))
+    t0 <- statistic(object, ...)
+    lt0 <- length(t0)
+    t.star <- matrix(NA, nsim, lt0)
+    if(!is.null(names(t0)))
+        colnames(t.star) <- names(t0)
+    else colnames(t.star) <- paste("t*", 1:lt0, sep="")
+    cat("t0 =", t0, "\n")      
+    fits <- list()
+    simdata <- umf
+    simList <- simulate(object, nsim = nsim, na.rm = FALSE)
+    for(i in 1:nsim) {
+        y.sim <- simList[[i]]
+        is.na(y.sim) <- is.na(y)
+        simdata@y <- y.sim
+        fits[[i]] <- update(object, data=simdata, starts=ests, se=FALSE, ...)
+        t.star[i,] <- statistic(fits[[i]], ...)
+        if(nsim > report && i %in% seq(report, nsim, by=report))
+            cat(paste(round(t.star[(i-(report-1)):i,], 1), collapse=", "), 
+                fill=TRUE)
+        }
+    out <- new("parboot", call=call, t0 = t0, t.star = t.star)
+    return(out)
+    })
 
 
 
@@ -1107,42 +1142,42 @@ setMethod("show", "parboot", function(object)
           {
             t.star <- object@t.star
             t0 <- object@t0
-            bias <- mean(t0 - t.star)
-            bias.se <- sd(t0 - t.star)
-            nsim <- length(t.star)
-            p.val <- sum(abs(t.star - 1) > abs(t0 - 1)) / (1 + nsim)
-            stats <- c("original" = t0, "bias" = bias, "Std. error" = bias.se, 
-                       "p.value" = p.val)
-            cat("\nCall:", deparse(object@call), fill=T)
-            cat("\nBootstrap Statistics:\n")
+            nsim <- nrow(t.star)
+            biasMat <- pMat <- matrix(NA, nsim, length(t0))
+            for(i in 1:nsim) {
+                biasMat[i,] <- t0 - t.star[i,]
+                pMat[i,] <- abs(t.star[i,] - 1) > abs(t0 - 1)
+                }
+            bias <- colMeans(biasMat)
+            bias.se <- apply(biasMat, 2, sd)
+            p.val <- colSums(pMat) / (1 + nsim)
+            stats <- data.frame("t0" = t0, "mean(t0 - t_B)" = bias, 
+                "StdDev(t0 - t_B)" = bias.se, "Pr(t_B > t0)" = p.val, 
+                check.names = FALSE)
+            cat("\nCall:", deparse(object@call, width=500), fill=T)
+            cat("\nParametric Bootstrap Statistics:\n")
             print(stats, digits=3)
-            cat("\nt quantiles:\n")
-            print(quantile(t.star, probs=c(0,2.5,25,50,75,97.5,100)/100))        
+            cat("\nt_B quantiles:\n")
+            print(t(apply(t.star, 2, quantile, 
+                probs=c(0, 2.5, 25, 50, 75, 97.5, 100) / 100)), digits=2)
+            cat("\nt0 = Original statistic compuated from data\n")
+            cat("t_B = Vector of bootstrap samples\n\n")
           })
 
 
 
 
-setMethod("plot", signature(x="parboot", y="missing"), function(x, y, ...)
-          {
-                                        #			op <- par(mfrow=c(1, 2))
-            t.star <- x@t.star
-            t0 <- x@t0
-            t.t0 <- c(t.star, t0)
-            bias <- mean(t0 - t.star)
-            bias.se <- sd(t0 - t.star)
-            nsim <- length(t.star)
-            p.val <- sum(abs(t.star - 1) > abs(t0 - 1)) / (1 + nsim)
-            hist(t.star, xlim=c(min(floor(t.t0)), max(ceiling(t.t0))), 
-                 main=paste("P =", round(p.val, 4), "; nsim =", format(nsim)), 
-                 xlab="t*")
-            rug(t.star)
-            abline(v=t0, lty=2)
-                                        #			qqnorm(t.star, ylab="t*")
-                                        #			qqline(t.star)
-                                        #			title(outer=T, ...)
-                                        #			par(op)
-          })
+setMethod("plot", signature(x="parboot", y="missing"), 
+    function(x, y, ...)
+    {
+        t.star <- x@t.star
+        t0 <- x@t0
+        for(i in 1:length(t0)) {
+            hist(t.star[,i], xlab=colnames(t.star)[i], ...)
+            abline(v=t0[i], lty=2)
+            devAskNewPage(ask = TRUE)
+            }
+    })
 
 
 ############################### Nonparametric bootstrapping ###########################
@@ -1162,7 +1197,7 @@ setMethod("nonparboot", "unmarkedFit",
             }
             data <- object@data
             formula <- object@formula
-            designMats <- getDesign2(formula, data)  # bootstrap only after removing sites
+            designMats <- getDesign(data, formula)  # bootstrap only after removing sites
             removed.sites <- designMats$removed.sites
             data <- data[-removed.sites,]
             y <- getY(data)
@@ -1241,7 +1276,7 @@ setMethod("nonparboot", "unmarkedFitColExt",
                                 gammaformula=object@gamformula,
                                 epsilonformula=object@epsformula,
                                 pformula=object@detformula)
-            designMats <- getDesign3(formula = formulaList, object@data)   # bootstrap only after removing sites
+            designMats <- getDesign(object@data, formlist = formulaList)   # bootstrap only after removing sites
             removed.sites <- designMats$removed.sites
             data <- data[-removed.sites,]
             y <- getY(data)

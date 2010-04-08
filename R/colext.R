@@ -45,7 +45,7 @@ colext <- function(psiformula = ~ 1, gammaformula = ~ 1,
   
   if(se) {
     tryCatch(covMat <- solve(opt$hessian),
-             error=function(x) simpleError("Hessian is not invertible.  Try using fewer covariates."))
+             error=function(x) stop(simpleError("Hessian is singular.  Try using fewer covariates.")))
   } else {
     covMat <- matrix(NA, nP, nP)
   }
@@ -102,7 +102,8 @@ colext.fit <- function(formula, data, J,
 {
   K <- 1
   
-  designMats <- getDesign3(formula = formula, data)
+  designMats <- getDesign(data, 
+    formula = as.formula(paste(unlist(formula), collapse=" ")))
   V.itjk <- designMats$V
   X.it.gam <- designMats$X.gam
   X.it.eps <- designMats$X.eps
@@ -221,7 +222,7 @@ colext.fit <- function(formula, data, J,
     forward(detParams, phis, psis) + 0.001*sqrt(sum(params^2))
   }
   
-  if(is.null(starts)) starts <- rnorm(nP)
+  if(is.null(starts)) starts <- rep(0,nP)
   fm <- optim(starts, nll, method=method,hessian = getHessian,	control=control)
   mle <- fm$par
 

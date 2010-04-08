@@ -8,9 +8,15 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
 	if(!is(data, "unmarkedFramePCount")) 
 		stop("Data is not an unmarkedFramePCount object.")
 
-	designMats <- getDesign2(formula, data)
+	designMats <- getDesign(data, formula)
 	X <- designMats$X; V <- designMats$V; y <- designMats$y
-	plotArea <- designMats$plotArea
+        X.offset <- designMats$X.offset; V.offset <- designMats$V.offset
+        if (is.null(X.offset)) {
+          X.offset <- rep(0, nrow(X))
+        }
+        if (is.null(V.offset)) {
+          V.offset <- rep(0, nrow(V))
+        }
 
 	J <- ncol(y)
 	M <- nrow(y)
@@ -38,8 +44,8 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
 	ijk.to.ikj <- with(ijk, order(i, k, j)) 
 
 	nll <- function(parms){
-		theta.i <- exp(X %*% parms[1 : nAP]) * plotArea
-		p.ij <- plogis(V %*% parms[(nAP + 1) : (nAP + nDP)])
+		theta.i <- exp(X %*% parms[1 : nAP] + X.offset) 
+		p.ij <- plogis(V %*% parms[(nAP + 1) : (nAP + nDP)] + V.offset)
 		theta.ik <- rep(theta.i, each = K + 1)
 		p.ijk <- rep(p.ij, each = K + 1)
 
@@ -72,13 +78,13 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
 	names(ests) <- c(lamParms, detParms, nbParm)
 	if(se) {
 		tryCatch(covMat <- solve(fm$hessian),
-				error=function(x) simpleError("Hessian is not invertible.  Try using fewer covariates."))
+				error=function(x) stop(simpleError("Hessian is singular.  Try using fewer covariates.")))
 	} else {
 		covMat <- matrix(NA, nP, nP)
 	}
 	fmAIC <- 2 * fm$value + 2 * nP
 	
-	stateName <- ifelse(all(data@plotArea == 1), "Abundance", "Density")
+	stateName <- "Abundance"
 	
 	stateEstimates <- unmarkedEstimate(name = stateName, short.name = "lam",
 		estimates = ests[1:nAP], covMat = as.matrix(covMat[1:nAP,1:nAP]), 

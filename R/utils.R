@@ -9,7 +9,7 @@ genFixedNLL <- function(nll, whichFixed, fixedValues) {
 # nll the original negative log likelihood function
 # MLE the full vector of MLE values
 profileCI <- function(nll, whichPar, MLE, interval, level){
-	stopifnot(length(whichPar) == 1)
+  stopifnot(length(whichPar) == 1)
   MLEnll <- nll(MLE)
   nPar <- length(MLE)
 	chsq <- qchisq(level, 1)/2
@@ -18,13 +18,19 @@ profileCI <- function(nll, whichPar, MLE, interval, level){
 		mleRestricted <- optim(MLE, fixedNLL)$value
     mleRestricted - MLEnll - chsq
   }
-## TODO: expand interval as necessary rather than use +/- Inf?
-#  lower <- tryCatch(uniroot(f, c(interval[1],MLE[whichPar]))$root,
-#			error=function(x) -Inf)
-#  upper <- tryCatch(uniroot(f, c(MLE[whichPar], interval[2]))$root,
-#			error=function(x) Inf)
-  lower <- uniroot(f, c(interval[1],MLE[whichPar]))$root
-  upper <- uniroot(f, c(MLE[whichPar], interval[2]))$root
+  lower <- tryCatch(uniroot(f, c(interval[1],MLE[whichPar]))$root,
+                    error = function(e) {
+                      warning("Lower endpoint of profile confidence interval is on the boundary.",
+                              call. = FALSE)
+                      -Inf
+                    })
+           
+  upper <- tryCatch(upper <- uniroot(f, c(MLE[whichPar], interval[2]))$root,
+                    error = function(e) {
+                      warning("Upper endpoint of profile confidence interval is on the boundary.",
+                              call. = FALSE)
+                      Inf
+                    })
 	
   return(c(lower,upper))
 }
@@ -591,284 +597,6 @@ function(lam, r)
 #}
 
 
-getDesign <- function(stateformula, detformula, umf) {
-
-  M <- nrow(umf@y)
-
-  ## Compute detection design matrix
-  ## add site Covariates at observation-level
-  if(!is.null(umf@obsCovs)) {
-    V.mf <- model.frame(detformula, umf@obsCovs, na.action = NULL)
-    V <- model.matrix(detformula, V.mf)
-  } else {
-    V <- matrix(1, M*umf@obsNum, 1)
-    colnames(V) <- "(Intercept)"
-  }
-
-  ## Compute state design matrix
-  if(!is.null(umf@siteCovs)) {
-    X.mf <- model.frame(stateformula, umf@siteCovs, na.action = NULL)
-    X <- model.matrix(stateformula, X.mf)
-  } else {
-    X <- matrix(1, M, 1)
-    colnames(X) <- "(Intercept)"
-  }
-  return(list(X = X, V = V))
-}
-
-getDesign2 <- function(formula, umf, na.rm = TRUE) {
-	
-	detformula <- as.formula(formula[[2]])
-	stateformula <- as.formula(paste("~",formula[3],sep=""))
-	detVars <- all.vars(detformula)
-	
-	M <- numSites(umf)
-	R <- obsNum(umf)
-	
-	## Compute state design matrix
-	if(is.null(siteCovs(umf))) {
-		siteCovs <- data.frame(placeHolder = rep(1, M))
-	} else {
-		siteCovs <- siteCovs(umf)
-	}
-	X.mf <- model.frame(stateformula, siteCovs, na.action = NULL)
-	X <- model.matrix(stateformula, X.mf)
-
-	## Compute detection design matrix
-	if(is.null(obsCovs(umf))) {
-		obsCovs <- data.frame(placeHolder = rep(1, M*R))
-	} else {
-		obsCovs <- obsCovs(umf)
-	}
-	
-	## Record future column names for obsCovs
-	colNames <- c(colnames(obsCovs), colnames(siteCovs))
-	
-	## add site Covariates at observation-level
-	obsCovs <- cbind(obsCovs, siteCovs[rep(1:M, each = R),])
-	colnames(obsCovs) <- colNames
-	
-	## add observation number if not present
-	if(!("obs" %in% names(obsCovs))) {
-		obsCovs <- cbind(obsCovs, obs = as.factor(rep(1:R, M)))
-	}
-	
-	V.mf <- model.frame(detformula, obsCovs, na.action = NULL)
-	V <- model.matrix(detformula, V.mf)
-	
-	if(na.rm)
-		out <- handleNA2(umf, X, V)
-	else
-		out <- list(y=getY(umf), X=X, V=V, plotArea=umf@plotArea, 
-			removed.sites=integer(0))
-	
-	return(list(y = out$y, X = out$X, V = out$V, 
-		plotArea = out$plotArea, removed.sites = out$removed.sites))
-}
-
-# TODO: use methods so that this is for multframe
-getDesign3 <- function(formula, umf, na.rm = TRUE) {
-	
-#	detformula <- as.formula(formula[[2]])
-#	stateformula <- as.formula(paste("~",formula[3],sep=""))
-  detformula <- formula$pformula
-  psiformula <- formula$psiformula
-  gamformula <- formula$gammaformula
-  epsformula <- formula$epsilonformula
-  
-  detVars <- all.vars(detformula)
-  
-  M <- numSites(umf)
-  R <- obsNum(umf)
-  nY <- umf@numPrimary
-  
-  ## Compute phi design matrices
-  if(is.null(umf@yearlySiteCovs)) {
-    yearlySiteCovs <- data.frame(placeHolder = rep(1, M*nY))
-  } else {
-    yearlySiteCovs <- umf@yearlySiteCovs
-  }
-  ## in order to drop factor levels that only appear in last year,
-  ## replace last year with NAs and use drop=TRUE
-  yearlySiteCovs[seq(nY,M*nY,by=nY),] <- NA
-  yearlySiteCovs <- as.data.frame(lapply(yearlySiteCovs, function(x) {
-    x[,drop = TRUE]
-  }))
-  ## add siteCovs in so they can be used as well
-  if(!is.null(umf@siteCovs)) {
-    sC <- umf@siteCovs[rep(1:M, each = nY),,drop=FALSE]
-    yearlySiteCovs <- cbind(yearlySiteCovs, sC)
-  }
-  X.mf.gam <- model.frame(gamformula, yearlySiteCovs, na.action = NULL)
-  X.gam <- model.matrix(gamformula, X.mf.gam)
-  X.mf.eps <- model.frame(epsformula, yearlySiteCovs, na.action = NULL)
-  X.eps <- model.matrix(epsformula, X.mf.eps)
-  
-  ## Compute site-level design matrix for psi
-  if(is.null(siteCovs(umf))) {
-    siteCovs <- data.frame(placeHolder = rep(1, M))
-  } else {
-    siteCovs <- siteCovs(umf)
-  }
-  W.mf <- model.frame(psiformula, siteCovs, na.action = NULL)
-  W <- model.matrix(psiformula, W.mf)
-
-#  ## impute missing yearlySiteCovs across years as average
-#  X <- t(apply(X, 1, function(x) {
-#            out <- x
-#            out[is.na(x)] <- mean(x)
-#          }))
-  
-	## Compute detection design matrix
-	if(is.null(obsCovs(umf))) {
-		obsCovs <- data.frame(placeHolder = rep(1, M*R))
-	} else {
-		obsCovs <- obsCovs(umf)
-	}
-	
-	## add site and yearlysite covariates at observation-level
-	obsCovs <- cbind(obsCovs, yearlySiteCovs[rep(1:(M*nY), each = R),],
-                         siteCovs[rep(1:M, each = R), ])
-	
-	## add observation number if not present
-	if(!("obs" %in% names(obsCovs))) {
-		obsCovs <- cbind(obsCovs, obs = as.factor(rep(1:R, M)))
-	}
-	
-	V.mf <- model.frame(detformula, obsCovs, na.action = NULL)
-	V <- model.matrix(detformula, V.mf)
-	
-	if(na.rm)
-		out <- handleNA3(umf, X.gam, X.eps, W, V)
-	else
-		out <- list(y=getY(umf), X.gam=X.gam, X.eps=X.eps,
-                            W=W,V=V, plotArea=umf@plotArea, 
-				removed.sites=integer(0))
-	
-	return(list(y = out$y, X.eps = out$X.eps, X.gam = out$X.gam,
-                    W = out$W, V = out$V, plotArea = out$plotArea,
-                    removed.sites = out$removed.sites))
-}
-
-
-handleNA2 <- function(umf, X, V) {
-	obsToY <- obsToY(umf)
-	if(is.null(obsToY)) stop("obsToY cannot be NULL to clean data.")
-	
-	J <- numY(umf)
-	R <- obsNum(umf)
-	M <- numSites(umf)
-
-	plotArea <- umf@plotArea
-	if(all(is.na(plotArea))) 	# Necessary b/c distsamp calculates plot areas w/in the function when all(is.na(plotArea))
-		plotArea.na <- rep(FALSE, length(plotArea))
-	else
-		plotArea.na <- is.na(plotArea)
-	
-	X.long <- X[rep(1:M, each = J),]
-	X.long.na <- is.na(X.long)
-	
-	V.long.na <- apply(V, 2, function(x) {
-				x.mat <- matrix(x, M, R, byrow = TRUE)
-				x.mat <- is.na(x.mat)
-				x.mat <- x.mat %*% obsToY
-				x.long <- as.vector(t(x.mat))
-				x.long == 1
-			})
-	V.long.na <- apply(V.long.na, 1, any)
-	
-	y.long <- as.vector(t(getY(umf)))
-	y.long.na <- is.na(y.long)
-	
-	covs.na <- apply(cbind(X.long.na, V.long.na), 1, any)
-	
-	## are any NA in covs not in y already?
-	y.new.na <- covs.na & !y.long.na
-	
-	if(sum(y.new.na) > 0) {
-		y.long[y.new.na] <- NA
-		warning("Some observations have been discarded because correspoding covariates were missing.")
-	}
-	
-	y <- matrix(y.long, M, J, byrow = TRUE)
-	sites.to.remove <- apply(y, 1, function(x) all(is.na(x)))
-	#sites.to.remove <- sites.to.remove | plotArea.na
-	
-	num.to.remove <- sum(sites.to.remove)
-	if(num.to.remove > 0) {
-		y <- y[!sites.to.remove, ,drop = FALSE]
-		X <- X[!sites.to.remove, ,drop = FALSE]
-		V <- V[!sites.to.remove[rep(1:M, each = R)], ,drop = FALSE]
-		plotArea <- plotArea[!sites.to.remove]
-		warning(paste(num.to.remove,"sites have been discarded because of missing data."))
-	}
-	
-	list(y = y, X = X, V = V, plotArea = plotArea, removed.sites = which(sites.to.remove))
-}
-
-
-handleNA3 <- function(umf, X.gam, X.eps, W, V) {
-	obsToY <- obsToY(umf)
-	if(is.null(obsToY)) stop("obsToY cannot be NULL to clean data.")
-	
-	R <- obsNum(umf)
-	M <- numSites(umf)
-	nY <- umf@numPrimary
-	J <- numY(umf) / nY
-	
-        ## treat both X's and W together
-        X <- cbind(X.gam, X.eps, W[rep(1:M, each = nY), ])
-
-	plotArea <- umf@plotArea
-	if(all(is.na(plotArea))) 	# Necessary b/c distsamp calculates plot areas w/in the function when all(is.na(plotArea))
-		plotArea.na <- rep(FALSE, length(plotArea))
-	else
-		plotArea.na <- is.na(plotArea)
-	
-	X.na <- is.na(X)
-	X.na[seq(nY,M*nY,by=nY),] <- FALSE  ## final years are unimportant (not used).
-	X.long.na <- X.na[rep(1:(M*nY), each = J),]
-	
-	V.long.na <- apply(V, 2, function(x) {
-				x.mat <- matrix(x, M, R, byrow = TRUE)
-				x.mat <- is.na(x.mat)
-				x.mat <- x.mat %*% obsToY
-				x.long <- as.vector(t(x.mat))
-				x.long == 1
-			})
-	V.long.na <- apply(V.long.na, 1, any)
-	
-	y.long <- as.vector(t(getY(umf)))
-	y.long.na <- is.na(y.long)
-	
-	covs.na <- apply(cbind(X.long.na, V.long.na), 1, any)
-	
-	## are any NA in covs not in y already?
-	y.new.na <- covs.na & !y.long.na
-	
-	if(sum(y.new.na) > 0) {
-		y.long[y.new.na] <- NA
-		warning("Some observations have been discarded because correspoding covariates were missing.")
-	}
-	
-	y <- matrix(y.long, M, numY(umf), byrow = TRUE)
-	sites.to.remove <- apply(y, 1, function(x) all(is.na(x)))
-	#sites.to.remove <- sites.to.remove | plotArea.na
-	
-	num.to.remove <- sum(sites.to.remove)
-	if(num.to.remove > 0) {
-		y <- y[!sites.to.remove, ,drop = FALSE]
-		X.gam <- X.gam[!sites.to.remove[rep(1:M, each = J)], ,drop = FALSE]
-                X.eps <- X.eps[!sites.to.remove[rep(1:M, each = J)], ,drop = FALSE]
-                W <- X[!sites.to.remove, drop = FALSE]
-		V <- V[!sites.to.remove[rep(1:M, each = R)], ,drop = FALSE]
-		plotArea <- plotArea[!sites.to.remove]
-		warning(paste(num.to.remove,"sites have been discarded because of missing data."))
-	}
-	list(y = y, X.gam = X.gam, X.eps = X.eps, W = W,
-             V = V, plotArea = plotArea,
-             removed.sites = which(sites.to.remove))
-}
 
 meanstate <- function(x) {
     K <- length(x) - 1
@@ -981,10 +709,92 @@ if(any(lambda < 0))
 as.numeric(1 - exp(-lambda))
 }
 
-#psi2lambda <- function(psi)
-#{
-#if(any(0 > psi | psi > 1))
-#	stop("psi must be in [0, 1]")
-#as.numeric(-log(1 - psi))
-#}
+
+# Convert individual-level distance data to the transect-level format required by distsamp()
+
+formatDistData <- function(distData, distCol, transectNameCol, dist.breaks)
+{
+transects <- distData[,transectNameCol]
+M <- nlevels(transects)
+J <- length(dist.breaks) - 1
+y <- matrix(NA, M, J, 
+	dimnames = list(levels(transects), paste("y", 1:J, sep=".")))
+for(i in 1:M) {
+	sub <- subset(distData, transects==rownames(y)[i])
+	y[i,] <- table(cut(sub[,distCol], dist.breaks, include.lowest=TRUE))
+	}
+return(data.frame(y))
+}
+
+
+
+## Sight distance to perpendicular distance
+
+sight2perpdist <- function(sightdist, sightangle) 
+{
+if(any(0 > sightangle | sightangle > 180))
+	stop("sightangle must be degrees in [0, 180]")
+sightdist * sin(sightangle * pi / 180)
+}
+
+
+
+SSE <- function(fit) {
+    sse <- sum(residuals(fit)^2, na.rm=TRUE)
+    return(c(SSE=sse))
+    }
+
+
+
+
+
+
+
+
+
+
+
+# Prepare area argument for distsamp(). This is primarily for internal use
+
+calcAreas <- function(dist.breaks, tlength, survey, output, M, J, unitsIn, 
+	unitsOut)
+{
+switch(output, 	
+	density = {
+        switch(unitsIn, 
+            km = conv <- 1,
+            m = conv <- 1000
+            )
+		switch(survey, 
+			line = {
+				stripwidths <- (((dist.breaks*2)[-1] - 
+                    (dist.breaks*2)[-(J+1)])) / conv
+				tl <- tlength / conv
+				a <- rep(tl, each=J) * stripwidths						# km^2
+				a <- matrix(a, nrow=M, ncol=J, byrow=TRUE)
+				if(unitsOut == "ha") a <- a * 100
+				},
+			point = {
+				W <- max(dist.breaks) / conv
+				a <- matrix(rep(pi * W^2, each=J), M, J, byrow=TRUE) 	# km^2
+				if(unitsOut == "ha") a <- a * 100			
+				})
+			},
+	abund = {
+        ndi <- length(unique(diff(dist.breaks)))
+        if(!isTRUE(all.equal(ndi, 1)))
+            stop("output cannot equal 'abund' when distance intervals differ. Use output='density' instead.")
+        switch(survey, 
+            line = {
+                ntl <- length(unique(tlength))
+                if(!isTRUE(all.equal(ntl, 1)))
+                    stop("output cannot equal 'abund' when transect lengths differ. Use output='density' instead.")
+                a <- matrix(1 / J, M, J)
+                },
+            point = a <- matrix(1, M, J)
+            )
+        })
+return(a)
+}
+
 

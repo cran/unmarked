@@ -40,8 +40,15 @@ function(formula, data, starts, method = "BFGS", control = list(), se = TRUE)
 	if(!is(data, "unmarkedFrameMPois"))
 		stop("Data is not a data frame or unmarkedFrame.")
 
-	designMats <- getDesign2(formula, data)
-	X <- designMats$X; V <- designMats$V; y <- designMats$y; plotArea <- designMats$plotArea
+	designMats <- getDesign(data, formula)
+	X <- designMats$X; V <- designMats$V; y <- designMats$y
+        X.offset <- designMats$X.offset; V.offset <- designMats$V.offset
+        if (is.null(X.offset)) {
+          X.offset <- rep(0, nrow(X))
+        }
+        if (is.null(V.offset)) {
+          V.offset <- rep(0, nrow(V))
+        }
   
 	J <- ncol(y)
 	R <- obsNum(data)
@@ -57,8 +64,8 @@ function(formula, data, starts, method = "BFGS", control = list(), se = TRUE)
 	navec <- is.na(yvec)
 
 	nll <- function(parms) {
-		lambda <- exp(X %*% parms[1 : nAP]) * plotArea
-		p <- plogis(V %*% parms[(nAP + 1) : nP])
+		lambda <- exp(X %*% parms[1 : nAP] + X.offset) 
+		p <- plogis(V %*% parms[(nAP + 1) : nP] + V.offset)
 		p.matrix <- matrix(p, M, R, byrow = TRUE)
 		pi <- do.call(piFun, list(p = p.matrix))
 		logLikeSite <- dpois(y, matrix(lambda, M, J) * pi, log = TRUE)
@@ -71,7 +78,7 @@ function(formula, data, starts, method = "BFGS", control = list(), se = TRUE)
 	opt <- fm
 	if(se) {
 		tryCatch(covMat <- solve(fm$hessian),
-				error=function(x) simpleError("Hessian is not invertible.  Try using fewer covariates."))
+				error=function(x) stop(simpleError("Hessian is singular.  Try using fewer covariates.")))
 	} else {
 		covMat <- matrix(NA, nP, nP)
 	}
@@ -79,7 +86,7 @@ function(formula, data, starts, method = "BFGS", control = list(), se = TRUE)
 	fmAIC <- 2 * fm$value + 2 * nP
 	names(ests) <- c(lamParms, detParms)
 
-	stateName <- ifelse(all(data@plotArea == 1), "Abundance", "Density")
+	stateName <- "Abundance"
 	
 	stateEstimates <- unmarkedEstimate(name = stateName, short.name = "lambda",
 		estimates = ests[1:nAP],
