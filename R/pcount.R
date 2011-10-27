@@ -1,15 +1,16 @@
 
 #' Fit the N-mixture point count model
 
-pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
-                   method = "BFGS", control = list(), se = TRUE,
-                   engine = c("C", "R"))
+pcount <- function(formula, data, K, mixture = c("P", "NB", "ZIP"), starts,
+                   method = "BFGS", se = TRUE,
+                   engine = c("C", "R"), ...)
 {
-    mixture <- match.arg(mixture, c("P", "NB"))
+    mixture <- match.arg(mixture, c("P", "NB", "ZIP"))
     if(!is(data, "unmarkedFramePCount"))
         stop("Data is not an unmarkedFramePCount object.")
-
     engine <- match.arg(engine, c("C", "R"))
+    if(identical(mixture, "ZIP") & identical(engine, "R"))
+        stop("ZIP mixture not available for engine='R'")
 
     designMats <- getDesign(data, formula)
     X <- designMats$X; V <- designMats$V; y <- designMats$y
@@ -18,6 +19,7 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
         X.offset <- rep(0, nrow(X))
     if (is.null(V.offset))
         V.offset <- rep(0, nrow(V))
+    NAmat <- is.na(y)
 
     J <- ncol(y)
     M <- nrow(y)
@@ -27,7 +29,10 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
     nDP <- ncol(V)
     nAP <- ncol(X)
 
-    if(missing(K)) K <- max(y, na.rm = TRUE) + 100
+    if(missing(K)) {
+        K <- max(y, na.rm = TRUE) + 100
+        warning("K was not specified and was set to ", K, ".")
+    }
     if(K <= max(y, na.rm = TRUE))
         stop("specified K is too small. Try a value larger than any observation")
     k <- 0:K
@@ -37,19 +42,16 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
     k.ik <- rep(k, M)
     k.ijk <- rep(k, M*J)
 
-    nP <- nAP + nDP + ifelse(identical(mixture,"NB"),1,0)
+    nP <- nAP + nDP + (mixture != "P")
     if(!missing(starts) && length(starts) != nP)
         stop(paste("The number of starting values should be", nP))
 
-    y.ij <- as.numeric(t(y))
-    y.ijk <- rep(y.ij, each = K + 1)
-    navec <- is.na(y.ijk)
-    NAmat <- is.na(y)
-    nd <- ifelse(rowSums(y, na.rm=TRUE) == 0, 1, 0)#no detection at site i
-    ijk <- expand.grid(k = 0:K, j = 1:J, i = 1:M)
-    ijk.to.ikj <- with(ijk, order(i, k, j))
-
     if(identical(engine, "R")) {
+        y.ij <- as.numeric(t(y))
+        y.ijk <- rep(y.ij, each = K + 1)
+        navec <- is.na(y.ijk)
+        ijk <- expand.grid(k = 0:K, j = 1:J, i = 1:M)
+        ijk.to.ikj <- with(ijk, order(i, k, j))
         nll <- function(parms) {
             theta.i <- exp(X %*% parms[1 : nAP] + X.offset)
             p.ij <- plogis(V %*% parms[(nAP + 1) : (nAP + nDP)] + V.offset)
@@ -78,7 +80,7 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
             beta.lam <- parms[1:nAP]
             beta.p <- parms[(nAP+1):(nAP+nDP)]
             log.alpha <- 1
-            if(identical(mixture, "NB"))
+            if(mixture %in% c("NB", "ZIP"))
                 log.alpha <- parms[nP]
             .Call("nll_pcount",
                   y, X, V, beta.lam, beta.p, log.alpha, X.offset, V.offset,
@@ -88,18 +90,18 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
     }
 
     if(missing(starts)) starts <- rep(0, nP)
-    fm <- optim(starts, nll, method=method, hessian=se, control=control)
+    fm <- optim(starts, nll, method=method, hessian=se, ...)
     opt <- fm
 
     ests <- fm$par
-    if(identical(mixture,"NB"))
-        nbParm <- "alpha"
-    else
-        nbParm <- character(0)
+    nbParm <- switch(mixture,
+                     NB = "alpha",
+                     ZIP = "psi",
+                     P = character(0))
     names(ests) <- c(lamParms, detParms, nbParm)
     if(se) {
-        tryCatch(covMat <- solve(fm$hessian),
-                 error=function(x) stop(simpleError("Hessian is singular.  Try using fewer covariates.")))
+        tryCatch(covMat <- solve(fm$hessian), error=function(x)
+                 stop(simpleError("Hessian is singular.  Try using fewer covariates.")))
     } else {
         covMat <- matrix(NA, nP, nP)
     }
@@ -126,6 +128,14 @@ pcount <- function(formula, data, K, mixture = c("P", "NB"), starts,
             short.name = "alpha", estimates = ests[nP],
             covMat = as.matrix(covMat[nP, nP]), invlink = "exp",
             invlinkGrad = "exp")
+    }
+
+    if(identical(mixture,"ZIP")) {
+        estimateList@estimates$psi <- unmarkedEstimate(
+            name="Zero-inflation",
+            short.name = "psi", estimates = ests[nP],
+            covMat = as.matrix(covMat[nP, nP]), invlink = "logistic",
+            invlinkGrad = "logistic.grad")
     }
 
     umfit <- new("unmarkedFitPCount", fitType="pcount", call=match.call(),

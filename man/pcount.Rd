@@ -4,8 +4,8 @@
 
 \title{Fit the N-mixture model of Royle (2004)}
 
-\usage{pcount(formula, data, K, mixture=c("P", "NB"), starts, method="BFGS",
-    control=list(), se=TRUE, engine=c("C", "R"))}
+\usage{pcount(formula, data, K, mixture=c("P", "NB", "ZIP"),
+    starts, method="BFGS", se=TRUE, engine=c("C", "R"), ...)}
 
 \description{Fit the N-mixture model of Royle (2004)}
 
@@ -19,11 +19,12 @@
     \item{mixture}{character specifying mixture: either "P" or "NB".}
     \item{starts}{vector of starting values}
     \item{method}{Optimization method used by \code{\link{optim}}.}
-    \item{control}{Other arguments passed to \code{\link{optim}}.}
     \item{se}{logical specifying whether or not to compute standard
       errors.}
     \item{engine}{Either "C" or "R" to use fast C++ code or native R
-    code during the optimization.}
+      code during the optimization.}
+    \item{\dots}{Additional arguments to optim, such as lower and upper
+      bounds}
   }
 
 
@@ -36,13 +37,16 @@ This function fits the latent N-mixture model for point count data
 (Royle 2004, Kéry et al 2005).
 
 The latent abundance distribution, \eqn{f(N | \mathbf{\theta})}{f(N |
-theta)} can be set as either a Poisson or a negative binomial random
-variable, depending on the setting of the \code{mixture} argument.
-\code{mixture = "P"} or \code{mixture = "NB"} select the Poisson or
-negative binomial distribution respectively.  The mean of \eqn{N_i} is
+theta)} can be set as a Poisson, negative binomial, or zero-inflated
+Poisson random
+variable, depending on the setting of the \code{mixture} argument,
+\code{mixture = "P"}, \code{mixture = "NB"}, \code{mixture = "ZIP"}
+respectively.  For the first two distributions, the mean of \eqn{N_i} is
 \eqn{\lambda_i}{lambda_i}.  If \eqn{N_i \sim NB}{N_i ~ NB}, then an
 additional parameter, \eqn{\alpha}{alpha}, describes dispersion (lower
-\eqn{\alpha}{alpha} implies higher variance).
+\eqn{\alpha}{alpha} implies higher variance). For the ZIP distribution,
+the mean is \eqn{\lambda_i(1-\psi)}{lambda*(1-psi)}, where psi is the
+zero-inflation parameter.
 
 The detection process is modeled as binomial: \eqn{y_{ij} \sim
 Binomial(N_i, p_{ij})}{y_ij ~ Binomial(N_i, p_ij)}.
@@ -52,7 +56,7 @@ covariates of \eqn{p_{ij}}{p_ij} use the logit link.}
 
 \value{unmarkedFit object describing the model fit.}
 
-\author{Ian Fiske \email{ianfiske@gmail.com}}
+\author{Ian Fiske and Richard Chandler}
 
 \seealso{\code{\link{unmarkedFramePCount}}, \code{\link{pcountOpen}}}
 
@@ -64,10 +68,47 @@ Spatially Replicated Counts. \emph{Biometrics} 60, pp. 108--105.
 Kéry, M., Royle, J. A., and Schmid, H. (2005) Modeling Avaian Abundance from
 Replicated Counts Using Binomial Mixture Models. \emph{Ecological Applications}
 15(4), pp. 1450--1461.
+
+Johnson, N.L, A.W. Kemp, and S. Kotz. (2005) Univariate Discrete
+Distributions, 3rd ed. Wiley.
 }
 
 \examples{
 
+# Simulate data
+set.seed(35)
+nSites <- 200
+nVisits <- 3
+x <- rnorm(nSites)               # a covariate
+beta0 <- -1
+beta1 <- 1
+lambda <- exp(beta0 + beta1*x)   # expected counts at each site
+N <- rpois(nSites, lambda)       # latent abundance
+y <- matrix(NA, nSites, nVisits)
+p <- c(0.3, 0.6, 0.8)            # detection prob for each visit
+for(j in 1:nVisits) {
+  y[,j] <- rbinom(nSites, N, p[j])
+  }
+
+# Organize data
+visitMat <- matrix(as.character(1:nVisits), nSites, nVisits, byrow=TRUE)
+
+umf <- unmarkedFramePCount(y=y, siteCovs=data.frame(x=x),
+    obsCovs=list(visit=visitMat))
+summary(umf)
+
+# Fit a model
+fm1 <- pcount(~visit-1 ~ x, umf, K=50)
+fm1
+
+plogis(coef(fm1, type="det")) # Should be close to p
+
+
+
+
+
+
+# Real data
 data(mallard)
 mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site,
 obsCovs = mallard.obs)

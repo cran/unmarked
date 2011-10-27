@@ -5,7 +5,7 @@
 \title{Fit the MacKenzie et al. (2002) Occupancy Model}
 
 \usage{occu(formula, data, knownOcc=numeric(0), starts, method="BFGS",
-    control=list(), se=TRUE, engine=c("C", "R"))}
+    se=TRUE, engine=c("C", "R"), ...)}
 
 \arguments{
     \item{formula}{Double right-hand side formula describing covariates of
@@ -14,11 +14,12 @@
     \item{knownOcc}{Vector of sites that are known to be occupied.}
     \item{starts}{Vector of parameter starting values.}
     \item{method}{Optimization method used by \code{\link{optim}}.}
-    \item{control}{Other arguments passed to \code{\link{optim}}.}
     \item{se}{Logical specifying whether or not to compute standard
       errors.}
     \item{engine}{Either "C" or "R" to use fast C++ code or native R
-    code during the optimization.}
+      code during the optimization.}
+    \item{\dots}{Additional arguments to optim, such as lower and upper
+      bounds}
   }
 
 \description{This function fits the single season occupancy model of MacKenzie et al (2002).}
