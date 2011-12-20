@@ -1,6 +1,6 @@
 Package: unmarked
-Version: 0.9-3
-Date: 2011-10-27
+Version: 0.9-4
+Date: 2011-12-20
 Type: Package
 Title: Models for Data from Unmarked Animals
 Author: Ian Fiske, Richard Chandler, Andy Royle
@@ -24,6 +24,6 @@ URL: http://groups.google.com/group/unmarked,
         https://sites.google.com/site/unmarkedinfo/home,
         http://github.com/ianfiske/unmarked,
         http://github.com/rbchan/unmarked
-Packaged: 2011-10-27 14:59:00 UTC; rchandler
+Packaged: 2011-12-20 14:18:37 UTC; rchandler
 Repository: CRAN
-Date/Publication: 2011-10-27 19:35:40
+Date/Publication: 2011-12-20 16:42:34

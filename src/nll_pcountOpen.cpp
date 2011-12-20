@@ -145,6 +145,9 @@ SEXP nll_pcountOpen( SEXP y_, SEXP Xlam_, SEXP Xgam_, SEXP Xom_, SEXP Xp_, SEXP 
       }
     }
     for(int t=0; t<(T-1); t++) {
+      if(ytna(first1,t)==1) { // FIXME: this is not generic!
+	continue;
+      }
       if(dynamics=="constant" || dynamics=="notrend")
 	tp1(g3_t.slice(t), lk, gam(first1,t), om(first1,t));
       else if(dynamics=="autoreg")
@@ -192,7 +195,8 @@ SEXP nll_pcountOpen( SEXP y_, SEXP Xlam_, SEXP Xgam_, SEXP Xom_, SEXP Xp_, SEXP 
 	if(delta_it>1) {
 	  g3_d = g3;
 	  for(int d=1; d<delta_it; d++) {
-	    g3_d *= g3_d;
+	    //	    g3_d *= g3_d; // ouch bad bug
+	    g3_d = g3_d * g3;
 	    /*
 	    might be necessary to guard against underflow
 	    approach 1
@@ -230,13 +234,15 @@ SEXP nll_pcountOpen( SEXP y_, SEXP Xlam_, SEXP Xgam_, SEXP Xom_, SEXP Xp_, SEXP 
 	ll_i += g1(k) * g2(k) * g_star(k);
     }
     if(delta_i0>1) {
+      g3_d = g3;
       for(int d=0; d<delta_i0; d++) {
-	g3_d *= g3_d;
+	//	g3_d *= g3_d; // same bug as above
+	g3_d = g3_d * g3;
       }
       g_star = g3_d * g1_star;
       ll_i = arma::dot(g2, g_star);
     }
-    ll += log(ll_i + 1.0e-50);
+    ll += log(ll_i + DOUBLE_XMIN);
   }
   return wrap(-ll);
 }

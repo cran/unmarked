@@ -167,7 +167,8 @@ halfnorm = {
         for(i in 1:M) {
             mn <- matrix(0, lk, T)
             for(t in 1:T) {
-                if(!all(naflag[i,t,])) {
+                if(all(naflag[i,t,]))
+                    next
                 p <- rep(NA, J)
                 switch(survey,
                 line = {
@@ -188,14 +189,13 @@ halfnorm = {
                     })
                 cp <- p * u[i,] * phi[i, t]
                 cp[J+1] <- 1 - sum(cp)
-                }
                 mn[, t] <- lfac.k - lfac.kmyt[i, t,] +
                     sum(y[i, t, !naflag[i,t,]] *
                     log(cp[which(!naflag[i,t,])])) +
                     kmyt[i, t,] * log(cp[J+1])
-                }
-            g[i,] <- exp(rowSums(mn))
             }
+            g[i,] <- exp(rowSums(mn))
+        }
         f[!fin] <- g[!fin] <- 0
         ll <- rowSums(f*g)
         -sum(log(ll))
@@ -228,7 +228,8 @@ exp = {
         for(i in 1:M) {
             mn <- matrix(0, lk, T)
             for(t in 1:T) {
-                if(!all(naflag[i,t,])) {
+                if(all(naflag[i,t,]))
+                    next
                 p <- rep(NA, J)
                 switch(survey,
                 line = {
@@ -253,14 +254,13 @@ exp = {
                     })
                 cp <- p * u[i,] * phi[i, t]
                 cp[J+1] <- 1 - sum(cp)
-                }
                 mn[, t] <- lfac.k - lfac.kmyt[i, t,] +
                     sum(y[i, t, !naflag[i,t,]] *
                     log(cp[which(!naflag[i,t,])])) +
                     kmyt[i, t,] * log(cp[J+1])
-                }
-            g[i,] <- exp(rowSums(mn))
             }
+            g[i,] <- exp(rowSums(mn))
+        }
         f[!fin] <- g[!fin] <- 0
         ll <- rowSums(f*g)
         -sum(log(ll))
@@ -294,7 +294,8 @@ hazard = {
         for(i in 1:M) {
             mn <- matrix(0, lk, T)
             for(t in 1:T) {
-                if(!all(naflag[i,t,])) {
+                if(all(naflag[i,t,]))
+                    next
                 p <- rep(NA, J)
                 switch(survey,
                 line = {
@@ -321,7 +322,6 @@ hazard = {
                     })
                 cp <- p * u[i,] * phi[i, t]
                 cp[J+1] <- 1 - sum(cp)
-                }
                 mn[, t] <- lfac.k - lfac.kmyt[i, t,] +
                     sum(y[i, t, !naflag[i,t,]] *
                     log(cp[which(!naflag[i,t,])])) +
@@ -356,22 +356,22 @@ uniform = {
         for(i in 1:M) {
             mn <- matrix(0, lk, T)
             for(t in 1:T) {
-                if(!all(naflag[i,t,])) {
-                    cp <- p * u[i,] * phi[i, t]
-                    cp[J+1] <- 1 - sum(cp)
-                    }
+                if(all(naflag[i,t,]))
+                    next
+                cp <- p * u[i,] * phi[i, t]
+                cp[J+1] <- 1 - sum(cp)
                 mn[, t] <- lfac.k - lfac.kmyt[i, t,] +
                     sum(y[i, t, !naflag[i,t,]] *
                     log(cp[which(!naflag[i,t,])])) +
                     kmyt[i, t,] * log(cp[J+1])
-                }
-            g[i,] <- exp(rowSums(mn))
             }
+            g[i,] <- exp(rowSums(mn))
+        }
         f[!fin] <- g[!fin] <- 0
         ll <- rowSums(f*g)
         -sum(log(ll))
-        }
-    })
+    }
+})
 
 fm <- optim(starts, nll, method = method, hessian = se, ...)
 opt <- fm
