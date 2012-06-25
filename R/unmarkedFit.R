@@ -149,7 +149,6 @@ setMethod("summary", "unmarkedFitDS", function(object)
 
 
 # Compute linear combinations of estimates in unmarkedFit objects.
-
 setMethod("linearComb",
     signature(obj = "unmarkedFit", coefficients = "matrixOrVector"),
     function(obj, coefficients, type, offset = NULL)
@@ -192,7 +191,7 @@ setMethod("names", "unmarkedFit",
 
 setMethod("predict", "unmarkedFit",
     function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
-        appendData = FALSE, ...)
+        appendData = FALSE, level=0.95, ...)
 {
     if(missing(newdata) || is.null(newdata))
         newdata <- getData(object)
@@ -267,16 +266,16 @@ setMethod("predict", "unmarkedFit",
     for(i in 1:nrow(X)) {
         if(nrow(X) > 5000) {
             if(i %% 1000 == 0)
-                cat("  doing row", i, "of", nrow(X), "rows\n")
+                cat("  doing row", i, "of", nrow(X), "\n")
         }
         if(any(is.na(X[i,])))
             next
-        lc <- linearComb(object, X[i,], type, offset = offset)
+        lc <- linearComb(object, X[i,], type, offset = offset[i])
         if(backTransform)
             lc <- backTransform(lc)
         out$Predicted[i] <- coef(lc)
         out$SE[i] <- SE(lc)
-        ci <- confint(lc)
+        ci <- confint(lc, level=level)
         out$lower[i] <- ci[1]
         out$upper[i] <- ci[2]
     }
@@ -308,9 +307,157 @@ setMethod("predict", "unmarkedFit",
 
 
 
+
+
+
+
+
+setMethod("predict", "unmarkedFitPCount",
+    function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
+        appendData = FALSE, level=0.95, ...)
+{
+    if(type %in% c("psi", "alpha"))
+        stop(type, " is scalar, so use backTransform instead")
+    if(missing(newdata) || is.null(newdata))
+        newdata <- getData(object)
+    formula <- object@formula
+    detformula <- as.formula(formula[[2]])
+    stateformula <- as.formula(paste("~", formula[3], sep=""))
+    if(inherits(newdata, "unmarkedFrame"))
+        class(newdata) <- "unmarkedFrame"
+    cls <- class(newdata)[1]
+    if(!cls %in% c("unmarkedFrame", "data.frame", "RasterStack"))
+        stop("newdata should be an unmarkedFrame, data.frame, or RasterStack", call.=FALSE)
+    if(identical(cls, "RasterStack"))
+        if(!require(raster))
+            stop("raster package is required")
+    switch(cls,
+    unmarkedFrame = {
+        designMats <- getDesign(newdata, formula, na.rm = na.rm)
+        switch(type,
+            state = {
+                X <- designMats$X
+                offset <- designMats$X.offset
+                },
+            det = {
+                X <- designMats$V
+                offset <- designMats$V.offset
+                })
+        },
+    data.frame = {
+        switch(type,
+            state = {
+                mf <- model.frame(stateformula, newdata)
+                X <- model.matrix(stateformula, mf)
+                offset <- model.offset(mf)
+                },
+            det = {
+                mf <- model.frame(detformula, newdata)
+                X <- model.matrix(detformula, mf)
+                offset <- model.offset(mf)
+                })
+            },
+    RasterStack = {
+        cd.names <- layerNames(newdata)
+        npix <- prod(dim(newdata)[1:2])
+        isfac <- is.factor(newdata)
+        if(any(isfac))
+            stop("This method currently does not handle factors")
+        z <- as.data.frame(matrix(getValues(newdata), npix))
+        names(z) <- cd.names
+        switch(type,
+               state = {
+                   varnames <- all.vars(stateformula)
+                   if(!all(varnames %in% cd.names))
+                       stop("At least 1 covariate in the formula is not in the raster stack.\n   You probably need to assign them using\n\t 'layerNames(object) <- covariate.names'")
+                   mf <- model.frame(stateformula, z, na.action="na.pass")
+                   X.terms <- attr(mf, "terms")
+                   X <- model.matrix(X.terms, mf)
+                   offset <- model.offset(mf)
+               },
+               det= {
+                   varnames <- all.vars(detformula)
+                   if(!all(varnames %in% cd.names))
+                       stop("At least 1 covariate in the formula is not in the raster stack.\n   You probably need to assign them using\n\t 'layerNames(object) <- covariate.names'")
+                   mf <- model.frame(detformula, z, na.action="na.pass")
+                   X.terms <- attr(mf, "terms")
+                   X <- model.matrix(X.terms, mf)
+                   offset <- model.offset(mf)
+               })
+    })
+    out <- data.frame(matrix(NA, nrow(X), 4,
+        dimnames=list(NULL, c("Predicted", "SE", "lower", "upper"))))
+    mix <- object@mixture
+    lam.mle <- coef(object, type="state")
+    if(identical(mix, "ZIP") & identical(type, "state")) {
+        psi.hat <- plogis(coef(object, type="psi"))
+        if(is.null(offset))
+            offset <- rep(0, nrow(X))
+        warning("Method to compute SE for ZIP model has not been written")
+    }
+    for(i in 1:nrow(X)) {
+        if(nrow(X) > 5000) {
+            if(i %% 1000 == 0)
+                cat("  doing row", i, "of", nrow(X), "\n")
+        }
+        if(any(is.na(X[i,])))
+            next
+        if(identical(mix, "ZIP") & identical(type, "state")) {
+            out$Predicted[i] <-
+                X[i,] %*% lam.mle + offset[i] + log(1 - psi.hat)
+            if(backTransform)
+                out$Predicted[i] <- exp(out$Predicted[i])
+            out$SE <- NA
+            ci <- c(NA, NA)
+        } else {
+            lc <- linearComb(object, X[i,], type, offset = offset[i])
+            if(backTransform)
+                lc <- backTransform(lc)
+            out$Predicted[i] <- coef(lc)
+            out$SE[i] <- SE(lc)
+            ci <- confint(lc, level=level)
+        }
+        out$lower[i] <- ci[1]
+        out$upper[i] <- ci[2]
+    }
+    if(appendData) {
+        if(!identical(cls, "RasterStack"))
+            out <- data.frame(out, as(newdata, "data.frame"))
+        else
+            out <- data.frame(out, z)
+    }
+    if(identical(cls, "RasterStack")) {
+        E.mat <- matrix(out[,1], dim(newdata)[1], dim(newdata)[2],
+                        byrow=TRUE)
+        E.raster <- raster(E.mat)
+        extent(E.raster) <- extent(newdata)
+        out.rasters <- list(E.raster)
+        for(i in 2:ncol(out)) {
+            i.mat <- matrix(out[,i], dim(newdata)[1], dim(newdata)[2],
+                            byrow=TRUE)
+            i.raster <- raster(i.mat)
+            extent(i.raster) <- extent(newdata)
+            out.rasters[[i]] <- i.raster
+        }
+        out.stack <- stack(out.rasters)
+        layerNames(out.stack) <- colnames(out)
+        out <- out.stack
+    }
+    return(out)
+})
+
+
+
+
+
+
+
+
+
+
 setMethod("predict", "unmarkedFitColExt",
     function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
-        appendData = FALSE, ...)
+        appendData = FALSE, level=0.95, ...)
 {
     if(missing(newdata) || is.null(newdata))
         newdata <- getData(object)
@@ -428,7 +575,7 @@ setMethod("predict", "unmarkedFitColExt",
     for(i in 1:nrow(X)) {
         if(nrow(X) > 5000) {
             if(i %% 1000 == 0)
-                cat("  doing row", i, "of", nrow(X), "rows\n")
+                cat("  doing row", i, "of", nrow(X), "\n")
         }
         if(any(is.na(X[i,])))
             next
@@ -437,7 +584,7 @@ setMethod("predict", "unmarkedFitColExt",
             lc <- backTransform(lc)
         out$Predicted[i] <- coef(lc)
         out$SE[i] <- SE(lc)
-        ci <- confint(lc)
+        ci <- confint(lc, level=level)
         out$lower[i] <- ci[1]
         out$upper[i] <- ci[2]
     }
@@ -476,8 +623,10 @@ setMethod("predict", "unmarkedFitColExt",
 
 setMethod("predict", "unmarkedFitPCO",
     function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
-        appendData = FALSE, ...)
+        appendData = FALSE, level=0.95, ...)
 {
+    if(type %in% c("psi", "alpha"))
+        stop(type, " is scalar, so use backTransform instead")
     if(missing(newdata) || is.null(newdata))
         newdata <- getData(object)
     dynamics <- object@dynamics
@@ -603,19 +752,36 @@ setMethod("predict", "unmarkedFitPCO",
     })
     out <- data.frame(matrix(NA, nrow(X), 4,
         dimnames=list(NULL, c("Predicted", "SE", "lower", "upper"))))
+    mix <- object@mixture
+    lam.mle <- coef(object, type="lambda")
+    if(identical(mix, "ZIP") & identical(type, "lambda")) {
+        psi.hat <- plogis(coef(object, type="psi"))
+        if(is.null(offset))
+            offset <- rep(0, nrow(X))
+        warning("Method to compute SE for ZIP model has not been written")
+    }
     for(i in 1:nrow(X)) {
         if(nrow(X) > 5000) {
             if(i %% 1000 == 0)
-                cat("  doing row", i, "of", nrow(X), "rows\n")
+                cat("  doing row", i, "of", nrow(X), "\n")
         }
         if(any(is.na(X[i,])))
             next
-        lc <- linearComb(object, X[i,], type, offset = offset)
-        if(backTransform)
-            lc <- backTransform(lc)
-        out$Predicted[i] <- coef(lc)
-        out$SE[i] <- SE(lc)
-        ci <- confint(lc)
+        if(identical(mix, "ZIP") & identical(type, "lambda")) {
+            out$Predicted[i] <-
+                X[i,] %*% lam.mle + offset[i] + log(1 - psi.hat)
+            if(backTransform)
+                out$Predicted[i] <- exp(out$Predicted[i])
+            out$SE <- NA
+            ci <- c(NA, NA)
+        } else {
+            lc <- linearComb(object, X[i,], type, offset = offset[i])
+            if(backTransform)
+                lc <- backTransform(lc)
+            out$Predicted[i] <- coef(lc)
+            out$SE[i] <- SE(lc)
+            ci <- confint(lc, level=level)
+        }
         out$lower[i] <- ci[1]
         out$upper[i] <- ci[2]
     }
@@ -651,7 +817,7 @@ setMethod("predict", "unmarkedFitPCO",
 
 setMethod("predict", "unmarkedFitGMM",
     function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
-        appendData = FALSE, ...)
+        appendData = FALSE, level=0.95, ...)
 {
     if(missing(newdata) || is.null(newdata))
         newdata <- getData(object)
@@ -766,16 +932,16 @@ setMethod("predict", "unmarkedFitGMM",
     for(i in 1:nrow(X)) {
         if(nrow(X) > 5000) {
             if(i %% 1000 == 0)
-                cat("  doing row", i, "of", nrow(X), "rows\n")
+                cat("  doing row", i, "of", nrow(X), "\n")
         }
         if(any(is.na(X[i,])))
             next
-        lc <- linearComb(object, X[i,], type, offset = offset)
+        lc <- linearComb(object, X[i,], type, offset = offset[i])
         if(backTransform)
             lc <- backTransform(lc)
         out$Predicted[i] <- coef(lc)
         out$SE[i] <- SE(lc)
-        ci <- confint(lc)
+        ci <- confint(lc, level=level)
         out$lower[i] <- ci[1]
         out$upper[i] <- ci[2]
     }
