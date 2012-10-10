@@ -3,23 +3,25 @@
 \alias{ranef}
 \alias{ranef-methods}
 \alias{ranef,unmarkedFitOccu-method}
+\alias{ranef,unmarkedFitOccuFP-method}
 \alias{ranef,unmarkedFitOccuRN-method}
 \alias{ranef,unmarkedFitPCount-method}
 \alias{ranef,unmarkedFitMPois-method}
 \alias{ranef,unmarkedFitDS-method}
 \alias{ranef,unmarkedFitGMM-method}
 \alias{ranef,unmarkedFitGDS-method}
+\alias{ranef,unmarkedFitGPC-method}
 \alias{ranef,unmarkedFitGMMorGDS-method}
 \alias{ranef,unmarkedFitColExt-method}
 \alias{ranef,unmarkedFitPCO-method}
 \title{ Methods for Function \code{ranef} in Package \pkg{unmarked} }
 \description{
-Estimate posterior distributions of the random variables (latent abundance or
-occurrence) using empirical Bayes methods. These methods return an
-object storing the posterior distributions of the latent variables at
-each site, and for each year (primary period) in the case of open
-population models. See \link{unmarkedRanef-class} for methods used to
-manipulate the returned object.
+Estimate posterior distributions of the random variables (latent
+abundance or occurrence) using empirical Bayes methods. These methods
+return an object storing the posterior distributions of the latent
+variables at each site, and for each year (primary period) in the case
+of open population models. See \link{unmarkedRanef-class} for methods
+used to manipulate the returned object.
 }
 \section{Methods}{
 \describe{

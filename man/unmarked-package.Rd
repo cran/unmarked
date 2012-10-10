@@ -17,7 +17,7 @@
 \details{\tabular{ll}{
 Package: \tab unmarked\cr
 Type: \tab Package\cr
-Version: \tab 0.9-8\cr
+Version: \tab 0.9-9\cr
 License: \tab GPL (>= 3)\cr
 }
 
@@ -29,6 +29,10 @@ abundance and detection (MacKenzie et al. 2002).
 \code{\link{occuRN}} fits abundance models to presence/absence data by
 exploiting the link between detection probability and abundance (Royle and
 Nichols 2003).
+
+\code{\link{occuFP}} fits occupancy models to data characterized by
+false negatives and false positive detections (e.g., Royle and Link
+[2006] and Miller et al. [2011]).
 
 \code{\link{colext}} fits the mutli-season occupancy model of
 MacKenzie et al. (2003).
@@ -42,6 +46,10 @@ Royle et al. (2004) to distance data recorded in discrete intervals.
 \code{\link{gdistsamp}} fits the generalized distance sampling model
 described by Chandler et al. (2011) to distance data recorded in
 discrete intervals.
+
+\code{\link{gpcount}} fits the generalized N-mixture model
+described by Chandler et al. (2011) to repeated count data collected
+using the robust design.
 
 \code{\link{multinomPois}} fits the multinomial-Poisson model of Royle (2004b)
 to data collected using methods such as removal sampling or double observer
@@ -203,7 +211,12 @@ MacKenzie, D. I., J. D. Nichols, J. E. Hines, M. G. Knutson, and
 
 MacKenzie, D. I., J. D. Nichols, J. A. Royle, K. H. Pollock,
   L. L. Bailey, and J. E. Hines. 2006. \emph{Occupancy Estimation and
-  Modeling}. Amsterdam: Academic Press.
+    Modeling}. Amsterdam: Academic Press.
+
+Miller, D.A., J.D. Nichols, B.T. McClintock, E.H.C. Grant, L.L. Bailey,
+  and L.A. Weir. 2011. Improving occupancy estimation when two types of
+  observational error occur: non-detection and species
+  misidentification. \emph{Ecology} 92:1422-1428.
 
 Royle, J. A. 2004a. N-Mixture models for estimating population size from
   spatially replicated counts. \emph{Biometrics} 60:108--105.
@@ -217,7 +230,11 @@ Royle, J. A., D. K. Dawson, and S. Bates. 2004. Modeling abundance
 
 Royle, J. A., and R. M. Dorazio. 2006. Hierarchical models of animal
   abundance and occurrence. \emph{Journal Of Agricultural Biological And
-  Environmental Statistics} 11:249--263.
+    Environmental Statistics} 11:249--263.
+
+Royle, J.A., and W.A. Link. 2006. Generalized site occupancy models
+  allowing for false positive and false negative errors. \emph{Ecology}
+  87:835-841.
 
 Royle, J. A. and R. M. Dorazio. 2008. \emph{Hierarchical Modeling and
   Inference in Ecology}. Academic Press.

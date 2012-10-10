@@ -1,5 +1,5 @@
 setClass("unmarkedFit",
-    representation(fitType = "character",
+   representation(fitType = "character",
         call = "call",
         formula = "formula",
         data = "unmarkedFrame",
@@ -55,6 +55,15 @@ setClass("unmarkedFitOccu",
     representation(knownOcc = "logical"),
     contains = "unmarkedFit")
 
+setClass("unmarkedFitOccuFP",
+         representation(knownOcc = "logical",
+            detformula = "formula",
+            FPformula = "formula",
+            Bformula = "formula",
+            stateformula = "formula",
+            type = "numeric"),
+         contains = "unmarkedFit")
+
 
 setClass("unmarkedFitMPois",
     contains = "unmarkedFit")
@@ -97,6 +106,11 @@ setClass("unmarkedFitGDS",
         unitsOut = "character",
         output = "character"),
     contains = "unmarkedFitGMM")
+
+
+setClass("unmarkedFitGPC",
+    contains = "unmarkedFitGMM")
+
 
 
 # -------------------------- Show and Summary ----------------------------
@@ -447,7 +461,93 @@ setMethod("predict", "unmarkedFitPCount",
 })
 
 
+### prediction
 
+setMethod("predict", "unmarkedFitOccuFP",
+          function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
+                   appendData = FALSE, ...)
+          {
+            if(missing(newdata) || is.null(newdata))
+              newdata <- getData(object)
+            detformula <- object@detformula
+            stateformula <- object@stateformula
+            FPformula <- object@FPformula
+            Bformula <- object@Bformula
+            if(inherits(newdata, "unmarkedFrameOccuFP"))
+              class(newdata) <- "unmarkedFrameOccuFP"
+            cls <- class(newdata)[1]
+            if(!cls %in% c("unmarkedFrameOccuFP", "data.frame", "RasterStack"))
+              stop("newdata should be an unmarkedFrameOccuFP, data.frame, or RasterStack", call.=FALSE)
+            if(identical(cls, "RasterStack"))
+              stop("RasterStack not implemented for occuFP")
+            switch(cls,
+                   unmarkedFrameOccuFP = {
+                     designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+                     switch(type,
+                            state = {
+                              X <- designMats$X
+                              offset <- designMats$X.offset
+                            },
+                            det = {
+                              X <- designMats$V
+                              offset <- designMats$V.offset
+                            },
+                            fp = {
+                              X <- designMats$U
+                              offset <- designMats$U.offset
+                            },
+                            b = {
+                              X <- designMats$W
+                              offset <- designMats$W.offset
+                            })
+                   },
+                   data.frame = {
+                     switch(type,
+                            state = {
+                              mf <- model.frame(stateformula, newdata)
+                              X <- model.matrix(stateformula, mf)
+                              offset <- model.offset(mf)
+                            },
+                            det = {
+                              mf <- model.frame(detformula, newdata)
+                              X <- model.matrix(detformula, mf)
+                              offset <- model.offset(mf)
+                            },
+                            fp = {
+                              mf <- model.frame(FPformula, newdata)
+                              X <- model.matrix(FPformula, mf)
+                              offset <- model.offset(mf)
+                            },
+                            b = {
+                              mf <- model.frame(Bformula, newdata)
+                              X <- model.matrix(Bformula, mf)
+                              offset <- model.offset(mf)
+                            })
+                   })
+            
+            out <- data.frame(matrix(NA, nrow(X), 4,
+                                     dimnames=list(NULL, c("Predicted", "SE", "lower", "upper"))))
+            for(i in 1:nrow(X)) {
+              if(nrow(X) > 5000) {
+                if(i %% 1000 == 0)
+                  cat("  doing row", i, "of", nrow(X), "rows\n")
+              }
+              if(any(is.na(X[i,])))
+                next
+              lc <- linearComb(object, X[i,], type, offset = offset)
+              if(backTransform)
+                lc <- backTransform(lc)
+              out$Predicted[i] <- coef(lc)
+              out$SE[i] <- SE(lc)
+              ci <- confint(lc)
+              out$lower[i] <- ci[1]
+              out$upper[i] <- ci[2]
+            }
+            if(appendData) {
+              out <- data.frame(out, z)
+            }
+            return(out)
+          })
 
 
 
@@ -812,9 +912,6 @@ setMethod("predict", "unmarkedFitPCO",
 })
 
 
-
-
-
 setMethod("predict", "unmarkedFitGMM",
     function(object, type, newdata, backTransform = TRUE, na.rm = TRUE,
         appendData = FALSE, level=0.95, ...)
@@ -1115,6 +1212,12 @@ setMethod("fitted", "unmarkedFit",
     fitted
 })
 
+    
+    
+setMethod("fitted", "unmarkedFitOccuFP", function(object, na.rm = FALSE)
+{
+  cat("fitted is not implemented for occuFP at this time")
+})
 
 
 setMethod("fitted", "unmarkedFitDS", function(object, na.rm = FALSE)
@@ -1426,6 +1529,42 @@ setMethod("fitted", "unmarkedFitGMM",
 
 
 
+## # Identical to method for unmarkedFitGMM. Need to fix class structure
+## setMethod("fitted", "unmarkedFitGPC",
+##     function(object, na.rm = FALSE)
+## {
+##     data <- object@data
+##     D <- unmarked:::getDesign(data, object@formula, na.rm = na.rm)
+##     Xlam <- D$Xlam
+##     Xphi <- D$Xphi
+##     Xdet <- D$Xdet
+
+##     Xlam.offset <- D$Xlam.offset
+##     Xphi.offset <- D$Xphi.offset
+##     Xdet.offset <- D$Xdet.offset
+##     if(is.null(Xlam.offset)) Xlam.offset <- rep(0, nrow(Xlam))
+##     if(is.null(Xphi.offset)) Xphi.offset <- rep(0, nrow(Xphi))
+##     if(is.null(Xdet.offset)) Xdet.offset <- rep(0, nrow(Xdet))
+
+##     y <- D$y
+##     M <- nrow(y)
+##     T <- data@numPrimary
+##     J <- ncol(y) / T
+##     lambda <- drop(exp(Xlam %*% coef(object, 'lambda') + Xlam.offset))
+##     if(T==1)
+##         phi <- 1
+##     else
+##         phi <- plogis(Xphi %*% coef(object, 'phi') + Xphi.offset)
+##     phi.mat <- matrix(phi, nrow=M, ncol=T, byrow=TRUE)
+##     phi.ijt <- as.numeric(apply(phi.mat, 2, rep, times=J))
+##     cp <- getP(object, na.rm = na.rm)
+
+##     fitted <- lambda * phi.ijt * as.numeric(cp) # recycle
+##     fitted <- matrix(fitted, M, J*T)
+##     return(fitted)
+## })
+
+
 setMethod("profile", "unmarkedFit",
     function(fitted, type, parm, seq)
 {
@@ -1659,6 +1798,11 @@ setMethod("residuals", "unmarkedFitOccu", function(object, ...) {
     return(r)
 })
 
+setMethod("residuals", "unmarkedFitOccuFP", function(object, ...) {
+  cat("residuals is not implemented for occuFP at this time")
+})
+
+
 setMethod("residuals", "unmarkedFitOccuRN", function(object, ...) {
     y <- getY(object@data)
     y <- truncateToBinary(y)
@@ -1787,6 +1931,8 @@ setMethod("hist", "unmarkedFitDS", function(x, lwd=1, lty=1, ...) {
 
 # Extract detection probs
 setGeneric("getP", function(object, ...) standardGeneric("getP"))
+setGeneric("getFP", function(object, ...) standardGeneric("getFP"))
+setGeneric("getB", function(object, ...) standardGeneric("getB"))
 
 
 setMethod("getP", "unmarkedFit", function(object, na.rm = TRUE)
@@ -1809,6 +1955,82 @@ setMethod("getP", "unmarkedFit", function(object, na.rm = TRUE)
 })
 
 
+setMethod("getP", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
+{
+  formula <- object@formula
+  detformula <- object@detformula
+  stateformula <- object@stateformula
+  FPformula <- object@FPformula
+  Bformula <- object@Bformula
+  umf <- object@data
+  designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+  y <- designMats$y
+  V <- designMats$V
+  V.offset <- designMats$V.offset
+  if (is.null(V.offset))
+    V.offset <- rep(0, nrow(V))
+  M <- nrow(y)
+  J <- ncol(y)
+  ppars <- coef(object, type = "det")
+  p <- plogis(V %*% ppars + V.offset)
+  p <- matrix(p, M, J, byrow = TRUE)
+  return(p)
+})
+
+
+setMethod("getFP", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
+{
+  formula <- object@formula
+  detformula <- object@detformula
+  stateformula <- object@stateformula
+  FPformula <- object@FPformula
+  Bformula <- object@Bformula
+  umf <- object@data
+  designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+  type = object@type
+  y <- designMats$y
+  U <- designMats$U
+  U.offset <- designMats$U.offset
+  if (is.null(U.offset))
+    U.offset <- rep(0, nrow(U))
+  M <- nrow(y)
+  J <- ncol(y)
+  fpars <- coef(object, type = "fp")
+  f <- plogis(U %*% fpars + U.offset)
+  f <- matrix(f, M, J, byrow = TRUE)
+  if (type[1]!=0){
+    f[,1:type[1]] = 0
+  }
+  return(f)
+})
+
+setMethod("getB", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
+{
+  formula <- object@formula
+  detformula <- object@detformula
+  stateformula <- object@stateformula
+  FPformula <- object@FPformula
+  Bformula <- object@Bformula
+  umf <- object@data
+  designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+  y <- designMats$y
+  W <- designMats$W
+  W.offset <- designMats$W.offset
+  if (is.null(W.offset))
+    W.offset <- rep(0, nrow(W))
+  M <- nrow(y)
+  J <- ncol(y)
+  type = object@type
+  if (type[3]!=0){
+    bpars <- coef(object, type = "b")
+  b <- plogis(W %*% bpars + W.offset)
+  b <- matrix(b, M, J, byrow = TRUE)
+  }
+  if (type[3]==0){
+    b <- matrix(0, M, J)
+  }
+  return(b)
+})
 
 
 setMethod("getP", "unmarkedFitDS",
@@ -2027,7 +2249,10 @@ setMethod("getP", "unmarkedFitGDS",
                 cp[i,,t] <- cp[i,,t] * u[i,]
                 }}
             },
-	uniform = cp <- u)
+	uniform = {
+#            browser()
+            cp[] <- u
+        })
     cp <- matrix(cp, nrow=M)
     return(cp)
 })
@@ -2134,6 +2359,28 @@ setMethod("getP", "unmarkedFitGMM",
     cp <- matrix(cp, nrow=M, ncol=numY(object@data))
 
     return(cp)
+})
+
+
+setMethod("getP", "unmarkedFitGPC",
+    function(object, na.rm = TRUE)
+{
+    formula <- object@formula
+    detformula <- object@formlist$pformula
+    umf <- object@data
+    D <- getDesign(umf, formula, na.rm = na.rm)
+    y <- D$y
+    Xdet <- D$Xdet
+    Xdet.offset <- D$Xdet.offset
+    if (is.null(Xdet.offset))
+        Xdet.offset <- rep(0, nrow(Xdet))
+    R <- nrow(y)
+    T <- object@data@numPrimary
+    J <- ncol(y) / T
+    ppars <- coef(object, type = "det")
+    p <- plogis(Xdet %*% ppars + Xdet.offset)
+    p <- matrix(p, nrow=R, byrow=TRUE)
+    return(p)
 })
 
 
@@ -2382,6 +2629,54 @@ setMethod("simulate", "unmarkedFitOccu",
     return(simList)
 })
 
+    
+setMethod("simulate", "unmarkedFitOccuFP",
+          function(object, nsim = 1, seed = NULL, na.rm = TRUE)
+          {
+            detformula <- object@detformula
+            stateformula <- object@stateformula
+            FPformula <- object@FPformula
+            Bformula <- object@Bformula
+            umf <- object@data
+            designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+            X <- designMats$X; V <- designMats$V; U <- designMats$U; W <- designMats$W;  
+            y <- designMats$y
+            X.offset <- designMats$X.offset; V.offset <- designMats$V.offset; U.offset <- designMats$U.offset; W.offset <- designMats$W.offset
+            if(is.null(X.offset)) {
+              X.offset <- rep(0, nrow(X))
+            }
+            if(is.null(V.offset)) {
+              V.offset <- rep(0, nrow(V))
+            }
+            if(is.null(U.offset)) {
+              U.offset <- rep(0, nrow(U))
+            }
+            if(is.null(W.offset)) {
+              W.offset <- rep(0, nrow(W))
+            }
+            M <- nrow(y)
+            J <- ncol(y)
+            allParms <- coef(object, altNames = FALSE)
+            psiParms <- coef(object, type = "state")
+            psi <- as.numeric(plogis(X %*% psiParms + X.offset))
+            p <- c(t(getP(object)))
+            fp <- c(t(getFP(object)))
+            b <- c(t(getB(object)))
+            simList <- list()
+            for(i in 1:nsim) {
+              Z <- rbinom(M, 1, psi)
+              Z[object@knownOcc] <- 1
+              Z <- rep(Z, each = J)
+              P <- matrix(0,M*J,3)
+              P[,1] <- Z*rbinom(M * J, 1, prob = (1-p)) + (1-Z)*rbinom(M * J, 1, prob = (1-fp)) 
+              P[,2] <- (1-P[,1])*(1-Z) + (1-P[,1])*rbinom(M * J, 1, prob = (1-b))*Z
+              P[,3] <- 1 - P[,1]-P[,2]
+              yvec <- sapply(1:(M*J),function(x) which(as.logical(rmultinom(1,1,P[x,])))-1)
+              simList[[i]] <- matrix(yvec, M, J, byrow = TRUE)
+            }
+            return(simList)
+          })
+
 
 
 setMethod("simulate", "unmarkedFitColExt",
@@ -2562,6 +2857,68 @@ setMethod("simulate", "unmarkedFitGMM",
 
 
 
+
+setMethod("simulate", "unmarkedFitGPC",
+    function(object, nsim = 1, seed = NULL, na.rm = TRUE)
+{
+    formula <- object@formula
+    umf <- object@data
+    mixture <- object@mixture
+    D <- unmarked:::getDesign(umf, formula, na.rm = na.rm)
+    y <- D$y
+    Xlam <- D$Xlam
+    Xphi <- D$Xphi
+    Xdet <- D$Xdet
+
+    Xlam.offset <- D$Xlam.offset
+    Xphi.offset <- D$Xphi.offset
+    Xdet.offset <- D$Xdet.offset
+    if (is.null(Xlam.offset)) Xlam.offset <- rep(0, nrow(Xlam))
+    if (is.null(Xphi.offset)) Xphi.offset <- rep(0, nrow(Xphi))
+    if (is.null(Xdet.offset)) Xdet.offset <- rep(0, nrow(Xdet))
+
+    R <- nrow(y)
+    T <- umf@numPrimary
+    J <- ncol(y) / T
+
+    lamParms <- coef(object, type = "lambda")
+    phiParms <- coef(object, type = "phi")
+    detParms <- coef(object, type = "det")
+    lam <- drop(exp(Xlam %*% lamParms + Xlam.offset))
+    if(is.null(phiParms))
+        phi <- rep(1, nrow(Xphi))
+    else
+        phi <- as.numeric(plogis(Xphi %*% phiParms + Xphi.offset))
+    phi.mat <- matrix(phi, nrow=R, ncol=T, byrow=TRUE)
+    p <- as.numeric(plogis(Xdet %*% detParms + Xdet.offset))
+    p <- matrix(p, R, J*T, byrow=TRUE)
+    p <- array(p, c(R, J, T))
+
+    simList <- list()
+    for(s in 1:nsim) {
+        switch(mixture,
+               P = M <- rpois(n=R, lambda=lam),
+               #               FIXME: Add ZIP
+               NB = M <- rnbinom(n=R, mu=lam,
+               size=exp(coef(object, type="alpha"))))
+
+        N <- rbinom(R*T, size=M, prob=phi.mat)
+        N <- matrix(N, nrow=R, ncol=T, byrow=FALSE)
+
+        y.sim <- array(NA, c(R, J, T))
+        for(i in 1:R) {
+            for(t in 1:T) {
+                if(is.na(N[i,t]))
+                    next
+                y.sim[i,,t] <- rbinom(J, N[i,t], p[i,,t])
+            }
+        }
+        y.sim <- matrix(y.sim, nrow=R, ncol=J*T)
+        y.sim[is.na(y)] <- NA # Not necessary if covariates exist!
+        simList[[s]] <- y.sim
+    }
+    return(simList)
+})
 
 
 setMethod("simulate", "unmarkedFitGDS",
