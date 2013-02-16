@@ -1,5 +1,5 @@
 Package: unmarked
-Version: 0.10-0
+Version: 0.10-1
 Date: 2013-02-16
 Type: Package
 Title: Models for Data from Unmarked Animals
@@ -24,14 +24,13 @@ Collate: 'classes.R' 'unmarkedEstimate.R' 'mapInfo.R' 'unmarkedFrame.R'
         'multinomPois.R' 'occu.R' 'occuRN.R' 'pcount.R' 'gmultmix.R'
         'pcountOpen.R' 'gdistsamp.R' 'unmarkedFitList.R'
         'unmarkedLinComb.R' 'ranef.R' 'boot.R' 'occuFP.R' 'gpcount.R'
-Encoding: UTF-8
 LinkingTo: Rcpp, RcppArmadillo
 SystemRequirements: GNU make
 URL: http://groups.google.com/group/unmarked,
         https://sites.google.com/site/unmarkedinfo/home,
         http://github.com/ianfiske/unmarked,
         http://github.com/rbchan/unmarked
-Packaged: 2013-04-16 13:19:49 UTC; rchandler
+Packaged: 2013-06-12 13:44:40 UTC; rchandler
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2013-04-16 18:14:10
+Date/Publication: 2013-06-12 17:35:37
