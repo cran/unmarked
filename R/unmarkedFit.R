@@ -56,6 +56,24 @@ setClass("unmarkedFitOccu",
     representation(knownOcc = "logical"),
     contains = "unmarkedFit")
 
+setClass("unmarkedFitOccuPEN",
+    representation(
+	knownOcc = "logical",
+	pen.type = "character",
+	lambda = "numeric"),
+    contains = "unmarkedFit")
+
+setClass("unmarkedFitOccuPEN_CV",
+    representation(
+	knownOcc = "logical",
+	pen.type = "character",
+	lambdaVec = "numeric",
+	k = "numeric",
+	foldAssignments = "numeric",
+	lambdaScores = "numeric",
+	chosenLambda = "numeric"),
+    contains = "unmarkedFit")
+
 setClass("unmarkedFitOccuFP",
          representation(knownOcc = "logical",
             detformula = "formula",
@@ -254,7 +272,7 @@ setMethod("predict", "unmarkedFit",
         isfac <- is.factor(newdata)
         if(any(isfac))
             stop("This method currently does not handle factors")
-        z <- as.data.frame(matrix(getValues(newdata), npix))
+        z <- as.data.frame(matrix(raster::getValues(newdata), npix))
         names(z) <- cd.names
         switch(type,
                state = {
@@ -303,14 +321,14 @@ setMethod("predict", "unmarkedFit",
     if(identical(cls, "RasterStack")) {
         E.mat <- matrix(out[,1], dim(newdata)[1], dim(newdata)[2],
                         byrow=TRUE)
-        E.raster <- raster(E.mat)
-        extent(E.raster) <- extent(newdata)
+        E.raster <- raster::raster(E.mat)
+        raster::extent(E.raster) <- raster::extent(newdata)
         out.rasters <- list(E.raster)
         for(i in 2:ncol(out)) {
             i.mat <- matrix(out[,i], dim(newdata)[1], dim(newdata)[2],
                             byrow=TRUE)
-            i.raster <- raster(i.mat)
-            extent(i.raster) <- extent(newdata)
+            i.raster <- raster::raster(i.mat)
+            raster::extent(i.raster) <- raster::extent(newdata)
             out.rasters[[i]] <- i.raster
         }
         out.stack <- stack(out.rasters)
@@ -378,7 +396,7 @@ setMethod("predict", "unmarkedFitPCount",
         isfac <- is.factor(newdata)
         if(any(isfac))
             stop("This method currently does not handle factors")
-        z <- as.data.frame(matrix(getValues(newdata), npix))
+        z <- as.data.frame(matrix(raster::getValues(newdata), npix))
         names(z) <- cd.names
         switch(type,
                state = {
@@ -444,14 +462,14 @@ setMethod("predict", "unmarkedFitPCount",
     if(identical(cls, "RasterStack")) {
         E.mat <- matrix(out[,1], dim(newdata)[1], dim(newdata)[2],
                         byrow=TRUE)
-        E.raster <- raster(E.mat)
-        extent(E.raster) <- extent(newdata)
+        E.raster <- raster::raster(E.mat)
+        raster::extent(E.raster) <- raster::extent(newdata)
         out.rasters <- list(E.raster)
         for(i in 2:ncol(out)) {
             i.mat <- matrix(out[,i], dim(newdata)[1], dim(newdata)[2],
                             byrow=TRUE)
-            i.raster <- raster(i.mat)
-            extent(i.raster) <- extent(newdata)
+            i.raster <- raster::raster(i.mat)
+            raster::extent(i.raster) <- raster::extent(newdata)
             out.rasters[[i]] <- i.raster
         }
         out.stack <- stack(out.rasters)
@@ -545,7 +563,7 @@ setMethod("predict", "unmarkedFitOccuFP",
               out$upper[i] <- ci[2]
             }
             if(appendData) {
-              out <- data.frame(out, z)
+              out <- data.frame(out, newdata)
             }
             return(out)
           })
@@ -631,7 +649,7 @@ setMethod("predict", "unmarkedFitColExt",
         isfac <- is.factor(newdata)
         if(any(isfac))
             stop("This method currently does not handle factors")
-        z <- as.data.frame(matrix(getValues(newdata), npix))
+        z <- as.data.frame(matrix(raster::getValues(newdata), npix))
         names(z) <- cd.names
         switch(type,
                psi = {
@@ -698,14 +716,14 @@ setMethod("predict", "unmarkedFitColExt",
     if(identical(cls, "RasterStack")) {
         E.mat <- matrix(out[,1], dim(newdata)[1], dim(newdata)[2],
                         byrow=TRUE)
-        E.raster <- raster(E.mat)
-        extent(E.raster) <- extent(newdata)
+        E.raster <- raster::raster(E.mat)
+        raster::extent(E.raster) <- raster::extent(newdata)
         out.rasters <- list(E.raster)
         for(i in 2:ncol(out)) {
             i.mat <- matrix(out[,i], dim(newdata)[1], dim(newdata)[2],
                             byrow=TRUE)
-            i.raster <- raster(i.mat)
-            extent(i.raster) <- extent(newdata)
+            i.raster <- raster::raster(i.mat)
+            raster::extent(i.raster) <- raster::extent(newdata)
             out.rasters[[i]] <- i.raster
         }
         out.stack <- stack(out.rasters)
@@ -820,7 +838,7 @@ setMethod("predict", "unmarkedFitPCO",
             isfac <- is.factor(newdata)
             if(any(isfac))
                 stop("This method currently does not handle factors")
-            z <- as.data.frame(matrix(getValues(newdata), npix))
+            z <- as.data.frame(matrix(raster::getValues(newdata), npix))
             names(z) <- cd.names
             switch(type,
                    lambda = {
@@ -908,14 +926,14 @@ setMethod("predict", "unmarkedFitPCO",
     if(identical(cls, "RasterStack")) {
         E.mat <- matrix(out[,1], dim(newdata)[1], dim(newdata)[2],
                         byrow=TRUE)
-        E.raster <- raster(E.mat)
-        extent(E.raster) <- extent(newdata)
+        E.raster <- raster::raster(E.mat)
+        raster::extent(E.raster) <- raster::extent(newdata)
         out.rasters <- list(E.raster)
         for(i in 2:ncol(out)) {
             i.mat <- matrix(out[,i], dim(newdata)[1], dim(newdata)[2],
                             byrow=TRUE)
-            i.raster <- raster(i.mat)
-            extent(i.raster) <- extent(newdata)
+            i.raster <- raster::raster(i.mat)
+            raster::extent(i.raster) <- raster::extent(newdata)
             out.rasters[[i]] <- i.raster
         }
         out.stack <- stack(out.rasters)
@@ -986,7 +1004,7 @@ setMethod("predict", "unmarkedFitGMM",
             cd.names <- names(newdata)
             npix <- prod(dim(newdata)[1:2])
             isfac <- is.factor(newdata)
-            z <- as.data.frame(matrix(getValues(newdata), npix))
+            z <- as.data.frame(matrix(raster::getValues(newdata), npix))
             names(z) <- cd.names
             if(any(isfac)) {
                 stop("This method currently does not handle factors", call.=FALSE)
@@ -1065,14 +1083,14 @@ setMethod("predict", "unmarkedFitGMM",
     if(identical(cls, "RasterStack")) {
         E.mat <- matrix(out[,1], dim(newdata)[1], dim(newdata)[2],
                         byrow=TRUE)
-        E.raster <- raster(E.mat)
-        extent(E.raster) <- extent(newdata)
+        E.raster <- raster::raster(E.mat)
+        raster::extent(E.raster) <- raster::extent(newdata)
         out.rasters <- list(E.raster)
         for(i in 2:ncol(out)) {
             i.mat <- matrix(out[,i], dim(newdata)[1], dim(newdata)[2],
                             byrow=TRUE)
-            i.raster <- raster(i.mat)
-            extent(i.raster) <- extent(newdata)
+            i.raster <- raster::raster(i.mat)
+            raster::extent(i.raster) <- raster::extent(newdata)
             out.rasters[[i]] <- i.raster
         }
         out.stack <- stack(out.rasters)
@@ -1396,7 +1414,7 @@ setMethod("fitted", "unmarkedFitPCO",
             else if(identical(dynamics, "trend"))
                 N[i,1] <- N[i,1] * gamma[i,1] + iota[i, 1]
             else if(identical(dynamics, "ricker"))
-                N[i,1] <- N[i,1] * exp(gamma[i,1]*(1-N[i,1]/omega[i,1])) + 
+                N[i,1] <- N[i,1] * exp(gamma[i,1]*(1-N[i,1]/omega[i,1])) +
                     iota[i, 1]
             else if(identical(dynamics, "gompertz"))
                 N[i,1] <- N[i,1] * exp(gamma[i,1]*(1-log(N[i,1]+1)/
@@ -1407,12 +1425,12 @@ setMethod("fitted", "unmarkedFitPCO",
             }
         for(t in 2:T) {
             if(identical(dynamics, "autoreg"))
-                N[i, t] <- N[i, t-1] * (omega[i, t-1] + gamma[i, t-1]) + 
+                N[i, t] <- N[i, t-1] * (omega[i, t-1] + gamma[i, t-1]) +
                     iota[i, t-1]
             else if(identical(dynamics, "trend"))
                 N[i,t] <- N[i,t-1] * gamma[i,t-1] + iota[i, t-1]
             else if(identical(dynamics, "ricker"))
-                N[i,t] <- N[i,t-1]*exp(gamma[i,t-1]*(1-N[i,t-1]/omega[i,t-1]))+ 
+                N[i,t] <- N[i,t-1]*exp(gamma[i,t-1]*(1-N[i,t-1]/omega[i,t-1]))+
                     iota[i, t-1]
             else if(identical(dynamics, "gompertz"))
                 N[i,1] <- N[i,t-1] * exp(gamma[i,t-1]*(1-log(N[i,t-1]+1)/
@@ -1422,16 +1440,16 @@ setMethod("fitted", "unmarkedFitPCO",
             if(delta[i, t] > 1) {
                 for(d in 2:delta[i, t]) {
                     if(identical(dynamics, "autoreg"))
-                        N[i, t] <- N[i, t] * (omega[i, t-1] + gamma[i, t-1]) + 
+                        N[i, t] <- N[i, t] * (omega[i, t-1] + gamma[i, t-1]) +
                             iota[i, t-1]
                     else if(identical(dynamics, "trend"))
                         N[i, t] <- N[i, t] * gamma[i, t-1] + iota[i, t-1]
                     else if(identical(dynamics, "ricker"))
-                        N[i, t] <- N[i, t] * exp(gamma[i, t-1] * (1 - N[i,t] / 
+                        N[i, t] <- N[i, t] * exp(gamma[i, t-1] * (1 - N[i,t] /
                             omega[i,t-1]))+ iota[i, t-1]
                     else if(identical(dynamics, "gompertz"))
-                        N[i, 1] <- N[i, t] * exp(gamma[i, t-1] * (1 - 
-                            log(N[i, t]+1) / log(omega[i, t-1] + 1))) + 
+                        N[i, 1] <- N[i, t] * exp(gamma[i, t-1] * (1 -
+                            log(N[i, t]+1) / log(omega[i, t-1] + 1))) +
                             iota[i, t-1]
                     else
                         N[i,t] <- N[i,t] * omega[i, t-1] + gamma[i, t-1]
@@ -1672,8 +1690,8 @@ setMethod("update", "unmarkedFit",
         newStateformula <- as.formula(paste("~", formula.[3], sep=""))
         upStateformula <- update.formula(stateformula, newStateformula)
         call$formula <- as.formula(paste(
-			deparse(upDetformula, width=500),
-            deparse(upStateformula, width=500)))
+			deparse(upDetformula, width.cutoff=500),
+            deparse(upStateformula, width.cutoff=500)))
             }
     if (length(extras) > 0) {
         existing <- !is.na(match(names(extras), names(call)))
@@ -2018,7 +2036,7 @@ setMethod("getP", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
   FPformula <- object@FPformula
   Bformula <- object@Bformula
   umf <- object@data
-  designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+  designMats <- getDesign(umf, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
   y <- designMats$y
   V <- designMats$V
   V.offset <- designMats$V.offset
@@ -2041,7 +2059,7 @@ setMethod("getFP", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
   FPformula <- object@FPformula
   Bformula <- object@Bformula
   umf <- object@data
-  designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+  designMats <- getDesign(umf, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
   type = object@type
   y <- designMats$y
   U <- designMats$U
@@ -2067,7 +2085,7 @@ setMethod("getB", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
   FPformula <- object@FPformula
   Bformula <- object@Bformula
   umf <- object@data
-  designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+  designMats <- getDesign(umf, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
   y <- designMats$y
   W <- designMats$W
   W.offset <- designMats$W.offset
@@ -2538,7 +2556,7 @@ setMethod("simulate", "unmarkedFitPCO",
     D <- getDesign(umf, object@formula, na.rm = na.rm)
     Xlam <- D$Xlam; Xgam <- D$Xgam; Xom <- D$Xom; Xp <- D$Xp; Xiota <- D$Xiota
     Xlam.offset <- D$Xlam.offset; Xgam.offset <- D$Xgam.offset
-    Xom.offset <- D$Xom.offset; Xp.offset <- D$Xp.offset 
+    Xom.offset <- D$Xom.offset; Xp.offset <- D$Xp.offset
     Xiota.offset <- D$Xiota.offset
     delta <- D$delta
 
@@ -2594,10 +2612,10 @@ setMethod("simulate", "unmarkedFitPCO",
                     if(dynamics == "trend")
                         N[i,1] <- rpois(1, N[i,1]*gamma[i,1]+iota[i,1])
                     else if(dynamics == "ricker")
-                        N[i,1] <- rpois(1, N[i,1]*exp(gamma[i, 1] * (1 - 
+                        N[i,1] <- rpois(1, N[i,1]*exp(gamma[i, 1] * (1 -
                           N[i, 1] / omega[i, 1])) + iota[i, 1])
                     else if(dynamics == "gompertz")
-                        N[i,1] <- rpois(1, N[i, 1] * exp(gamma[i, 1] * (1 -  
+                        N[i,1] <- rpois(1, N[i, 1] * exp(gamma[i, 1] * (1 -
                           log(N[i, 1] + 1)/log(omega[i, 1] + 1))) +
                           iota[i, 1])
                     else if(dynamics == "autoreg")
@@ -2627,7 +2645,7 @@ setMethod("simulate", "unmarkedFitPCO",
                             t-1]/omega[i,t-1]))+iota[i,t-1])
                     else if(identical(dynamics, "gompertz"))
                         N[i,t] <- rpois(1, N[i,t-1]*exp(gamma[i,t-1]*(1-
-                            log(N[i,t-1] + 1) / log(omega[i,t-1] + 1))) + 
+                            log(N[i,t-1] + 1) / log(omega[i,t-1] + 1))) +
                             iota[i,t-1])
                     else
                         N[i, t] <- S[i, t-1] + G[i, t-1]
@@ -2729,7 +2747,7 @@ setMethod("simulate", "unmarkedFitOccuFP",
             FPformula <- object@FPformula
             Bformula <- object@Bformula
             umf <- object@data
-            designMats <- getDesign(newdata, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
+            designMats <- getDesign(umf, detformula,FPformula,Bformula,stateformula, na.rm = na.rm)
             X <- designMats$X; V <- designMats$V; U <- designMats$U; W <- designMats$W;
             y <- designMats$y
             X.offset <- designMats$X.offset; V.offset <- designMats$V.offset; U.offset <- designMats$U.offset; W.offset <- designMats$W.offset
@@ -2915,6 +2933,7 @@ setMethod("simulate", "unmarkedFitGMM",
     cp.mat[is.na(y)] <- NA
     cp.temp <- array(cp.mat, c(n, J, T))
     cp.arr[,,1:J] <- aperm(cp.temp, c(1,3,2))
+    cp.arr[,, 1:J][is.na(y)]<- NA   # Andy added 5/30
     cp.arr[,,J+1] <- 1 - apply(cp.arr[,,1:J,drop=FALSE], 1:2, sum, na.rm=TRUE)
 
     simList <- list()
