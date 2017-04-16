@@ -274,10 +274,22 @@ unmarkedFrameGMM <- function(y, siteCovs = NULL, obsCovs = NULL, numPrimary,
           piFun <- "doublePiFun"
           })
     } else {
-        type <- "userDefined"
+cat("this is a test message",fill=TRUE)
+       type <- "userDefined"
+        # ncol(obsToY) should be ncol(y) (numPrimary*J)
         if(missing(obsToY))
             stop("obsToY is required for gmultmix data with no specified type.")
+        if(ncol(obsToY) == J){
+           obsToY <- kronecker(diag(numPrimary), obsToY)
+       }
+        if(ncol(obsToY) == ncol(y)){
+           # this is a good situation
         }
+        if(ncol(obsToY) != ncol(y) &  ncol(obsToY) != J){
+           stop("obsToY wrong dimension.")
+       }
+
+      }
 
     umf <- unmarkedFrame(y, siteCovs, obsCovs, obsToY = obsToY)
     umf <- as(umf, "unmarkedMultFrame")

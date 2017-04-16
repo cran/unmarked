@@ -13,11 +13,14 @@ importFrom(reshape, melt, cast, recast)
 importFrom(plyr, ldply, alply, ddply)
 importFrom(grDevices, devAskNewPage)
 importFrom("raster","stack")
-import(lattice, methods, Rcpp)
+importFrom("raster", "raster", "extent", "extent<-", "getValues") ## MM
+
+import(lattice, methods, parallel, Rcpp)
 
 # Fitting functions
 export(occu, occuFP, occuRN, pcount, pcountOpen, multinomPois, distsamp,
-       colext, gmultmix, gdistsamp, gpcount, occuPEN, occuPEN_CV, computeMPLElambda)
+       colext, gmultmix, gdistsamp, gpcount, occuPEN, occuPEN_CV, 
+       computeMPLElambda, pcount.spHDS)
 export(removalPiFun, doublePiFun)
 
 # S4 classes
@@ -52,4 +55,4 @@ export(csvToUMF, formatLong, formatWide, formatMult, formatDistData)
 export(imputeMissing, gxhn, gxexp, gxhaz, dxhn, dxexp, dxhaz, drhn, drexp,
     drhaz, grhn, grexp, grhaz, sight2perpdist, lambda2psi, SSE)
 
-useDynLib(unmarked)
+useDynLib("unmarked", .registration=TRUE)

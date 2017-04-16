@@ -97,7 +97,7 @@ chisq <- function(fm) {
     sum((y-fv)^2/(fv*(1-fv)), na.rm=TRUE)
     }
 
-(pb <- parboot(fm2, statistic=chisq, nsim=100))
+(pb <- parboot(fm2, statistic=chisq, nsim=100, parallel=FALSE))
 
 
 ###################################################

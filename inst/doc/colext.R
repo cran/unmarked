@@ -184,7 +184,7 @@ turnover <- function(fm) {
     for(t in 2:T) {
         psi.hat[t] <- psi.hat[t-1]*phi.hat[t-1] +
             (1-psi.hat[t-1])*gamma.hat[t-1]
-        tau.hat[t-1] <- gamma.hat[t-1]*(1-psi.hat[t-1]) / psi.hat[t-1]
+        tau.hat[t-1] <- gamma.hat[t-1]*(1-psi.hat[t-1]) / psi.hat[t]
         }
     return(tau.hat)
     }
