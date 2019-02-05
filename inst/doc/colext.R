@@ -8,7 +8,7 @@ options(continue=" ")
 
 
 ###################################################
-### code chunk number 2: colext.Rnw:377-416
+### code chunk number 2: colext.Rnw:378-417
 ###################################################
 M <- 250                                # Number of sites
 J <- 3                                  # num secondary sample periods
@@ -67,26 +67,26 @@ legend(1, 0.6, c("truth", "observed"),
 
 
 ###################################################
-### code chunk number 4: colext.Rnw:457-458
+### code chunk number 4: colext.Rnw:458-459
 ###################################################
 library(unmarked)
 
 
 ###################################################
-### code chunk number 5: colext.Rnw:467-468
+### code chunk number 5: colext.Rnw:468-469
 ###################################################
 yy <- matrix(y, M, J*T)
 
 
 ###################################################
-### code chunk number 6: colext.Rnw:476-478
+### code chunk number 6: colext.Rnw:477-479
 ###################################################
 year <- matrix(c('01','02','03','04','05','06','07','08','09','10'),
                nrow(yy), T, byrow=TRUE)
 
 
 ###################################################
-### code chunk number 7: colext.Rnw:493-498
+### code chunk number 7: colext.Rnw:494-499
 ###################################################
 simUMF <- unmarkedMultFrame(
     y = yy,
@@ -96,13 +96,13 @@ summary(simUMF)
 
 
 ###################################################
-### code chunk number 8: colext.Rnw:577-578
+### code chunk number 8: colext.Rnw:578-579
 ###################################################
 plogis(-0.813)
 
 
 ###################################################
-### code chunk number 9: colext.Rnw:647-652 (eval = FALSE)
+### code chunk number 9: colext.Rnw:648-653 (eval = FALSE)
 ###################################################
 ## m1 <- colext(psiformula = ~1,   # First-year occupancy
 ##     gammaformula = ~ year-1,    # Colonization
@@ -112,13 +112,13 @@ plogis(-0.813)
 
 
 ###################################################
-### code chunk number 10: colext.Rnw:654-655 (eval = FALSE)
+### code chunk number 10: colext.Rnw:655-656 (eval = FALSE)
 ###################################################
 ## m1
 
 
 ###################################################
-### code chunk number 11: colext.Rnw:736-741 (eval = FALSE)
+### code chunk number 11: colext.Rnw:737-742 (eval = FALSE)
 ###################################################
 ## nd <- data.frame(year=c('01','02','03','04','05','06','07','08','09'))
 ## E.ext <- predict(m1, type='ext', newdata=nd)
@@ -169,7 +169,7 @@ plogis(-0.813)
 
 
 ###################################################
-### code chunk number 13: colext.Rnw:881-898
+### code chunk number 13: colext.Rnw:882-899
 ###################################################
 turnover <- function(fm) {
     psi.hat <- plogis(coef(fm, type="psi"))
@@ -191,7 +191,7 @@ turnover <- function(fm) {
 
 
 ###################################################
-### code chunk number 14: colext.Rnw:981-995 (eval = FALSE)
+### code chunk number 14: colext.Rnw:982-996 (eval = FALSE)
 ###################################################
 ## 
 ## chisq <- function(fm) {
@@ -217,14 +217,14 @@ turnover <- function(fm) {
 
 
 ###################################################
-### code chunk number 16: colext.Rnw:1039-1041
+### code chunk number 16: colext.Rnw:1040-1042
 ###################################################
 data(crossbill)
 colnames(crossbill)
 
 
 ###################################################
-### code chunk number 17: colext.Rnw:1078-1081
+### code chunk number 17: colext.Rnw:1079-1082
 ###################################################
 DATE <- as.matrix(crossbill[,32:58])
 y.cross <- as.matrix(crossbill[,5:31])
@@ -232,7 +232,7 @@ y.cross[is.na(DATE) != is.na(y.cross)] <- NA
 
 
 ###################################################
-### code chunk number 18: colext.Rnw:1093-1096
+### code chunk number 18: colext.Rnw:1094-1097
 ###################################################
 sd.DATE <- sd(c(DATE), na.rm=TRUE)
 mean.DATE <- mean(DATE, na.rm=TRUE)
@@ -240,7 +240,7 @@ DATE <- (DATE - mean.DATE) / sd.DATE
 
 
 ###################################################
-### code chunk number 19: colext.Rnw:1106-1112
+### code chunk number 19: colext.Rnw:1107-1113
 ###################################################
 years <- as.character(1999:2007)
 years <- matrix(years, nrow(crossbill), 9, byrow=TRUE)
@@ -251,42 +251,42 @@ umf <- unmarkedMultFrame(y=y.cross,
 
 
 ###################################################
-### code chunk number 20: colext.Rnw:1137-1139 (eval = FALSE)
+### code chunk number 20: colext.Rnw:1138-1140 (eval = FALSE)
 ###################################################
 ## # A model with constant parameters
 ## fm0 <- colext(~1, ~1, ~1, ~1, umf)
 
 
 ###################################################
-### code chunk number 21: colext.Rnw:1141-1143 (eval = FALSE)
+### code chunk number 21: colext.Rnw:1142-1144 (eval = FALSE)
 ###################################################
 ## # Like fm0, but with year-dependent detection
 ## fm1 <- colext(~1, ~1, ~1, ~year, umf)
 
 
 ###################################################
-### code chunk number 22: colext.Rnw:1145-1147 (eval = FALSE)
+### code chunk number 22: colext.Rnw:1146-1148 (eval = FALSE)
 ###################################################
 ## # Like fm0, but with year-dependent colonization and extinction
 ## fm2 <- colext(~1, ~year-1, ~year-1, ~1, umf)
 
 
 ###################################################
-### code chunk number 23: colext.Rnw:1149-1151 (eval = FALSE)
+### code chunk number 23: colext.Rnw:1150-1152 (eval = FALSE)
 ###################################################
 ## # A fully time-dependent model
 ## fm3 <- colext(~1, ~year-1, ~year-1, ~year, umf)
 
 
 ###################################################
-### code chunk number 24: colext.Rnw:1153-1155 (eval = FALSE)
+### code chunk number 24: colext.Rnw:1154-1156 (eval = FALSE)
 ###################################################
 ## # Like fm3 with forest-dependence of 1st-year occupancy
 ## fm4 <- colext(~forest, ~year-1, ~year-1, ~year, umf)
 
 
 ###################################################
-### code chunk number 25: colext.Rnw:1157-1160 (eval = FALSE)
+### code chunk number 25: colext.Rnw:1158-1161 (eval = FALSE)
 ###################################################
 ## # Like fm4 with date- and year-dependence of detection
 ## fm5 <- colext(~forest, ~year-1, ~year-1, ~year + date + I(date^2),
@@ -294,7 +294,7 @@ umf <- unmarkedMultFrame(y=y.cross,
 
 
 ###################################################
-### code chunk number 26: colext.Rnw:1162-1165 (eval = FALSE)
+### code chunk number 26: colext.Rnw:1163-1166 (eval = FALSE)
 ###################################################
 ## # Same as fm5, but with detection in addition depending on forest cover
 ## fm6 <- colext(~forest, ~year-1, ~year-1, ~year + date + I(date^2) +

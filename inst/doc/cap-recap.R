@@ -9,14 +9,14 @@ library(tools)
 
 
 ###################################################
-### code chunk number 2: cap-recap.Rnw:213-215
+### code chunk number 2: cap-recap.Rnw:214-216
 ###################################################
 alfl <- read.csv(system.file("csv", "alfl.csv", package="unmarked"))
 head(alfl, 5)
 
 
 ###################################################
-### code chunk number 3: cap-recap.Rnw:226-229
+### code chunk number 3: cap-recap.Rnw:227-230
 ###################################################
 alfl.covs <- read.csv(system.file("csv", "alflCovs.csv",
     package="unmarked"), row.names=1)
@@ -24,7 +24,7 @@ head(alfl.covs)
 
 
 ###################################################
-### code chunk number 4: cap-recap.Rnw:243-249
+### code chunk number 4: cap-recap.Rnw:244-250
 ###################################################
 alfl$captureHistory <- paste(alfl$interval1, alfl$interval2, alfl$interval3, sep="")
 alfl$captureHistory <- factor(alfl$captureHistory,
@@ -35,7 +35,7 @@ alfl$id <- factor(alfl$id, levels=rownames(alfl.covs))
 
 
 ###################################################
-### code chunk number 5: cap-recap.Rnw:261-264
+### code chunk number 5: cap-recap.Rnw:262-265
 ###################################################
 alfl.v1 <- alfl[alfl$survey==1,]
 alfl.H1 <- table(alfl.v1$id, alfl.v1$captureHistory)
@@ -43,7 +43,7 @@ head(alfl.H1, 5)
 
 
 ###################################################
-### code chunk number 6: cap-recap.Rnw:298-310
+### code chunk number 6: cap-recap.Rnw:299-311
 ###################################################
 crPiFun <- function(p) {
     p1 <- p[,1]
@@ -60,7 +60,7 @@ crPiFun <- function(p) {
 
 
 ###################################################
-### code chunk number 7: cap-recap.Rnw:319-322
+### code chunk number 7: cap-recap.Rnw:320-323
 ###################################################
 p <- matrix(0.4, 2, 3)
 crPiFun(p)
@@ -68,13 +68,13 @@ rowSums(crPiFun(p))
 
 
 ###################################################
-### code chunk number 8: cap-recap.Rnw:341-342
+### code chunk number 8: cap-recap.Rnw:342-343
 ###################################################
 o2y <- matrix(1, 3, 7)
 
 
 ###################################################
-### code chunk number 9: cap-recap.Rnw:351-358
+### code chunk number 9: cap-recap.Rnw:352-359
 ###################################################
 library(unmarked)
 intervalMat <- matrix(c('1','2','3'), 50, 3, byrow=TRUE)
@@ -86,7 +86,7 @@ umf.cr1 <- unmarkedFrameMPois(y=alfl.H1,
 
 
 ###################################################
-### code chunk number 10: cap-recap.Rnw:375-378
+### code chunk number 10: cap-recap.Rnw:376-379
 ###################################################
 M0 <- multinomPois(~1 ~1, umf.cr1)
 Mt <- multinomPois(~interval-1 ~1, umf.cr1)
@@ -94,7 +94,7 @@ Mx <- multinomPois(~time.1 ~1, umf.cr1)
 
 
 ###################################################
-### code chunk number 11: cap-recap.Rnw:387-388
+### code chunk number 11: cap-recap.Rnw:388-389
 ###################################################
 (M0.woody <- multinomPois(~1 ~woody, umf.cr1))
 
@@ -111,19 +111,19 @@ lines(upper ~ woody, E.abundance, col=gray(0.7))
 
 
 ###################################################
-### code chunk number 13: cap-recap.Rnw:417-418
+### code chunk number 13: cap-recap.Rnw:418-419
 ###################################################
 backTransform(M0.woody, type="det")
 
 
 ###################################################
-### code chunk number 14: cap-recap.Rnw:426-427
+### code chunk number 14: cap-recap.Rnw:427-428
 ###################################################
 round(getP(M0.woody), 2)[1,]
 
 
 ###################################################
-### code chunk number 15: cap-recap.Rnw:454-465
+### code chunk number 15: cap-recap.Rnw:455-466
 ###################################################
 crPiFun.Mb <- function(p) { # p should have 3 columns
     pNaive <- p[,1]
@@ -139,7 +139,7 @@ crPiFun.Mb <- function(p) { # p should have 3 columns
 
 
 ###################################################
-### code chunk number 16: cap-recap.Rnw:478-484
+### code chunk number 16: cap-recap.Rnw:479-485
 ###################################################
 behavior <- matrix(c('Naive','Naive','Wise'), 50, 3, byrow=TRUE)
 umf.cr1Mb <- unmarkedFrameMPois(y=alfl.H1,
@@ -150,19 +150,19 @@ M0 <- multinomPois(~1 ~1, umf.cr1Mb)
 
 
 ###################################################
-### code chunk number 17: cap-recap.Rnw:489-490
+### code chunk number 17: cap-recap.Rnw:490-491
 ###################################################
 (Mb <- multinomPois(~behavior-1 ~1, umf.cr1Mb))
 
 
 ###################################################
-### code chunk number 18: cap-recap.Rnw:496-497
+### code chunk number 18: cap-recap.Rnw:497-498
 ###################################################
 plogis(confint(Mb, type="det", method="profile"))
 
 
 ###################################################
-### code chunk number 19: cap-recap.Rnw:544-576
+### code chunk number 19: cap-recap.Rnw:545-577
 ###################################################
 MhPiFun <- function(p) {
 mu <- qlogis(p[,1]) # logit(p)
@@ -199,7 +199,7 @@ return(il)
 
 
 ###################################################
-### code chunk number 20: cap-recap.Rnw:694-703
+### code chunk number 20: cap-recap.Rnw:695-704
 ###################################################
 alfl.H <- table(alfl$id, alfl$captureHistory, alfl$survey)
 alfl.Hmat <- cbind(alfl.H[,,1], alfl.H[,,2], alfl.H[,,3])
@@ -213,7 +213,7 @@ umf.cr <- unmarkedFrameGMM(y=alfl.Hmat,
 
 
 ###################################################
-### code chunk number 21: cap-recap.Rnw:722-723
+### code chunk number 21: cap-recap.Rnw:723-724
 ###################################################
 (fm1 <- gmultmix(~woody, ~1, ~time+date, umf.cr))
 

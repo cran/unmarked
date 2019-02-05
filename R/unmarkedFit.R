@@ -83,6 +83,11 @@ setClass("unmarkedFitOccuFP",
             type = "numeric"),
          contains = "unmarkedFit")
 
+setClass("unmarkedFitOccuMulti",
+         representation(
+            detformulas = "character",
+            stateformulas = "character"),
+         contains = "unmarkedFit")
 
 setClass("unmarkedFitMPois",
     contains = "unmarkedFit")
@@ -850,7 +855,7 @@ setMethod("predict", "unmarkedFitColExt",
                    X <- model.matrix(X.terms, mf)
 #                   offset <- model.offset(mf)
                },
-               exp = {
+               ext = {
                    varnames <- all.vars(epsformula)
                    if(!all(varnames %in% cd.names))
                        stop("At least 1 covariate in the formula is not in the raster stack.\n   You probably need to assign them using\n\t 'names(object) <- covariate.names'")
@@ -1280,7 +1285,183 @@ setMethod("predict", "unmarkedFitGMM",
     return(out)
 })
 
+# OccuMulti
 
+setMethod("predict", "unmarkedFitOccuMulti",
+     function(object, type, newdata, 
+              #backTransform = TRUE, na.rm = TRUE,
+              #appendData = FALSE, 
+              se.fit=TRUE, level=0.95, species=NULL, cond=NULL, nsims=100,
+              ...)
+  {
+
+  type <- match.arg(type, c("state", "det"))
+
+  if(is.null(hessian(object))){
+    se.fit = FALSE
+  }
+  
+  species <- name_to_ind(species, names(object@data@ylist))
+  cond <- name_to_ind(cond, names(object@data@ylist))
+
+  if(missing(newdata)){
+    newdata <- object@data
+  }
+
+  if(! class(newdata) %in% c('unmarkedFrameOccuMulti','data.frame')){
+    stop("newdata must be a data frame or an unmarkedFrameOccuMulti object")
+  }
+
+  if (class(newdata) == 'data.frame') {
+    temp <- object@data
+    if(type=="state"){
+      temp@siteCovs <- newdata
+    } else {
+      temp@obsCovs <- newdata
+    }
+    newdata <- temp
+  }
+
+  dm <- getDesign(newdata,object@detformulas,object@stateformulas,na.rm=F)
+  
+  params <- coef(object)
+  low_bound <- (1-level)/2
+  up_bound <- level + (1-level)/2
+  
+
+  if(type=="state"){
+    N <- nrow(dm$dmOcc[[1]]); nF <- dm$nF; dmOcc <- dm$dmOcc;
+    fStart <- dm$fStart; fStop <- dm$fStop; fixed0 <- dm$fixed0
+    t_dmF <- t(dm$dmF)
+    
+    calc_psi <- function(params){
+
+      f <- matrix(NA,nrow=N,ncol=nF)
+      index <- 1
+      for (i in 1:nF){
+        if(fixed0[i]){
+          f[,i] <- 0
+        } else {
+          f[,i] <- dmOcc[[index]] %*% params[fStart[index]:fStop[index]]
+          index <- index + 1
+        }
+      }
+      psi <- exp(f %*% t_dmF)
+      as.matrix(psi/rowSums(psi))
+    }
+
+    psi_est <- calc_psi(params)
+    
+    if(se.fit){
+      cat('Bootstrapping confidence intervals with',nsims,'samples\n')
+      ses <- SE(object)
+      samp <- array(NA,c(dim(psi_est),nsims))
+      for (i in 1:nsims){
+        samp[,,i] <- calc_psi(stats::rnorm(length(params),params,ses))
+      }
+    }
+
+    if(!is.null(species)){
+      
+      sel_col <- species
+      
+      if(!is.null(cond)){
+        if(sel_col %in% abs(cond)){
+          stop("Species can't be conditional on itself")
+        }
+        ftemp <- object@data@fDesign
+        swap <- -1*cond[which(cond<0)]
+        ftemp[,swap] <- 1 - ftemp[,swap]
+        num_inds <- apply(ftemp[,c(sel_col,abs(cond))] == 1,1,all) 
+        denom_inds <- apply(ftemp[,abs(cond),drop=F] == 1,1,all)
+        est <- rowSums(psi_est[,num_inds,drop=F]) / 
+          rowSums(psi_est[,denom_inds, drop=F])
+        if(se.fit){
+          samp_num <- apply(samp[,num_inds,,drop=F],3,rowSums)
+          samp_denom <- apply(samp[,denom_inds,,drop=F],3,rowSums)
+          samp <- samp_num / samp_denom
+        }
+
+      } else {
+        num_inds <- which(object@data@fDesign[,sel_col] == 1)
+        est <- rowSums(psi_est[,num_inds])
+        if(se.fit){
+          samp <- samp[,num_inds,]
+          samp <- apply(samp, 3, rowSums)
+        }
+      }
+      
+      if(se.fit){
+        boot_se <- apply(samp,1,sd)
+        boot_low <- apply(samp,1,quantile,low_bound)
+        boot_up <- apply(samp,1,quantile,up_bound)
+      } else{
+        boot_se <- boot_low <- boot_up <- NA
+      }
+      return(data.frame(Predicted=est,
+                        SE=boot_se,
+                        lower=boot_low,
+                        upper=boot_up))
+
+    } else {
+      codes <- apply(dm$z,1,function(x) paste(x,collapse=""))
+      colnames(psi_est)  <- paste('psi[',codes,']',sep='') 
+      if(se.fit){
+        boot_se <- apply(samp,c(1,2),sd)
+        boot_low <- apply(samp,c(1,2),quantile,low_bound)
+        boot_up <- apply(samp,c(1,2),quantile,up_bound)
+        colnames(boot_se) <- colnames(boot_low) <- colnames(boot_up) <-
+          colnames(psi_est)
+      } else {
+        boot_se <- boot_low <- boot_up <- NA
+      }
+      return(list(Predicted=psi_est,
+                  SE=boot_se,
+                  lower=boot_low,
+                  upper=boot_up))
+    }
+  }
+
+  if(type=="det"){
+    #based on 
+    #https://blog.methodsconsultants.com/posts/delta-method-standard-errors/
+    S <- dm$S; dmDet <- dm$dmDet
+    dStart <- dm$dStart; dStop <- dm$dStop
+
+    out <- list()
+    z <- qnorm(low_bound,lower.tail=F)
+    N <- nrow(dmDet[[1]])
+    for (i in 1:S){
+
+      inds <- dStart[i]:dStop[i]
+      param_sub <- params[inds]
+      est <- plogis(dmDet[[i]] %*% param_sub)
+      
+      if(se.fit){
+        cov_sub <- vcov(object)[inds-sum(dm$fixed0),inds-sum(dm$fixed0)]
+        se_est <- lower <- upper <- numeric(N)
+        for (j in 1:N){
+          x <- dmDet[[i]][j]
+          xb <- stats::dlogis(t(x) %*% param_sub)
+          v <- xb %*% t(x) %*% cov_sub %*% x %*% xb
+          se_est[j] <- sqrt(v)
+          lower[j] <- est[j] - z*se_est[j]
+          upper[j] <- est[j] + z*se_est[j]
+        }
+      } else {
+        se_est <- lower <- upper <- NA
+      }
+      out[[i]] <- data.frame(Predicted=est,SE=se_est,
+                            lower=lower,upper=upper)
+    }
+    names(out) <- names(object@data@ylist)
+    if(!is.null(species)){
+      return(out[[species]])
+    }
+    return(out)
+  }
+  stop("type must be 'det' or 'state'")
+})
 
 
 # ---------------------- coef, vcov, and SE ------------------------------
@@ -1674,6 +1855,23 @@ setMethod("fitted", "unmarkedFitOccuRN", function(object, K, na.rm = FALSE)
     return(matrix(fitted, M, J, byrow = TRUE))
 })
 
+setMethod("fitted", "unmarkedFitOccuMulti", function(object)
+{
+
+  S <- length(object@data@ylist)
+  J <- ncol(object@data@ylist[[1]])
+  pmat <- getP(object)
+  
+  fitted_list <- list()
+  for (i in 1:S){
+    marg_occ <- predict(object,'state',se.fit=F,species=i)$Predicted
+    occmat <- t(tcrossprod(rep(1,J),marg_occ))
+    fitted_list[[i]] <- pmat[[i]] * occmat
+  }
+  names(fitted_list) <- names(object@data@ylist)
+  fitted_list 
+
+})
 
 setMethod("fitted", "unmarkedFitColExt", function(object, na.rm = FALSE)
 {
@@ -1889,6 +2087,38 @@ setMethod("update", "unmarkedFit",
     else call
 })
 
+setMethod("update", "unmarkedFitOccuMulti",
+    function(object, detformulas, stateformulas, ..., evaluate = TRUE)
+{
+
+    call <- object@call
+    if (is.null(call))
+        stop("need an object with call slot")
+    if(!missing(detformulas)){
+      call[["detformulas"]] <- detformulas
+    } else {
+      call[["detformulas"]] <- object@detformulas
+    }
+    if(!missing(stateformulas)){
+      call[["stateformulas"]] <- stateformulas
+    } else {
+      call[["stateformulas"]] <- object@stateformulas
+    }
+    extras <- match.call(call=sys.call(-1),
+                         expand.dots = FALSE)$...
+    if (length(extras) > 0) {
+        existing <- !is.na(match(names(extras), names(call)))
+        for (a in names(extras)[existing])
+            call[[a]] <- extras[[a]]
+        if (any(!existing)) {
+            call <- c(as.list(call), extras[!existing])
+            call <- as.call(call)
+            }
+        }
+    if (evaluate)
+        eval(call, parent.frame(2))
+    else call
+})
 
 setMethod("update", "unmarkedFitColExt",
     function(object, formula., ..., evaluate = TRUE)
@@ -2067,6 +2297,17 @@ setMethod("residuals", "unmarkedFitOccuRN", function(object, ...) {
     return(r)
 })
 
+setMethod("residuals", "unmarkedFitOccuMulti", function(object, ...) {
+  res_list <- list()
+  ylist <- object@data@ylist
+  fitlist <- fitted(object)
+
+  for (i in seq_along(ylist)){
+    res_list[[i]] <- ylist[[i]] - fitlist[[i]]
+  }
+  names(res_list) <- names(ylist)
+  res_list
+})
 
 setMethod("plot", c(x = "unmarkedFit", y = "missing"), function(x, y, ...)
 {
@@ -2076,7 +2317,13 @@ setMethod("plot", c(x = "unmarkedFit", y = "missing"), function(x, y, ...)
     abline(h = 0, lty = 3, col = "gray")
 })
 
-
+setMethod("plot", c(x = "unmarkedFitOccuMulti", y = "missing"), function(x, y, ...)
+{
+  r <- do.call(rbind,residuals(x))
+  e <- do.call(rbind,fitted(x))
+  plot(e, r, ylab = "Residuals", xlab = "Predicted values")
+  abline(h = 0, lty = 3, col = "gray")
+})
 
 
 setMethod("hist", "unmarkedFitDS", function(x, lwd=1, lty=1, ...) {
@@ -2233,6 +2480,29 @@ setMethod("getP", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
   return(p)
 })
 
+setMethod("getP", "unmarkedFitOccuMulti", function(object)
+{
+  
+  ylist <- object@data@ylist
+  S <- length(ylist)
+  N <- nrow(ylist[[1]])
+  dm <- getDesign(object@data,object@detformulas,object@stateformulas)
+  pred <- predict(object,'det',se.fit=F)
+  dets <- do.call(cbind,lapply(pred,`[`,,1))
+  #ugly mess
+  out <- list()
+  for (i in 1:S){
+    pmat <- array(NA,dim(ylist[[1]]))
+    for (j in 1:N){
+      ps <- dets[dm$yStart[j]:dm$yStop[j],i]
+      not_na <- !is.na(ylist[[i]][j,])
+      pmat[j,not_na] <- ps
+    }
+    out[[i]] <- pmat
+  }
+  names(out) <- names(ylist)
+  out
+})
 
 setMethod("getFP", "unmarkedFitOccuFP", function(object, na.rm = TRUE)
 {
@@ -2969,6 +3239,41 @@ setMethod("simulate", "unmarkedFitOccuFP",
             return(simList)
           })
 
+
+setMethod("simulate", "unmarkedFitOccuMulti",
+    function(object, nsim = 1, seed = NULL, na.rm = TRUE)
+{
+    data <- object@data
+    ynames <- names(object@data@ylist)
+    dm <- getDesign(object@data, object@detformulas, object@stateformulas)
+    psi <- predict(object, "state",se.fit=F)$Predicted
+    p <- getP(object)
+    
+    simList <- list()
+    for (s in 1:nsim){
+      #True state
+      ztruth <- matrix(NA,nrow=dm$N,ncol=dm$S)
+      nZ <- nrow(dm$z)
+      for (i in 1:dm$N){
+        ztruth[i,] <- as.matrix(dm$z[sample(nZ,1,prob=psi[i,]),])
+      }
+
+      y <- list()
+      for (i in 1:dm$S){
+        y[[i]] <- matrix(NA,dm$N,dm$J)
+        for (j in 1:dm$N){
+          for (k in 1:dm$J){
+            if(!is.na(p[[i]][j,k])){
+              y[[i]][j,k] <- rbinom(1,1,ztruth[j,i]*p[[i]][j,k])
+            }
+          }
+        }
+      }
+      names(y) <- ynames
+      simList[[s]] <- y
+    }
+    simList
+})
 
 
 setMethod("simulate", "unmarkedFitColExt",
