@@ -412,7 +412,7 @@ formatMult <- function(df.in)
 
     # Return any non-factors to the correct mode
     if (length(nonfac) >= 1) {
-      classes <- apply(df.obs[, nonfac], 2, class)
+      classes <- sapply(df.obs[, nonfac], class)
       for (i in 1:length(nonfac)) {
         class(obsvars.list[[nonfac[i]]]) <- classes[i]
       }
