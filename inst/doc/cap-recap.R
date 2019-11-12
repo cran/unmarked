@@ -88,15 +88,15 @@ umf.cr1 <- unmarkedFrameMPois(y=alfl.H1,
 ###################################################
 ### code chunk number 10: cap-recap.Rnw:376-379
 ###################################################
-M0 <- multinomPois(~1 ~1, umf.cr1)
-Mt <- multinomPois(~interval-1 ~1, umf.cr1)
-Mx <- multinomPois(~time.1 ~1, umf.cr1)
+M0 <- multinomPois(~1 ~1, umf.cr1, engine="R")
+Mt <- multinomPois(~interval-1 ~1, umf.cr1, engine="R")
+Mx <- multinomPois(~time.1 ~1, umf.cr1, engine="R")
 
 
 ###################################################
 ### code chunk number 11: cap-recap.Rnw:388-389
 ###################################################
-(M0.woody <- multinomPois(~1 ~woody, umf.cr1))
+(M0.woody <- multinomPois(~1 ~woody, umf.cr1, engine="R"))
 
 
 ###################################################
@@ -146,13 +146,13 @@ umf.cr1Mb <- unmarkedFrameMPois(y=alfl.H1,
     siteCovs=alfl.covs[,c("woody", "struct", "time.1")],
     obsCovs=list(behavior=behavior),
     obsToY=o2y, piFun="crPiFun.Mb")
-M0 <- multinomPois(~1 ~1, umf.cr1Mb)
+M0 <- multinomPois(~1 ~1, umf.cr1Mb, engine="R")
 
 
 ###################################################
 ### code chunk number 17: cap-recap.Rnw:490-491
 ###################################################
-(Mb <- multinomPois(~behavior-1 ~1, umf.cr1Mb))
+(Mb <- multinomPois(~behavior-1 ~1, umf.cr1Mb, engine="R"))
 
 
 ###################################################
@@ -215,6 +215,6 @@ umf.cr <- unmarkedFrameGMM(y=alfl.Hmat,
 ###################################################
 ### code chunk number 21: cap-recap.Rnw:723-724
 ###################################################
-(fm1 <- gmultmix(~woody, ~1, ~time+date, umf.cr))
+(fm1 <- gmultmix(~woody, ~1, ~time+date, umf.cr, engine="R"))
 
 

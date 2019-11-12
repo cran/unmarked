@@ -501,53 +501,26 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
     stop(paste(nF,"formulas are required in stateformulas list"))
   if(length(detformulas) != S)
     stop(paste(S,"formulas are required in detformulas list"))
- 
-  #Design matrices + parameter counts
-  #For f/occupancy
 
   if(is.null(siteCovs(umf))) {
-    site_covs <- data.frame(placeHolder = rep(1, N))
+    site_covs <- data.frame(placeHolderSite = rep(1, N))
   } else {
     site_covs <- siteCovs(umf)
   }
-  fInd <- c()
-  sf_no0 <- stateformulas[!fixed0]
-  var_names <- colnames(dmF)[!fixed0] 
-  dmOcc <- lapply(seq_along(sf_no0),function(i){
-                    out <- model.matrix(sf_no0[[i]],site_covs)
-                    colnames(out) <- paste('[',var_names[i],'] ',
-                                           colnames(out), sep='')
-                    fInd <<- c(fInd,rep(i,ncol(out)))
-                    out
-          })
-  fStart <- c(1,1+which(diff(fInd)!=0))
-  fStop <- c(fStart[2:length(fStart)]-1,length(fInd)) 
-  occParams <- unlist(lapply(dmOcc,colnames))
-  nOP <- length(occParams)
-  
-  #For detection
+
   if(is.null(obsCovs(umf))) {
-    obs_covs <- data.frame(placeHolder = rep(1, J*N))
+    obs_covs <- data.frame(placeHolderObs = rep(1, J*N))
   } else {
     obs_covs <- obsCovs(umf)
   }
-  dInd <- c()
-  dmDet <- lapply(seq_along(detformulas),function(i){
-                    out <- model.matrix(detformulas[[i]],obs_covs)
-                    colnames(out) <- paste('[',names(umf@ylist)[i],'] ',
-                                           colnames(out),sep='')
-                    dInd <<- c(dInd,rep(i,ncol(out)))
-                    out
-          })
-  dStart <- c(1,1+which(diff(dInd)!=0)) + nOP
-  dStop <- c(dStart[2:length(dStart)]-1,length(dInd)+nOP) 
-  detParams <- unlist(lapply(dmDet,colnames))
-  #nD <- length(detParams)
-  
-  #Combined
-  paramNames <- c(occParams,detParams)
-  nP <- length(paramNames)
 
+  # Record future column names for obsCovs
+  col_names <- c(colnames(obs_covs), colnames(site_covs))
+
+  # add site covariates at observation-level
+  obs_covs <- cbind(obs_covs, site_covs[rep(1:N, each = J),])
+  colnames(obs_covs) <- col_names
+  
   #Re-format ylist
   index <- 1
   ylong <- lapply(umf@ylist, function(x) {
@@ -562,22 +535,35 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
 
   #Remove missing values
   if(na.rm){
+    naSiteCovs <- which(apply(site_covs, 1, function(x) any(is.na(x))))
+    if(length(naSiteCovs>0)){
+      stop(paste("Missing site covariates at sites:",
+                 paste(naSiteCovs,collapse=", ")))
+    }
 
-    navec <- apply(ylong, 1, function(x) any(is.na(x)))
-    sites_with_missing <- unique(ylong$site[navec])
+    naY <- apply(ylong, 1, function(x) any(is.na(x)))
+    naCov <- apply(obs_covs, 1, function(x) any(is.na(x)))
+    navec <- naY | naCov
+
+    sites_with_missingY <- unique(ylong$site[naY])
+    sites_with_missingCov <- unique(ylong$site[naCov])
 
     ylong <- ylong[!navec,,drop=FALSE]
-    dmDet <- lapply(dmDet, function(x) x[!navec,,drop=FALSE])
+    obs_covs <- obs_covs[!navec,,drop=FALSE]
   
     no_data_sites <- which(! 1:N %in% ylong$site)
     if(length(no_data_sites>0)){
-      stop(paste("No non-missing detections at sites:",
+      stop(paste("All detections and/or detection covariates are missing at sites:",
                   paste(no_data_sites,collapse=", ")))
     }
 
-    if(sum(navec)>0&warn){  
-      warning(paste("Missing values for detections at sites:",
-                    paste(sites_with_missing,collapse=", ")))
+    if(sum(naY)>0&warn){  
+      warning(paste("Missing detections at sites:",
+                    paste(sites_with_missingY,collapse=", ")))
+    }
+    if(sum(naCov)>0&warn){
+      warning(paste("Missing detection covariate values at sites:",
+                    paste(sites_with_missingCov,collapse=", ")))
     }
 
   }
@@ -592,11 +578,250 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
   Iy0 <- do.call(cbind, lapply(umf@ylist, 
                                function(x) as.numeric(rowSums(x, na.rm=T)==0)))
 
+  #Design matrices + parameter counts
+  #For f/occupancy
+
+  fInd <- c()
+  sf_no0 <- stateformulas[!fixed0]
+  var_names <- colnames(dmF)[!fixed0] 
+  dmOcc <- lapply(seq_along(sf_no0),function(i){
+                    out <- model.matrix(sf_no0[[i]],
+                            model.frame(~.,site_covs,na.action=stats::na.pass))
+                    colnames(out) <- paste('[',var_names[i],'] ',
+                                           colnames(out), sep='')
+                    fInd <<- c(fInd,rep(i,ncol(out)))
+                    out
+          })
+  fStart <- c(1,1+which(diff(fInd)!=0))
+  fStop <- c(fStart[2:length(fStart)]-1,length(fInd)) 
+  occParams <- unlist(lapply(dmOcc,colnames))
+  nOP <- length(occParams)
+  
+  #For detection
+  dInd <- c()
+  dmDet <- lapply(seq_along(detformulas),function(i){
+                    out <- model.matrix(detformulas[[i]],
+                            model.frame(~.,obs_covs,na.action=stats::na.pass))
+                    colnames(out) <- paste('[',names(umf@ylist)[i],'] ',
+                                           colnames(out),sep='')
+                    dInd <<- c(dInd,rep(i,ncol(out)))
+                    out
+          })
+  dStart <- c(1,1+which(diff(dInd)!=0)) + nOP
+  dStop <- c(dStart[2:length(dStart)]-1,length(dInd)+nOP) 
+  detParams <- unlist(lapply(dmDet,colnames))
+  #nD <- length(detParams)
+  
+  #Combined
+  paramNames <- c(occParams,detParams)
+  nP <- length(paramNames)
+
   mget(c("N","S","J","M","nF","fStart","fStop","fixed0","dmF","dmOcc","dmDet",
          "dStart","dStop","y","yStart","yStop","Iy0","z","nOP","nP","paramNames"))
 })
 
+## occuMS
 
+setMethod("getDesign", "unmarkedFrameOccuMS",
+    function(umf, psiformulas, phiformulas, detformulas, prm, na.rm=TRUE) 
+{
+  
+  N <- numSites(umf)
+  S <- umf@numStates
+  T <- umf@numPrimary
+  R <- obsNum(umf)
+  J <- R / T
+  npsi <- S-1 #Number of free psi values
+  nphi <- S^2 - S #Number of free phi values 
+  np <- S * (S-1) / 2 #Number of free p values 
+
+  if(length(psiformulas) != npsi){
+    stop(paste(npsi,'formulas are required in psiformulas vector'))
+  }
+  
+  if(is.null(phiformulas)){
+    if(prm == 'condbinom') {
+      phiformulas <- rep('~1',6)
+    } else {
+      phiformulas <- rep('~1',S^2-S)
+    }
+  } else if(T>1){
+    if(length(phiformulas)!=nphi){
+      stop(paste(nphi,'formulas are required in phiformulas vector. See data@phiOrder for help'))
+    }
+  }
+
+  if(length(detformulas) != np){
+    stop(paste(np,'formulas are required in detformulas vector'))
+  }
+
+  #get placeholder for empty covs if necessary
+  get_covs <- function(covs, length){
+    if(is.null(covs)){
+      return(data.frame(placeHolder = rep(1, length)))
+    }
+    return(covs)
+  }
+
+  #Function to create list of design matrices from list of formulas
+  get_dm <- function(formulas, covs, namevec){
+
+    apply_func <- function(i){
+      out <- model.matrix(as.formula(formulas[i]), 
+                        model.frame(~., covs, na.action=stats::na.pass))
+      #improve these names
+      colnames(out) <- paste(namevec[i], colnames(out))
+      out
+    }
+
+    out <- lapply(seq_along(formulas), apply_func)
+    names(out) <- namevec
+    out
+  }
+
+  #Generate informative names for p
+  get_p_names <- function(S, prm){
+    if(prm=='condbinom'){
+      return(c('p[1]','p[2]','delta'))
+    }
+    inds <- matrix(NA,nrow=S,ncol=S)
+    inds <- lower.tri(inds,diag=T)
+    inds[,1] <- FALSE
+    inds <- which(inds,arr.ind=T) - 1
+    paste0('p[',inds[,2],inds[,1],']')
+  }
+  
+  #Informative names for phi
+  get_phi_names <- function(np, prm){
+    if(prm=='condbinom'){
+      return(c(paste0('phi[',0:(S-1),']'),paste0('R[',0:(S-1),']')))
+    }
+    vals <- paste0('phi[',rep(0:(S-1),each=S),rep(0:(S-1),S),']')
+    vals <- matrix(vals,nrow=S)
+    diag(vals) <- NA
+    c(na.omit(as.vector(vals)))
+  }
+
+  #Informative names for psi
+  get_psi_names <- function(np, prm){
+    if(prm=='condbinom'){
+      return(c('psi','R'))
+    }
+    paste0('psi[',1:np,']')
+  }
+
+  #Get vector of parameter count indices from a design matrix list
+  get_param_inds <- function(dm_list, offset=0){
+    apply_func <- function(i){
+      rep(i, ncol(dm_list[[i]]))
+    }
+    ind_vec <- unlist(lapply(seq_along(dm_list), apply_func))
+    start_ind <- c(1,1+which(diff(ind_vec)!=0)) + offset
+    stop_ind <- c(start_ind[2:length(start_ind)]-1,length(ind_vec)+offset)
+
+    cbind(start_ind, stop_ind)
+  }
+
+  #Get param names from dm_list
+  get_param_names <- function(dm_list){
+    unlist(lapply(dm_list,colnames))
+  }
+
+  site_covs <- get_covs(siteCovs(umf), N)
+
+  y_site_covs <- get_covs(yearlySiteCovs(umf), N*T)
+  
+  ## in order to drop factor levels that only appear in last year,
+  ## replace last year with NAs and use drop=TRUE
+  y_site_covs[seq(T,N*T,by=T),] <- NA
+  y_site_covs <- as.data.frame(lapply(y_site_covs, function(x) x[,drop = TRUE]))
+  #Actually just remove last year
+  y_site_covs <- y_site_covs[-seq(T,N*T,by=T),,drop=FALSE]
+  
+  obs_covs <- get_covs(obsCovs(umf), N*R)
+  y <- getY(umf)
+  
+  #Handle NAs
+  removed.sites <- NA
+  if(na.rm){
+
+    #Det
+    ylong <- as.vector(t(y))
+    miss_det_cov <- which(apply(obs_covs,1,function(x) any(is.na(x))))
+    miss_y <- which(is.na(ylong))
+    new_na <- miss_det_cov[!miss_det_cov%in%miss_y]
+    if(length(new_na)>0){
+      warning('Some observations removed because covariates were missing')
+      ylong[new_na] <- NA
+      y <- matrix(ylong,nrow=N,ncol=R,byrow=T)
+    }
+
+    #State
+    check_site_na <- function(yrow){
+      if(T==1) return(all(is.na(yrow)))
+      y_mat <- matrix(yrow, nrow=J)
+      pp_na <- apply(y_mat,2,function(x) all(is.na(x)))
+      if(any(pp_na)){
+        return(TRUE)
+      }
+      return(FALSE)
+    }
+
+    all_y_na <- which(apply(y,1, check_site_na ))
+    if(length(all_y_na)>0){
+      warning("Some sites removed because all y values in a primary period were missing") 
+    }
+    miss_covs <- which(apply(site_covs,1,function(x) any(is.na(x))))
+    if(length(miss_covs)>0){
+      warning("Some sites removed because site covariates were missing") 
+    }
+    removed.sites <- sort(unique(c(all_y_na,miss_covs)))
+    
+    if(T>1){
+      if(any(is.na(y_site_covs))){
+        stop("Some sites are missing yearly site covs")
+      }
+    }
+
+    if(length(removed.sites)>0){
+      ymap <- as.vector(t(matrix(rep(1:N,each=R),ncol=R,byrow=T)))
+      site_covs <- site_covs[-removed.sites,]
+      obs_covs <- obs_covs[!ymap%in%removed.sites,]
+      if(T>1){  
+        ysc_map <- as.vector(t(matrix(rep(1:N,each=(T-1)),ncol=(T-1),byrow=T)))
+        y_site_covs <- y_site_covs[!ysc_map%in%removed.sites,]
+      }
+      y <- y[-removed.sites,]
+      N <- nrow(y)
+    }
+
+  }
+
+  dm_state <- get_dm(psiformulas, site_covs, 
+                     get_psi_names(length(psiformulas),prm)) 
+  nSP <- length(get_param_names(dm_state))
+  state_ind <- get_param_inds(dm_state) #generate ind matrix in function
+  
+  nPP <- 0; dm_phi <- list(); phi_ind <- c()
+  if(T>1){
+    dm_phi <- get_dm(phiformulas, y_site_covs,
+                   get_phi_names(length(phiformulas),prm))
+    nPP <- length(get_param_names(dm_phi))
+    phi_ind <- get_param_inds(dm_phi, offset=nSP)
+  }
+
+  dm_det <- get_dm(detformulas, obs_covs, get_p_names(S,prm))
+  det_ind <- get_param_inds(dm_det, offset=(nSP+nPP))
+
+  param_names <- c(get_param_names(dm_state), 
+                   get_param_names(dm_phi),
+                   get_param_names(dm_det))
+
+  mget(c("y","dm_state","state_ind","nSP",
+         "dm_phi","phi_ind","nPP",
+         "dm_det","det_ind","param_names","removed.sites"))
+
+})
 
 
 # pcountOpen
