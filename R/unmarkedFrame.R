@@ -224,30 +224,37 @@ unmarkedFrameOccuFP <- function(y, siteCovs = NULL, obsCovs = NULL, type, mapInf
 }
 
 unmarkedFrameOccuMulti <- function(y, siteCovs = NULL, obsCovs = NULL,
-                                   mapInfo = NULL)
+                                   maxOrder, mapInfo = NULL)
 {
-    ylist <- y
-    y <- ylist[[1]]
-    J <- ncol(y)
-    if(is.null(names(ylist)))
-       names(ylist) <- paste('sp',1:length(ylist),sep='')
-    
-    obsCovs <- covsToDF(obsCovs, "obsCovs", J, nrow(y))
-    
-    #f design matrix guide
-    S <- length(ylist)
-    z <- expand.grid(rep(list(1:0),S))[,S:1]
-    colnames(z) <- names(ylist)
-    fDesign <- model.matrix(as.formula(paste0("~.^",S,"-1")),z)
-    attr(fDesign,'assign') <- NULL
-    zinds <- apply(z,1,function(x) paste(x,collapse=''))
-    rownames(fDesign) <- paste('psi[',zinds,']',sep='')
-    colnames(fDesign) <- paste('f',1:ncol(fDesign),'[',
-                               colnames(fDesign),']',sep='')
-
-    umfmo <- new("unmarkedFrameOccuMulti", y=y, ylist = ylist, fDesign=fDesign,
-                 obsCovs = obsCovs, siteCovs = siteCovs, obsToY = diag(J))
-    return(umfmo)
+  ylist <- y
+  y <- ylist[[1]]
+  J <- ncol(y)
+  if(is.null(names(ylist)))
+    names(ylist) <- paste('sp',1:length(ylist),sep='')
+  
+  obsCovs <- covsToDF(obsCovs, "obsCovs", J, nrow(y))
+  
+  #f design matrix guide
+  S <- length(ylist)
+  z <- expand.grid(rep(list(1:0),S))[,S:1]
+  colnames(z) <- names(ylist)
+  
+  if(missing(maxOrder)) maxOrder <- S
+  if(maxOrder == 1){
+    fDesign <- as.matrix(z)
+  } else {
+    fDesign <- model.matrix(as.formula(paste0("~.^",maxOrder,"-1")),z)
+  }
+  
+  attr(fDesign,'assign') <- NULL
+  zinds <- apply(z,1,function(x) paste(x,collapse=''))
+  rownames(fDesign) <- paste('psi[',zinds,']',sep='')
+  colnames(fDesign) <- paste('f',1:ncol(fDesign),'[',
+                             colnames(fDesign),']',sep='')
+  
+  umfmo <- new("unmarkedFrameOccuMulti", y=y, ylist = ylist, fDesign=fDesign,
+               obsCovs = obsCovs, siteCovs = siteCovs, obsToY = diag(J))
+  return(umfmo)
 }
 
 
@@ -852,8 +859,9 @@ setMethod("plot", c(x="unmarkedFrame", y="missing"),
     y$site <- 1:M
     sites.per.panel <- M/panels
     y$group <- as.factor(round(seq(1,panels,length=M)))
-    y2 <- melt(y, #measure.vars = c("V1", "V2", "V3"),
-        id.vars=c("site","group"))
+    y2 <- reshape(y, idvar=c("site", "group"), varying=list(1:ncol(getY(x))),
+              v.names="value", direction="long")
+    y2$variable <- factor(paste("obs", y2$time))
     if(missing(colorkey))
         colorkey <- list(at=0:(ym+1), labels=list(labels=as.character(0:ym),
             at=(0:ym)+0.5))
@@ -874,8 +882,9 @@ setMethod("plot", c(x="unmarkedFrameOccuMulti", y="missing"),
     colnames(y) <- paste("obs",1:J)
     y$site <- rep(1:M,S)
     y$species <- as.factor(rep(names(x@ylist),each=M))
-    y2 <- melt(y, #measure.vars = c("V1", "V2", "V3"),
-        id.vars=c("site","species"))
+    y2 <- reshape(y, idvar=c("site", "species"), varying=list(1:obsNum(x)),
+              v.names="value", direction="long")
+    y2$variable <- factor(paste("obs", y2$time))
     if(missing(colorkey))
         colorkey <- list(at=0:(ym+1), labels=list(labels=as.character(0:ym),
             at=(0:ym)+0.5))

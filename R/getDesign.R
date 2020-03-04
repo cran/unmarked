@@ -465,7 +465,8 @@ setMethod("handleNA", "unmarkedMultFrame",
 # occuMulti
 
 setMethod("getDesign", "unmarkedFrameOccuMulti",
-    function(umf, detformulas, stateformulas, maxOrder, na.rm=TRUE, warn=FALSE)
+    function(umf, detformulas, stateformulas, maxOrder, na.rm=TRUE, warn=FALSE,
+            return_frames=FALSE, old_fit=NULL)
 {
 
   #Format formulas
@@ -530,8 +531,11 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
                    x
           })
   ylong <- as.data.frame(do.call(rbind,ylong))
-  ylong <- melt(ylong,id.vars=c("site","species"),variable.name='sample')
-  ylong <- dcast(ylong, site + sample ~ species)
+  ylong <- reshape(ylong, idvar=c("site", "species"), varying=list(1:J),
+                   v.names="value", direction="long")
+  ylong <- reshape(ylong, idvar=c("site","time"), v.names="value",
+                    timevar="species", direction="wide")
+  ylong <- ylong[order(ylong$site, ylong$time), ]
 
   #Remove missing values
   if(na.rm){
@@ -568,6 +572,9 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
 
   }
 
+  #Return only the formatted covariate frames for use with model.frames()
+  if(return_frames) return(list(obs_covs=obs_covs, site_covs=site_covs))
+
   #Start-stop indices for sites
   yStart <- c(1,1+which(diff(ylong$site)!=0))
   yStop <- c(yStart[2:length(yStart)]-1,nrow(ylong)) 
@@ -581,12 +588,28 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
   #Design matrices + parameter counts
   #For f/occupancy
 
+  #Get reference covariate frames if necessary (for prediction)
+  site_ref <- site_covs
+  obs_ref <- obs_covs
+  if(!is.null(old_fit)){
+    mo <- old_fit@call$maxOrder
+    if(is.null(mo)) mo <- length(old_fit@data@ylist)
+    dfs <- getDesign(old_fit@data, old_fit@detformulas, old_fit@stateformulas,
+                           maxOrder=mo, return_frames=TRUE)
+    site_ref <- dfs$site_covs
+    obs_ref <- dfs$obs_covs
+  }
+
   fInd <- c()
   sf_no0 <- stateformulas[!fixed0]
   var_names <- colnames(dmF)[!fixed0] 
   dmOcc <- lapply(seq_along(sf_no0),function(i){
+                    fac_col <- site_ref[, sapply(site_ref, is.factor), drop=FALSE]
+                    mf <- model.frame(sf_no0[[i]], site_ref)
+                    xlevs <- lapply(fac_col, levels)
+                    xlevs <- xlevs[names(xlevs) %in% names(mf)]
                     out <- model.matrix(sf_no0[[i]],
-                            model.frame(~.,site_covs,na.action=stats::na.pass))
+                                        model.frame(stats::terms(mf), site_covs, na.action=stats::na.pass, xlev=xlevs))
                     colnames(out) <- paste('[',var_names[i],'] ',
                                            colnames(out), sep='')
                     fInd <<- c(fInd,rep(i,ncol(out)))
@@ -600,8 +623,12 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
   #For detection
   dInd <- c()
   dmDet <- lapply(seq_along(detformulas),function(i){
+                    fac_col <- obs_ref[, sapply(obs_ref, is.factor), drop=FALSE]
+                    mf <- model.frame(detformulas[[i]], obs_ref)
+                    xlevs <- lapply(fac_col, levels)
+                    xlevs <- xlevs[names(xlevs) %in% names(mf)]
                     out <- model.matrix(detformulas[[i]],
-                            model.frame(~.,obs_covs,na.action=stats::na.pass))
+                                        model.frame(stats::terms(mf), obs_covs, na.action=stats::na.pass, xlev=xlevs))
                     colnames(out) <- paste('[',names(umf@ylist)[i],'] ',
                                            colnames(out),sep='')
                     dInd <<- c(dInd,rep(i,ncol(out)))
@@ -623,7 +650,8 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
 ## occuMS
 
 setMethod("getDesign", "unmarkedFrameOccuMS",
-    function(umf, psiformulas, phiformulas, detformulas, prm, na.rm=TRUE) 
+    function(umf, psiformulas, phiformulas, detformulas, prm, na.rm=TRUE,
+             return_frames=FALSE, old_fit=NULL) 
 {
   
   N <- numSites(umf)
@@ -664,11 +692,20 @@ setMethod("getDesign", "unmarkedFrameOccuMS",
   }
 
   #Function to create list of design matrices from list of formulas
-  get_dm <- function(formulas, covs, namevec){
+  get_dm <- function(formulas, covs, namevec, old_covs=NULL){
+    
+    ref_covs <- covs
+    if(!is.null(old_covs)) ref_covs <- old_covs
+
+    fac_col <- ref_covs[, sapply(ref_covs, is.factor), drop=FALSE]
+    xlevs_all <- lapply(fac_col, levels)
 
     apply_func <- function(i){
+      mf <- model.frame(as.formula(formulas[i]), ref_covs)
+      xlevs <- xlevs_all[names(xlevs_all) %in% names(mf)]
       out <- model.matrix(as.formula(formulas[i]), 
-                        model.frame(~., covs, na.action=stats::na.pass))
+              model.frame(stats::terms(mf), covs, 
+                          na.action=stats::na.pass, xlev=xlevs))
       #improve these names
       colnames(out) <- paste(namevec[i], colnames(out))
       out
@@ -797,20 +834,34 @@ setMethod("getDesign", "unmarkedFrameOccuMS",
 
   }
 
+  if(return_frames){ 
+    return(list(site_covs=site_covs, y_site_covs=y_site_covs, obs_covs=obs_covs))
+  }
+
+  old_sc <- old_ysc <- old_oc <- NULL
+  if(!is.null(old_fit)){
+    old_frames <- getDesign(old_fit@data, old_fit@psiformulas, 
+                            old_fit@phiformulas, old_fit@detformulas,
+                            old_fit@parameterization, return_frames=TRUE)
+    old_sc <- old_frames$site_covs
+    old_ysc <- old_frames$y_site_covs
+    old_oc <- old_frames$obs_covs
+  }
+
   dm_state <- get_dm(psiformulas, site_covs, 
-                     get_psi_names(length(psiformulas),prm)) 
+                     get_psi_names(length(psiformulas),prm), old_sc) 
   nSP <- length(get_param_names(dm_state))
   state_ind <- get_param_inds(dm_state) #generate ind matrix in function
   
   nPP <- 0; dm_phi <- list(); phi_ind <- c()
   if(T>1){
     dm_phi <- get_dm(phiformulas, y_site_covs,
-                   get_phi_names(length(phiformulas),prm))
+                   get_phi_names(length(phiformulas),prm), old_ysc)
     nPP <- length(get_param_names(dm_phi))
     phi_ind <- get_param_inds(dm_phi, offset=nSP)
   }
 
-  dm_det <- get_dm(detformulas, obs_covs, get_p_names(S,prm))
+  dm_det <- get_dm(detformulas, obs_covs, get_p_names(S,prm), old_oc)
   det_ind <- get_param_inds(dm_det, offset=(nSP+nPP))
 
   param_names <- c(get_param_names(dm_state), 
