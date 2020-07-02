@@ -1,6 +1,6 @@
 Package: unmarked
-Version: 1.0.0
-Date: 2020-05-02
+Version: 1.0.1
+Date: 2020-06-30
 Type: Package
 Title: Models for Data from Unmarked Animals
 Authors@R: c(
@@ -41,7 +41,7 @@ URL: http://groups.google.com/group/unmarked,
         http://github.com/rbchan/unmarked
 BugReports: https://github.com/rbchan/unmarked/issues
 NeedsCompilation: yes
-Packaged: 2020-05-03 17:05:22 UTC; ken
+Packaged: 2020-06-30 19:02:17 UTC; ken
 Author: Richard Chandler [aut],
   Ken Kellner [aut],
   Ian Fiske [aut],
@@ -57,4 +57,4 @@ Author: Richard Chandler [aut],
   Chris Baker [ctb]
 Maintainer: Andy Royle <aroyle@usgs.gov>
 Repository: CRAN
-Date/Publication: 2020-05-04 11:40:02 UTC
+Date/Publication: 2020-07-02 17:10:02 UTC
