@@ -8,14 +8,14 @@ options(continue=" ")
 
 
 ###################################################
-### code chunk number 2: spp-dist.Rnw:59-61
+### code chunk number 2: spp-dist.Rnw:60-62
 ###################################################
 library(unmarked)
 library(raster)
 
 
 ###################################################
-### code chunk number 3: spp-dist.Rnw:87-95
+### code chunk number 3: spp-dist.Rnw:88-96
 ###################################################
 data(crossbill)
 umf <- unmarkedFrameOccu(
@@ -28,7 +28,7 @@ head(umf)
 
 
 ###################################################
-### code chunk number 4: spp-dist.Rnw:111-112
+### code chunk number 4: spp-dist.Rnw:112-113
 ###################################################
 (fm.occu <- occu(~date ~ele + I(ele^2) + forest, umf))
 
@@ -43,7 +43,7 @@ print(levelplot(elevation ~ x + y, Switzerland, aspect="iso",
 
 
 ###################################################
-### code chunk number 6: spp-dist.Rnw:138-144
+### code chunk number 6: spp-dist.Rnw:139-145
 ###################################################
 library(raster)
 elevation <- rasterFromXYZ(Switzerland[,c("x","y","elevation")],
@@ -83,7 +83,7 @@ print(spplot(psi, col.regions=terrain.colors(100)))
 
 
 ###################################################
-### code chunk number 10: spp-dist.Rnw:283-295
+### code chunk number 10: spp-dist.Rnw:284-296
 ###################################################
 data(issj)
 covs <- scale(issj[,c("elevation", "forest", "chaparral")])
@@ -100,7 +100,7 @@ fm1
 
 
 ###################################################
-### code chunk number 11: spp-dist.Rnw:307-313
+### code chunk number 11: spp-dist.Rnw:308-314
 ###################################################
 data(issj)
 data(cruz)
@@ -111,7 +111,7 @@ elev <- rasterFromXYZ(cruz[,c("x","y","elevation")],
 
 
 ###################################################
-### code chunk number 12: spp-dist.Rnw:335-351
+### code chunk number 12: spp-dist.Rnw:336-352
 ###################################################
 data(cruz)
 elev <- rasterFromXYZ(cruz[,c("x","y","elevation")],
@@ -139,7 +139,7 @@ plot(E, axes=FALSE, col=terrain.colors(100))
 
 
 ###################################################
-### code chunk number 14: spp-dist.Rnw:375-385
+### code chunk number 14: spp-dist.Rnw:376-386
 ###################################################
 cruz2 <- data.frame(cruz[,1:2],
                     chaparral=(cruz$chaparral-0.270)/0.234,
@@ -154,7 +154,7 @@ wireframe(E.N ~ x + y, cruz2,
 
 
 ###################################################
-### code chunk number 15: spp-dist.Rnw:391-392
+### code chunk number 15: spp-dist.Rnw:392-393
 ###################################################
 detach(package:raster)
 

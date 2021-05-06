@@ -10,8 +10,8 @@ setGeneric("handleNA", function(umf, ...) standardGeneric("handleNA"))
 setMethod("getDesign", "unmarkedFrame",
     function(umf, formula, na.rm=TRUE)
 {
-    detformula <- as.formula(formula[[2]])
-    stateformula <- as.formula(paste("~", formula[3], sep=""))
+    detformula <- lme4::nobars(as.formula(formula[[2]]))
+    stateformula <- lme4::nobars(as.formula(paste("~", formula[3], sep="")))
     detVars <- all.vars(detformula)
 
     M <- numSites(umf)
@@ -56,26 +56,39 @@ setMethod("getDesign", "unmarkedFrame",
         V.offset[is.na(V.offset)] <- 0
     }
 
+    #Generate random effects indicator matrices
+    sf_rand <- as.formula(paste("~", formula[3], sep=""))
+    df_rand <- as.formula(formula[[2]])
+    Z_state <- get_Z(sf_rand, siteCovs)
+    Z_det <- get_Z(df_rand, obsCovs)
+
     if (na.rm) {
-        out <- handleNA(umf, X, X.offset, V, V.offset)
+        out <- handleNA(umf, X, X.offset, V, V.offset, Z_state, Z_det)
         y <- out$y
         X <- out$X
         X.offset <- out$X.offset
         V <- out$V
         V.offset <- out$V.offset
+        Z_state <- out$Z_state
+        Z_det <- out$Z_det
         removed.sites <- out$removed.sites
     } else {
         y=getY(umf)
         removed.sites=integer(0)
     }
 
+    if (is.null(X.offset)) X.offset <- rep(0, nrow(X))
+    if (is.null(V.offset)) V.offset <- rep(0, nrow(V))
+
     return(list(y = y, X = X, X.offset = X.offset, V = V,
-                V.offset = V.offset, removed.sites = removed.sites))
+                V.offset = V.offset,
+                Z_state = Z_state, Z_det = Z_det,
+                removed.sites = removed.sites))
 })
 
 
 setMethod("handleNA", "unmarkedFrame",
-          function(umf, X, X.offset, V, V.offset)
+          function(umf, X, X.offset, V, V.offset, Z_state, Z_det)
 {
     obsToY <- obsToY(umf)
     if(is.null(obsToY)) stop("obsToY cannot be NULL to clean data.")
@@ -119,10 +132,13 @@ setMethod("handleNA", "unmarkedFrame",
         X.offset <- X.offset[!sites.to.remove]
         V <- V[!sites.to.remove[rep(1:M, each = R)], ,drop = FALSE]
         V.offset <- V.offset[!sites.to.remove[rep(1:M, each = R)], ]
+        if(nrow(Z_state)>0) Z_state <- Z_state[!sites.to.remove, , drop=FALSE]
+        if(nrow(Z_det)>0) Z_det <- Z_det[!sites.to.remove[rep(1:M, each = R)],,drop=FALSE]
         warning(paste(num.to.remove,"sites have been discarded because of missing data."), call. = FALSE)
         }
 
     list(y = y, X = X, X.offset = X.offset, V = V, V.offset = V.offset,
+         Z_state = Z_state, Z_det = Z_det,
         removed.sites = which(sites.to.remove))
     })
 
@@ -466,7 +482,7 @@ setMethod("handleNA", "unmarkedMultFrame",
 
 setMethod("getDesign", "unmarkedFrameOccuMulti",
     function(umf, detformulas, stateformulas, maxOrder, na.rm=TRUE, warn=FALSE,
-            return_frames=FALSE, old_fit=NULL)
+             newdata=NULL, type="state")
 {
 
   #Format formulas
@@ -515,15 +531,13 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
     obs_covs <- obsCovs(umf)
   }
 
-  #Add site covs to obs covs if we aren't predicting
-  if(is.null(old_fit)){
-    # Record future column names for obsCovs
-    col_names <- c(colnames(obs_covs), colnames(site_covs))
+  #Add site covs to obs covs if we aren't predicting with newdata
+  # Record future column names for obsCovs
+  col_names <- c(colnames(obs_covs), colnames(site_covs))
 
-    # add site covariates at observation-level
-    obs_covs <- cbind(obs_covs, site_covs[rep(1:N, each = J),])
-    colnames(obs_covs) <- col_names
-  }
+  # add site covariates at observation-level
+  obs_covs <- cbind(obs_covs, site_covs[rep(1:N, each = J),])
+  colnames(obs_covs) <- col_names
 
   #Re-format ylist
   index <- 1
@@ -575,9 +589,6 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
 
   }
 
-  #Return only the formatted covariate frames for use with model.frames()
-  if(return_frames) return(list(obs_covs=obs_covs, site_covs=site_covs))
-
   #Start-stop indices for sites
   yStart <- c(1,1+which(diff(ylong$site)!=0))
   yStop <- c(yStart[2:length(yStart)]-1,nrow(ylong))
@@ -588,21 +599,22 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
   Iy0 <- do.call(cbind, lapply(umf@ylist,
                                function(x) as.numeric(rowSums(x, na.rm=T)==0)))
 
-  #Design matrices + parameter counts
-  #For f/occupancy
-
-  #Get reference covariate frames if necessary (for prediction)
+  #Save formatted covariate frames for use in model frames
+  #For predicting with formulas etc
   site_ref <- site_covs
   obs_ref <- obs_covs
-  if(!is.null(old_fit)){
-    mo <- old_fit@call$maxOrder
-    if(is.null(mo)) mo <- length(old_fit@data@ylist)
-    dfs <- getDesign(old_fit@data, old_fit@detformulas, old_fit@stateformulas,
-                           maxOrder=mo, return_frames=TRUE)
-    site_ref <- dfs$site_covs
-    obs_ref <- dfs$obs_covs
+
+  #Assign newdata as the covariate frame if it is provided
+  if(!is.null(newdata)){
+    if(type == "state"){
+      site_covs <- newdata
+    } else if(type == "det"){
+      obs_covs <- newdata
+    }
   }
 
+  #Design matrices + parameter counts
+  #For f/occupancy
   fInd <- c()
   sf_no0 <- stateformulas[!fixed0]
   var_names <- colnames(dmF)[!fixed0]
@@ -654,7 +666,7 @@ setMethod("getDesign", "unmarkedFrameOccuMulti",
 
 setMethod("getDesign", "unmarkedFrameOccuMS",
     function(umf, psiformulas, phiformulas, detformulas, prm, na.rm=TRUE,
-             return_frames=FALSE, old_fit=NULL)
+             newdata=NULL, type="psi")
 {
 
   N <- numSites(umf)
@@ -778,17 +790,26 @@ setMethod("getDesign", "unmarkedFrameOccuMS",
 
   y_site_covs <- get_covs(yearlySiteCovs(umf), N*T)
 
-  ## in order to drop factor levels that only appear in last year,
-  ## replace last year with NAs and use drop=TRUE
-  ## this should only be done when not predicting
-  if(is.null(old_fit)){
-    y_site_covs[seq(T,N*T,by=T),] <- NA
-    y_site_covs <- as.data.frame(lapply(y_site_covs, function(x) x[,drop = TRUE]))
-    #Actually just remove last year
-    y_site_covs <- y_site_covs[-seq(T,N*T,by=T),,drop=FALSE]
+  #Add site covs to yearly site covs
+  if(!is.null(umf@siteCovs)){
+    y_site_covs <- cbind(y_site_covs,
+                         site_covs[rep(1:N, each=T),,drop=FALSE])
   }
 
   obs_covs <- get_covs(obsCovs(umf), N*R)
+  #Add yearly site covs to obs covs
+  if(!is.null(umf@siteCovs) | !is.null(umf@yearlySiteCovs)){
+    obs_covs <- cbind(obs_covs,
+                      y_site_covs[rep(1:(N*T), each=J),,drop=FALSE])
+  }
+
+  ## in order to drop factor levels that only appear in last year,
+  ## replace last year with NAs and use drop=TRUE
+  y_site_covs[seq(T,N*T,by=T),] <- NA
+  y_site_covs <- as.data.frame(lapply(y_site_covs, function(x) x[,drop = TRUE]))
+  #Actually just remove last year
+  y_site_covs <- y_site_covs[-seq(T,N*T,by=T),,drop=FALSE]
+
   y <- getY(umf)
 
   #Handle NAs
@@ -848,34 +869,35 @@ setMethod("getDesign", "unmarkedFrameOccuMS",
 
   }
 
-  if(return_frames){
-    return(list(site_covs=site_covs, y_site_covs=y_site_covs, obs_covs=obs_covs))
-  }
+  site_ref <- site_covs
+  ysc_ref <- y_site_covs
+  obs_ref <- obs_covs
 
-  old_sc <- old_ysc <- old_oc <- NULL
-  if(!is.null(old_fit)){
-    old_frames <- getDesign(old_fit@data, old_fit@psiformulas,
-                            old_fit@phiformulas, old_fit@detformulas,
-                            old_fit@parameterization, return_frames=TRUE)
-    old_sc <- old_frames$site_covs
-    old_ysc <- old_frames$y_site_covs
-    old_oc <- old_frames$obs_covs
+  #Assign newdata as the covariate frame if it is provided
+  if(!is.null(newdata)){
+    if(type == "psi"){
+      site_covs <- newdata
+    } else if(type == "phi"){
+      y_site_covs <- newdata
+    } else if(type == "det"){
+      obs_covs <- newdata
+    }
   }
 
   dm_state <- get_dm(psiformulas, site_covs,
-                     get_psi_names(length(psiformulas),prm), old_sc)
+                     get_psi_names(length(psiformulas),prm), site_ref)
   nSP <- length(get_param_names(dm_state))
   state_ind <- get_param_inds(dm_state) #generate ind matrix in function
 
   nPP <- 0; dm_phi <- list(); phi_ind <- c()
   if(T>1){
     dm_phi <- get_dm(phiformulas, y_site_covs,
-                   get_phi_names(length(phiformulas),prm), old_ysc)
+                   get_phi_names(length(phiformulas),prm), ysc_ref)
     nPP <- length(get_param_names(dm_phi))
     phi_ind <- get_param_inds(dm_phi, offset=nSP)
   }
 
-  dm_det <- get_dm(detformulas, obs_covs, get_p_names(S,prm), old_oc)
+  dm_det <- get_dm(detformulas, obs_covs, get_p_names(S,prm), obs_ref)
   det_ind <- get_param_inds(dm_det, offset=(nSP+nPP))
 
   param_names <- c(get_param_names(dm_state),

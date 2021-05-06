@@ -8,7 +8,7 @@ options(continue=" ")
 
 
 ###################################################
-### code chunk number 2: distsamp.Rnw:106-115
+### code chunk number 2: distsamp.Rnw:107-116
 ###################################################
 library(unmarked)
 dists <- read.csv(system.file("csv", "distdata.csv", package="unmarked"),
@@ -22,14 +22,14 @@ yDat
 
 
 ###################################################
-### code chunk number 3: distsamp.Rnw:126-128
+### code chunk number 3: distsamp.Rnw:127-129
 ###################################################
 (covs <- data.frame(canopyHt = c(5, 8, 3, 2, 4, 7, 5),
 	habitat = c('A','A','A','A','B','B','B'), row.names=letters[1:7]))
 
 
 ###################################################
-### code chunk number 4: distsamp.Rnw:140-143
+### code chunk number 4: distsamp.Rnw:141-144
 ###################################################
 umf <- unmarkedFrameDS(y=as.matrix(yDat), siteCovs=covs, survey="line",
 	dist.breaks=c(0, 5, 10, 15, 20), tlength=rep(100, 7),
@@ -44,7 +44,7 @@ hist(umf, xlab="distance (m)", main="", cex.lab=0.8, cex.axis=0.8)
 
 
 ###################################################
-### code chunk number 6: distsamp.Rnw:189-194
+### code chunk number 6: distsamp.Rnw:190-195
 ###################################################
 hn_Null <- distsamp(~1~1, umf)
 hn_Null <- distsamp(~1~1, umf, keyfun="halfnorm", output="density",
@@ -54,13 +54,13 @@ hn_Hab.Ht <- distsamp(~canopyHt ~habitat, umf)
 
 
 ###################################################
-### code chunk number 7: distsamp.Rnw:209-210
+### code chunk number 7: distsamp.Rnw:210-211
 ###################################################
 haz_Null
 
 
 ###################################################
-### code chunk number 8: distsamp.Rnw:218-223
+### code chunk number 8: distsamp.Rnw:219-224
 ###################################################
 names(haz_Null)
 backTransform(haz_Null, type="state")
@@ -70,7 +70,7 @@ backTransform(linearComb(hn_Hab.Ht['det'], c(1, 5)))
 
 
 ###################################################
-### code chunk number 9: distsamp.Rnw:242-246
+### code chunk number 9: distsamp.Rnw:243-247
 ###################################################
 site.level.density <- predict(hn_Hab.Ht, type="state")$Predicted
 plotArea.inHectares <- 100 * 40 / 10000
@@ -79,7 +79,7 @@ site.level.abundance <- site.level.density * plotArea.inHectares
 
 
 ###################################################
-### code chunk number 10: distsamp.Rnw:254-262
+### code chunk number 10: distsamp.Rnw:255-263
 ###################################################
 getN.hat <- function(fit) {
     d <- predict(fit, type="state")$Predicted
@@ -92,7 +92,7 @@ pb
 
 
 ###################################################
-### code chunk number 11: distsamp.Rnw:285-289
+### code chunk number 11: distsamp.Rnw:286-290
 ###################################################
 head(habConstant <- data.frame(canopyHt = seq(2, 8, length=20),
 	habitat=factor("A", levels=c("A", "B"))))
@@ -101,7 +101,7 @@ head(habConstant <- data.frame(canopyHt = seq(2, 8, length=20),
 
 
 ###################################################
-### code chunk number 12: distsamp.Rnw:295-299
+### code chunk number 12: distsamp.Rnw:296-300
 ###################################################
 (Elambda <- predict(hn_Hab.Ht, type="state", newdata=htConstant,
 	appendData=TRUE))

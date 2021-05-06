@@ -8,7 +8,7 @@ options(continue=" ")
 
 
 ###################################################
-### code chunk number 2: unmarked.Rnw:92-100
+### code chunk number 2: unmarked.Rnw:93-101
 ###################################################
 library(unmarked)
 wt <- read.csv(system.file("csv","widewt.csv", package="unmarked"))
@@ -21,27 +21,27 @@ summary(wt)
 
 
 ###################################################
-### code chunk number 3: unmarked.Rnw:105-107
+### code chunk number 3: unmarked.Rnw:106-108
 ###################################################
 wt <- csvToUMF(system.file("csv","widewt.csv", package="unmarked"),
                long = FALSE, type = "unmarkedFrameOccu")
 
 
 ###################################################
-### code chunk number 4: unmarked.Rnw:114-116
+### code chunk number 4: unmarked.Rnw:115-117
 ###################################################
 pcru <- csvToUMF(system.file("csv","frog2001pcru.csv", package="unmarked"),
                  long = TRUE, type = "unmarkedFrameOccu")
 
 
 ###################################################
-### code chunk number 5: unmarked.Rnw:122-123
+### code chunk number 5: unmarked.Rnw:123-124
 ###################################################
 obsCovs(pcru) <- scale(obsCovs(pcru))
 
 
 ###################################################
-### code chunk number 6: unmarked.Rnw:131-134
+### code chunk number 6: unmarked.Rnw:132-135
 ###################################################
 fm1 <- occu(~1 ~1, pcru)
 fm2 <- occu(~ MinAfterSunset + Temperature ~ 1, pcru)
@@ -49,33 +49,33 @@ fm2
 
 
 ###################################################
-### code chunk number 7: unmarked.Rnw:149-150
+### code chunk number 7: unmarked.Rnw:150-151
 ###################################################
 backTransform(fm2, 'state')
 
 
 ###################################################
-### code chunk number 8: unmarked.Rnw:168-169
+### code chunk number 8: unmarked.Rnw:169-170
 ###################################################
 backTransform(linearComb(fm2, coefficients = c(1,0,0), type = 'det'))
 
 
 ###################################################
-### code chunk number 9: unmarked.Rnw:177-179
+### code chunk number 9: unmarked.Rnw:178-180
 ###################################################
 newData <- data.frame(MinAfterSunset = 0, Temperature = -2:2)
 round(predict(fm2, type = 'det', newdata = newData, appendData=TRUE), 2)
 
 
 ###################################################
-### code chunk number 10: unmarked.Rnw:187-189
+### code chunk number 10: unmarked.Rnw:188-190
 ###################################################
 confint(fm2, type='det')
 confint(fm2, type='det', method = "profile")
 
 
 ###################################################
-### code chunk number 11: unmarked.Rnw:198-201
+### code chunk number 11: unmarked.Rnw:199-202
 ###################################################
 fms <- fitList('psi(.)p(.)' = fm1, 'psi(.)p(Time+Temp)' = fm2)
 modSel(fms)
@@ -83,7 +83,7 @@ predict(fms, type='det', newdata = newData)
 
 
 ###################################################
-### code chunk number 12: unmarked.Rnw:208-221
+### code chunk number 12: unmarked.Rnw:209-222
 ###################################################
 chisq <- function(fm) {
     umf <- getData(fm)
@@ -101,7 +101,7 @@ chisq <- function(fm) {
 
 
 ###################################################
-### code chunk number 13: unmarked.Rnw:246-250
+### code chunk number 13: unmarked.Rnw:247-251
 ###################################################
 re <- ranef(fm2)
 EBUP <- bup(re, stat="mode")
