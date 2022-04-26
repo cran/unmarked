@@ -36,6 +36,7 @@ head(umf)
 ###################################################
 ### code chunk number 5: swiss
 ###################################################
+library(lattice)
 data(Switzerland)
 print(levelplot(elevation ~ x + y, Switzerland, aspect="iso",
                 xlab="Easting (m)", ylab="Northing (m)",
@@ -43,7 +44,7 @@ print(levelplot(elevation ~ x + y, Switzerland, aspect="iso",
 
 
 ###################################################
-### code chunk number 6: spp-dist.Rnw:139-145
+### code chunk number 6: spp-dist.Rnw:140-146
 ###################################################
 library(raster)
 elevation <- rasterFromXYZ(Switzerland[,c("x","y","elevation")],
@@ -83,7 +84,7 @@ print(spplot(psi, col.regions=terrain.colors(100)))
 
 
 ###################################################
-### code chunk number 10: spp-dist.Rnw:284-296
+### code chunk number 10: spp-dist.Rnw:285-297
 ###################################################
 data(issj)
 covs <- scale(issj[,c("elevation", "forest", "chaparral")])
@@ -100,7 +101,7 @@ fm1
 
 
 ###################################################
-### code chunk number 11: spp-dist.Rnw:308-314
+### code chunk number 11: spp-dist.Rnw:309-315
 ###################################################
 data(issj)
 data(cruz)
@@ -111,7 +112,7 @@ elev <- rasterFromXYZ(cruz[,c("x","y","elevation")],
 
 
 ###################################################
-### code chunk number 12: spp-dist.Rnw:336-352
+### code chunk number 12: spp-dist.Rnw:337-353
 ###################################################
 data(cruz)
 elev <- rasterFromXYZ(cruz[,c("x","y","elevation")],
@@ -139,7 +140,7 @@ plot(E, axes=FALSE, col=terrain.colors(100))
 
 
 ###################################################
-### code chunk number 14: spp-dist.Rnw:376-386
+### code chunk number 14: spp-dist.Rnw:377-387
 ###################################################
 cruz2 <- data.frame(cruz[,1:2],
                     chaparral=(cruz$chaparral-0.270)/0.234,
@@ -154,7 +155,7 @@ wireframe(E.N ~ x + y, cruz2,
 
 
 ###################################################
-### code chunk number 15: spp-dist.Rnw:392-393
+### code chunk number 15: spp-dist.Rnw:393-394
 ###################################################
 detach(package:raster)
 

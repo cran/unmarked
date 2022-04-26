@@ -27,8 +27,6 @@
 \alias{plot,unmarkedFrame,missing-method}
 \alias{plot,unmarkedFrameOccuMulti,missing-method}
 \alias{plot,unmarkedFrameOccuTTD,missing-method}
-\alias{powerAnalysis}
-\alias{powerAnalysis,formula,unmarkedFramePCount,numeric-method}
 \alias{projection,unmarkedFrame-method}
 \alias{projection}
 \alias{siteCovs,unmarkedFrame-method}
@@ -60,10 +58,13 @@
 \alias{summary,unmarkedFrameOccuTTD-method}
 \alias{[,unmarkedFrameOccuMulti,missing,numeric,missing-method}
 \alias{[,unmarkedFrameOccuTTD,missing,numeric,missing-method}
+\alias{[,unmarkedFrameGDR,missing,numeric,missing-method}
 \alias{[,unmarkedFrameOccuMS,numeric,missing,missing-method}
 \alias{[,unmarkedFrameOccuTTD,numeric,missing,missing-method}
 \alias{[,unmarkedFrameOccuMulti,numeric,missing,missing-method}
 \alias{[,unmarkedFrameDSO,numeric,missing,missing-method}
+\alias{[,unmarkedFrameGDR,numeric,missing,missing-method}
+\alias{[,unmarkedFrameGDR,logical,missing,missing-method}
 
 \title{Class "unmarkedFrame" }
 \description{Methods for manipulating, summarizing and viewing

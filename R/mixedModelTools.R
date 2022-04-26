@@ -1,29 +1,3 @@
-model_frame <- function(formula, data, newdata=NULL){
-
-  formula <- lme4::nobars(formula)
-  mf <- model.frame(formula, data, na.action=stats::na.pass)
-
-  if(is.null(newdata)){
-    return(mf)
-  }
-
-  check_newdata(newdata, formula)
-  model.frame(stats::terms(mf), newdata, na.action=stats::na.pass,
-                        xlev=get_xlev(data, mf))
-}
-
-model_matrix <- function(formula, data, newdata=NULL){
-  mf <- model_frame(formula, data, newdata)
-  model.matrix(lme4::nobars(formula), mf)
-}
-
-model_offset <- function(formula, data, newdata=NULL){
-  mf <- model_frame(formula, data, newdata)
-  out <- model.offset(mf)
-  if(is.null(out)) out <- rep(0, nrow(mf))
-  out
-}
-
 get_xlev <- function(data, model_frame){
   fac_col <- data[, sapply(data, is.factor), drop=FALSE]
   xlevs <- lapply(fac_col, levels)
@@ -86,7 +60,7 @@ check_formula <- function(formula, data){
   rand <- lme4::findbars(formula)
   if(is.null(rand)) return(invisible())
 
-  char <- paste(deparse(formula))
+  char <- paste(formula, collapse=" ")
   if(grepl(":|/", char)){
     stop("Nested random effects (using / and :) are not supported",
          call.=FALSE)
@@ -98,28 +72,14 @@ check_formula <- function(formula, data){
   }
 }
 
-check_newdata <- function(newdata, formula){
-  inp_vars <- names(newdata)
-  term_vars <- all.vars(formula)
-  not_found <- ! term_vars %in% inp_vars
-  if(any(not_found)){
-    stop(paste0("Required variables not found in newdata: ",
-               paste(term_vars[not_found], collapse=", ")), call.=FALSE)
-  }
-}
-
 split_formula <- function(formula){
   if(length(formula) != 3) stop("Double right-hand side formula required")
-  p1 <- as.formula(formula[[2]])
-  p2 <- as.formula(paste0(formula[[1]], deparse(formula[[3]])))
+  char <- lapply(formula, function(x){
+            paste(deparse(x), collapse="")
+          })
+  p1 <- as.formula(char[[2]])
+  p2 <- as.formula(paste("~", char[[3]]))
   list(p1, p2)
-}
-
-nobars_double <- function(form){
-  spl <- split_formula(form)
-  spl <- lapply(spl, lme4::nobars)
-  spl <- paste(unlist(lapply(spl, as.character)),collapse="")
-  as.formula(spl)
 }
 
 is_tmb_fit <- function(mod){
@@ -210,19 +170,27 @@ fit_TMB <- function(model, data, params, random,
 
   fixed_sub <- names(params)[!names(params) %in% random]
   nfixed <- length(unlist(params[fixed_sub]))
+  list_fixed_only <- params[fixed_sub]
+  plengths <- sapply(list_fixed_only, length)
+  starts_order <- rep(fixed_sub, plengths)
+
+  if(!is.null(starts)){
+    if(length(starts) != nfixed){
+      stop(paste("The number of starting values should be", nfixed))
+    }
+    list_fixed_only <- params[fixed_sub]
+    list_fixed_only <- utils::relist(starts, list_fixed_only)
+    params <- replace(params, names(list_fixed_only), list_fixed_only)
+  }
 
   tmb_mod <- TMB::MakeADFun(data = c(model = model, data),
                             parameters = params,
                             random = random,
                             silent=TRUE,
                             DLL = "unmarked_TMBExports")
+  tmb_mod$starts_order <- starts_order
 
-  if(is.null(starts)) starts <- rep(0, nfixed)
-  if(length(starts) != nfixed){
-    stop(paste("The number of starting values should be", nfixed))
-  }
-
-  opt <- optim(starts, fn=tmb_mod$fn, gr=tmb_mod$gr, method=method, ...)
+  opt <- optim(tmb_mod$par, fn=tmb_mod$fn, gr=tmb_mod$gr, method=method, ...)
 
   sdr <- TMB::sdreport(tmb_mod, getJointPrecision=TRUE)
   sdr$par <- tmb_mod$par
@@ -330,3 +298,71 @@ setMethod("randomTerms", "unmarkedFit", function(object, type, level=0.95, ...){
   rownames(out) <- NULL
   out
 })
+
+get_ranef_inputs <- function(forms, datalist, dms, Zs){
+  stopifnot(!is.null(names(datalist)))
+  mods <- names(datalist)
+  ngv <- lapply(forms, get_group_vars)
+  names(ngv) <- paste0("n_group_vars_",mods)
+  ngroup <- mapply(get_nrandom, forms, datalist, SIMPLIFY=FALSE)
+  names(ngroup) <- paste0("n_grouplevels_",mods)
+  names(dms) <- paste0("X_", mods)
+  names(Zs) <- paste0("Z_", mods)
+
+  dat <- c(ngv, ngroup, dms, Zs)
+
+  beta <- lapply(dms, function(x) rep(0, ncol(x)))
+  names(beta) <- paste0("beta_", mods)
+  b <- lapply(ngroup, function(x) rep(0, sum(x)))
+  names(b) <- paste0("b_", mods)
+  lsigma <- lapply(ngv, function(x) rep(0, x))
+  names(lsigma) <- paste0("lsigma_", mods)
+
+  pars <- c(beta, b, lsigma)
+
+  rand_ef <- paste0(names(b))[sapply(forms, has_random)]
+  if(length(rand_ef) == 0) rand_ef <- NULL
+
+  list(data=dat, pars=pars, rand_ef=rand_ef)
+}
+
+add_covariates <- function(covs_long, covs_short, n){
+
+  if(is.null(covs_short)){
+    return(covs_long)
+  }
+
+  if(is.null(covs_long)){
+    covs_long <- data.frame(.dummy=rep(1, n))
+  } else {
+    stopifnot(nrow(covs_long) == n)
+  }
+
+  exp_factor <- nrow(covs_long) / nrow(covs_short)
+  stopifnot(exp_factor > 1)
+
+  rep_idx <- rep(1:nrow(covs_short), each=exp_factor)
+
+  to_add <- covs_short[rep_idx, ]
+  stopifnot(nrow(covs_long) == nrow(to_add))
+
+  cbind(covs_long, to_add)
+}
+
+vcov_TMB <- function(object, type, fixedOnly){
+
+  if(!missing(type)){
+    return(vcov(object[type], fixedOnly=fixedOnly))
+  }
+
+  v <- get_joint_cov(TMB::sdreport(object@TMB, getJointPrecision=TRUE))
+  no_sig <- !grepl("lsigma_",colnames(v))
+  v <- v[no_sig, no_sig]
+  colnames(v) <- rownames(v) <- names(coef(object, fixedOnly=FALSE))
+
+  if(fixedOnly){
+    no_re <- !grepl("b_", colnames(v))
+    v <- v[no_re, no_re]
+  }
+  v
+}
