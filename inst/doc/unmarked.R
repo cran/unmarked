@@ -1,15 +1,26 @@
-### R code from vignette source 'unmarked.Rnw'
+## ----echo=FALSE---------------------------------------------------------------
+options(rmarkdown.html_vignette.check_title = FALSE)
 
-###################################################
-### code chunk number 1: unmarked.Rnw:1-3
-###################################################
-options(width=70)
-options(continue=" ")
+## ---- echo=FALSE--------------------------------------------------------------
+tab1 <- data.frame(
+  Model=c("Occupancy", "Royle-Nichols", "Point Count", "Distance-sampling",
+          "Generalized distance-sampling", "Arbitrary multinomial-Poisson",
+          "Colonization-extinction", "Generalized multinomial-mixture"),
+  `Fitting Function`=c("occu","occuRN","pcount","distsamp","gdistsamp",
+                       "multinomPois","colext","gmultmix"),
+  Data=c("unmarkedFrameOccu","unmarkedFrameOccu","unmarkedFramePCount",
+         "unmarkedFrameDS","unmarkedFrameGDS","unmarkedFrameMPois",
+         "unmarkedMultFrame","unmarkedFrameGMM"),
+  Citation=c("@mackenzie_estimating_2002","@royle_estimating_2003",
+             "@royle_n-mixture_2004","@royle_modeling_2004",
+             "@chandlerEA_2011","@royle_generalized_2004",
+             "@mackenzie_estimating_2003","@royle_generalized_2004"),
+        check.names=FALSE)
 
+knitr::kable(tab1, format='markdown', align="lccc",
+             caption="Table 1. Models handled by unmarked.")
 
-###################################################
-### code chunk number 2: unmarked.Rnw:93-101
-###################################################
+## -----------------------------------------------------------------------------
 library(unmarked)
 wt <- read.csv(system.file("csv","widewt.csv", package="unmarked"))
 y <- wt[,2:4]
@@ -19,75 +30,50 @@ obsCovs <- list(date=wt[,c("date.1", "date.2", "date.3")],
 wt <- unmarkedFrameOccu(y = y, siteCovs = siteCovs, obsCovs = obsCovs)
 summary(wt)
 
-
-###################################################
-### code chunk number 3: unmarked.Rnw:106-108
-###################################################
+## -----------------------------------------------------------------------------
 wt <- csvToUMF(system.file("csv","widewt.csv", package="unmarked"),
                long = FALSE, type = "unmarkedFrameOccu")
 
-
-###################################################
-### code chunk number 4: unmarked.Rnw:115-117
-###################################################
+## -----------------------------------------------------------------------------
 pcru <- csvToUMF(system.file("csv","frog2001pcru.csv", package="unmarked"),
                  long = TRUE, type = "unmarkedFrameOccu")
 
-
-###################################################
-### code chunk number 5: unmarked.Rnw:123-124
-###################################################
+## -----------------------------------------------------------------------------
 obsCovs(pcru) <- scale(obsCovs(pcru))
 
-
-###################################################
-### code chunk number 6: unmarked.Rnw:132-135
-###################################################
+## -----------------------------------------------------------------------------
 fm1 <- occu(~1 ~1, pcru)
 fm2 <- occu(~ MinAfterSunset + Temperature ~ 1, pcru)
 fm2
 
-
-###################################################
-### code chunk number 7: unmarked.Rnw:150-151
-###################################################
+## -----------------------------------------------------------------------------
 backTransform(fm2, 'state')
 
-
-###################################################
-### code chunk number 8: unmarked.Rnw:169-170
-###################################################
+## -----------------------------------------------------------------------------
 backTransform(linearComb(fm2, coefficients = c(1,0,0), type = 'det'))
 
-
-###################################################
-### code chunk number 9: unmarked.Rnw:178-180
-###################################################
+## -----------------------------------------------------------------------------
 newData <- data.frame(MinAfterSunset = 0, Temperature = -2:2)
 round(predict(fm2, type = 'det', newdata = newData, appendData=TRUE), 2)
 
+## ---- eval=FALSE--------------------------------------------------------------
+#  confint(fm2, type='det')
+#  confint(fm2, type='det', method = "profile")
 
-###################################################
-### code chunk number 10: unmarked.Rnw:188-190
-###################################################
+## ---- echo=FALSE--------------------------------------------------------------
 confint(fm2, type='det')
-confint(fm2, type='det', method = "profile")
+nul <- capture.output(ci <- confint(fm2, type='det', method = "profile"))
+ci
 
-
-###################################################
-### code chunk number 11: unmarked.Rnw:199-202
-###################################################
+## -----------------------------------------------------------------------------
 fms <- fitList('psi(.)p(.)' = fm1, 'psi(.)p(Time+Temp)' = fm2)
 modSel(fms)
 predict(fms, type='det', newdata = newData)
 
-
-###################################################
-### code chunk number 12: unmarked.Rnw:209-222
-###################################################
+## ---- warning=FALSE-----------------------------------------------------------
 chisq <- function(fm) {
-    umf <- getData(fm)
-    y <- getY(umf)
+    umf <- fm@data
+    y <- umf@y
     y[y>1] <- 1
     sr <- fm@sitesRemoved
     if(length(sr)>0)
@@ -99,13 +85,8 @@ chisq <- function(fm) {
 
 (pb <- parboot(fm2, statistic=chisq, nsim=100, parallel=FALSE))
 
-
-###################################################
-### code chunk number 13: unmarked.Rnw:247-251
-###################################################
+## -----------------------------------------------------------------------------
 re <- ranef(fm2)
 EBUP <- bup(re, stat="mode")
-CI <- confint(re, level=0.9)
-rbind(PAO = c(Estimate = sum(EBUP), colSums(CI)) / 130)
-
+sum(EBUP) / numSites(pcru)
 

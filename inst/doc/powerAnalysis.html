@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Ken Kellner" />
+
+<meta name="date" content="2021-09-03" />
+
+<title>Power Analysis in unmarked</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Power Analysis in unmarked</h1>
+<h4 class="author">Ken Kellner</h4>
+<h4 class="date">September 3, 2021</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#hypothesis-testing"><span class="toc-section-number">1</span> Hypothesis Testing</a><ul>
+<li><a href="#wald-tests"><span class="toc-section-number">1.1</span> Wald tests</a></li>
+<li><a href="#making-a-conclusion"><span class="toc-section-number">1.2</span> Making a conclusion</a></li>
+<li><a href="#types-of-error"><span class="toc-section-number">1.3</span> Types of error</a></li>
+</ul></li>
+<li><a href="#power-analysis"><span class="toc-section-number">2</span> Power Analysis</a><ul>
+<li><a href="#overview-of-power-analysis"><span class="toc-section-number">2.1</span> Overview of power analysis</a></li>
+<li><a href="#power-analysis-inputs-in-unmarked"><span class="toc-section-number">2.2</span> Power analysis inputs in unmarked</a></li>
+<li><a href="#simulating-datasets"><span class="toc-section-number">2.3</span> Simulating datasets</a><ul>
+<li><a href="#customizing-the-covariates"><span class="toc-section-number">2.3.1</span> Customizing the covariates</a></li>
+<li><a href="#models-that-require-more-information"><span class="toc-section-number">2.3.2</span> Models that require more information</a></li>
+</ul></li>
+<li><a href="#conducting-a-power-analysis"><span class="toc-section-number">2.4</span> Conducting a power analysis</a><ul>
+<li><a href="#varying-the-sample-size"><span class="toc-section-number">2.4.1</span> Varying the sample size</a></li>
+<li><a href="#combining-unmarkedpower-objects"><span class="toc-section-number">2.4.2</span> Combining unmarkedPower objects</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#conclusion"><span class="toc-section-number">3</span> Conclusion</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="hypothesis-testing" class="section level1">
+<h1><span class="header-section-number">1</span> Hypothesis Testing</h1>
+<p>For many analyses in <code>unmarked</code>, a primary goal is to determine if a certain covariate affects the state or detection process. For example, we may want to determine if elevation has an effect on probability of site occupancy, or if wind speed has an effect on detection. We can formulate this idea as set of statistical hypotheses: the null hypothesis (<span class="math inline">\(H_0\)</span>) and the alternative hypothesis (<span class="math inline">\(H_a\)</span>):</p>
+<ul>
+<li><span class="math inline">\(H_0\)</span>: There is no effect of elevation on occupancy</li>
+<li><span class="math inline">\(H_a\)</span>: Elevation has an effect on occupancy</li>
+</ul>
+<p>In order to test these hypotheses, we must collected appropriate data, perhaps by sampling a series of sites at varying elevation for the presence of the species. We can then fit a model in <code>unmarked</code>, specifying in the formula that we are interested in estimating the effect of elevation on occupancy. For example, here is a simple model fit to the <code>crossbill</code> presence-absence dataset included with <code>unmarked</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">set.seed</span>(<span class="dv">123</span>)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(unmarked)</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="kw">data</span>(crossbill)</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">umf &lt;-<span class="st"> </span><span class="kw">unmarkedFrameOccu</span>(<span class="dt">y=</span>crossbill[,<span class="dv">11</span><span class="op">:</span><span class="dv">13</span>], </a>
+<a class="sourceLine" id="cb1-6" title="6">                         <span class="dt">siteCovs=</span><span class="kw">data.frame</span>(<span class="dt">elev=</span><span class="kw">scale</span>(crossbill<span class="op">$</span>ele)))</a>
+<a class="sourceLine" id="cb1-7" title="7">(mod &lt;-<span class="st"> </span><span class="kw">occu</span>(<span class="op">~</span><span class="dv">1</span><span class="op">~</span>elev, umf))</a></code></pre></div>
+<pre><code>## 
+## Call:
+## occu(formula = ~1 ~ elev, data = umf)
+## 
+## Occupancy:
+##             Estimate    SE     z  P(&gt;|z|)
+## (Intercept)   -1.223 0.168 -7.27 3.61e-13
+## elev           0.594 0.166  3.59 3.35e-04
+## 
+## Detection:
+##  Estimate    SE    z P(&gt;|z|)
+##     0.326 0.186 1.75  0.0798
+## 
+## AIC: 480.8533</code></pre>
+<div id="wald-tests" class="section level2">
+<h2><span class="header-section-number">1.1</span> Wald tests</h2>
+<p>In the code{unmarked} output, we obtain an estimate (<span class="math inline">\(\hat{\theta}\)</span>) of the regression coefficient associated with elevation (<code>elev</code>) along with its standard error. Our null hypothesis is that elevation has no effect on occupancy, i.e. <span class="math inline">\(\theta_0 = 0\)</span>. With this information, we can conduct a statistical hypothesis test called a Wald test: <span class="math display">\[
+\sqrt{W} = \frac{(\hat{\theta} -\theta_0)}{se(\hat{\theta})}
+\]</span></p>
+<p>Or simplified: <span class="math display">\[
+\sqrt{W} = \frac{(0.5939 - 0)}{0.1656} = 3.59
+\]</span></p>
+<p>It turns out that the square root of the Wald statistic, <span class="math inline">\(\sqrt{W}\)</span>, follows a standard normal distribution. Thus, we can calculate the probability that our observed statistic, <span class="math inline">\(\sqrt{W} = 3.59\)</span>, occurred by chance assuming that the null hypothesis <span class="math inline">\(\theta = 0\)</span> is true. In R, for a two-tailed test, this can be calculated as:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">z =<span class="st"> </span>sqrt_w =<span class="st"> </span><span class="kw">coef</span>(mod)[<span class="dv">2</span>] <span class="op">/</span><span class="st"> </span><span class="kw">SE</span>(mod)[<span class="dv">2</span>]</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="dv">2</span><span class="op">*</span><span class="kw">pnorm</span>(<span class="kw">abs</span>(z), <span class="dt">lower.tail=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<pre><code>##    psi(elev) 
+## 0.0003350055</code></pre>
+<p>This is the p-value. These values we calculated manually match the results that <code>unmarked</code> gave us in the summary output.</p>
+</div>
+<div id="making-a-conclusion" class="section level2">
+<h2><span class="header-section-number">1.2</span> Making a conclusion</h2>
+<p>Before conducting our study, we should have defined a threshold p-value (the significance level or <span class="math inline">\(\alpha\)</span>) below which we reject the null hypothesis. Traditionally, <span class="math inline">\(\alpha = 0.05\)</span>. Our calculated p-value is less than <span class="math inline">\(\alpha\)</span>, so we reject the null hypothesis that elevation has no effect on occupancy.</p>
+</div>
+<div id="types-of-error" class="section level2">
+<h2><span class="header-section-number">1.3</span> Types of error</h2>
+<p>There are two types of errors that we could be making at this point:</p>
+<ol style="list-style-type: decimal">
+<li>Type I error: We reject the null hypothesis when in fact it is true. Type I error is conceptually the same as <span class="math inline">\(\alpha\)</span>. If we set <span class="math inline">\(\alpha\)</span> larger, we have a greater chance of Type I error.</li>
+<li>Type II error: We fail to reject the null hypothesis when in fact it is false. This can occur, for example, if we did not have enough data to detect an effect.</li>
+</ol>
+<p>In this vignette, we are most concerned with Type II error. How do we know we have enough data to detect if a covariate has a certain effect? To answer this question we can use power analysis.</p>
+</div>
+</div>
+<div id="power-analysis" class="section level1">
+<h1><span class="header-section-number">2</span> Power Analysis</h1>
+<div id="overview-of-power-analysis" class="section level2">
+<h2><span class="header-section-number">2.1</span> Overview of power analysis</h2>
+<p>Statistical power is defined as 1 - Type II error. So more power means less chance of false negatives, i.e., less chance of failing to reject the null hypothesis when it is false. Statistical power depends on three other pieces of information:</p>
+<ol style="list-style-type: decimal">
+<li>The effect size: the magnitude of the effect of the covariate. The larger the effect, the more power we have to detect it.</li>
+<li>The sample size: how many sites or surveys we’ve done. The more samples, the more power we have.</li>
+<li>The significance level, <span class="math inline">\(\alpha\)</span>. The smaller we make <span class="math inline">\(\alpha\)</span>, the less power we have: thus there is a tradeoff between Type I and Type II error.</li>
+</ol>
+<p>Of the three factors (2) is the one that makes the most sense for researchers to manipulate in order to increase power. However, increasing the sample size requires additional effort and money - so how large does it need to be?</p>
+<p>For many statistical models, mathematical formulas have been developed so that power can be calculated for any combination of values for factors 1-3 above. This is not true for most occupancy and abundance models available in <code>unmarked</code> (but see <span class="citation">Guillera-Arroita and Lahoz-Monfort (2012)</span> for one example with occupancy models). Thus, <code>unmarked</code> uses a simulation-based approach for estimating power under various combinations of values for effect size, sample size, and significance level.</p>
+</div>
+<div id="power-analysis-inputs-in-unmarked" class="section level2">
+<h2><span class="header-section-number">2.2</span> Power analysis inputs in unmarked</h2>
+<p>When conducting power analysis, <code>unmarked</code> needs three pieces of information corresponding to 1-3 above. Of these, (1) the effect size and (3) the significance level are easy to set depending on our hypotheses and desired Type I error. The sample size (2) is trickier: it isn’t enough to just provide the number of sites, since datasets in <code>unmarked</code> also require a variety of other information such as number of surveys per site, number of distance bins, or number of primary periods. Thus, power analysis in <code>unmarked</code> requires a complete dataset in the form of an appropriate <code>unmarkedFrame</code>.</p>
+<p>In some cases, we may want to calculate power using an already collected dataset. Importantly, this step must be done  running our final analysis. If power analysis is done after the final model is fit, and the effect sizes are defined based on what was observed in that fitted model, we have done what is called a <em>post-hoc</em> power analysis, which is a bad idea (see <a href="https://statmodeling.stat.columbia.edu/2018/09/24/dont-calculate-post-hoc-power-using-observed-estimate-effect-size/">this post</a> for an example of why this is so bad). In most cases, the real value of power analysis comes before we actually go collect any data, because it helps us decide how much data to collect. But how to get an <code>unmarkedFrame</code> of data before we’ve done our study? Once again the solution is simulation: <code>unmarked</code> provides a set of tools for simulating datasets for any of its supported model types.</p>
+</div>
+<div id="simulating-datasets" class="section level2">
+<h2><span class="header-section-number">2.3</span> Simulating datasets</h2>
+<p>To simulate a dataset for a given <code>unmarked</code> model, we need at a minimum four pieces of information:</p>
+<ol style="list-style-type: decimal">
+<li>The type of model (the name of the corresponding fitting function)</li>
+<li>The covariates affecting each submodel, such as occupancy or detection (supplied as formulas)</li>
+<li>The effect size for each intercept and covariate</li>
+<li>Study design parameters such as number of sites and number of surveys</li>
+</ol>
+<p>For example, suppose we want to simulate an occupancy dataset (<code>&quot;occu&quot;</code>) in which site occupancy is affected by elevation. The first step is to organize the model structure as a list of formulas, one per submodel. This list must be named in a specific way depending on the model type. To get the required names for a given model, fit an example of that model (the documentation should have one) and call <code>names(model)</code>. A single-season occupancy model requires a list with two named components: <code>state</code> and <code>det</code>. We supply a formula for each including an effect of elevation on occupancy (note we could name this whatever we want, here we call it <code>elev</code>).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">forms &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">state=</span><span class="op">~</span>elev, <span class="dt">det=</span><span class="op">~</span><span class="dv">1</span>)</a></code></pre></div>
+<p>Next we must tell <code>unmarked</code> what the values for the intercept and regression coefficients in each submodel should be. Once again, this is a named list, one element for each submodel. Within each element we need a named vector with names that match the covariates in our list of formulas above. Note also that each must include a value for the intercept term (this can be named <code>intercept</code> or <code>Intercept</code>). If we are not sure exactly how to structure this list, just skip it for now: <code>unmarked</code> can generate a template for us to fill in later.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">coefs &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">state=</span><span class="kw">c</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">elev=</span><span class="op">-</span><span class="fl">0.4</span>), <span class="dt">det=</span><span class="kw">c</span>(<span class="dt">intercept=</span><span class="dv">0</span>))</a></code></pre></div>
+<p>Finally, we need to give <code>unmarked</code> information about the study design. This is pretty simple: we just need a list containing values for <code>M</code>, the number of sites, and <code>J</code> the number of surveys per site. For models with multiple primary periods, we’d also need a value of <code>T</code>, the number of primary periods.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">design &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">M=</span><span class="dv">300</span>, <span class="dt">J=</span><span class="dv">8</span>) <span class="co"># 300 sites, 8 occasions per site</span></a></code></pre></div>
+<p>We’re now ready to simulate a dataset. To do this we use the <code>simulate</code> function, providing as arguments the name of the model <code>&quot;occu&quot;</code> and the three lists we constructed above. Actually, first, let’s not supply the <code>coefs</code> list, to show how <code>unmarked</code> will generate a template for us to use:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">simulate</span>(<span class="st">&quot;occu&quot;</span>, <span class="dt">formulas=</span>forms, <span class="dt">design=</span>design)</a></code></pre></div>
+<pre><code>## coefs argument should be a named list of named vectors, with the following structure
+##         (replacing 0s with your desired coefficient values):
+## 
+## $state
+## intercept      elev 
+##         0         0 
+## 
+## $det
+## intercept 
+##         0 
+## 
+## Error : Supply coefs argument as specified above</code></pre>
+<p>Once we have our covariates set up properly, add them to the function call:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">occu_umf &lt;-<span class="st"> </span><span class="kw">simulate</span>(<span class="st">&quot;occu&quot;</span>, <span class="dt">formulas=</span>forms, <span class="dt">coefs=</span>coefs, <span class="dt">design=</span>design)</a>
+<a class="sourceLine" id="cb10-2" title="2"><span class="kw">head</span>(occu_umf)</a></code></pre></div>
+<pre><code>## Data frame representation of unmarkedFrame object.
+##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8       elev
+## 1    0   0   0   0   0   0   0   0 -0.7152422
+## 2    0   0   0   0   0   0   0   0 -0.7526890
+## 3    0   0   0   0   1   0   1   0 -0.9385387
+## 4    0   0   0   0   0   0   0   0 -1.0525133
+## 5    1   0   0   0   0   0   1   0 -0.4371595
+## 6    0   1   0   1   1   0   0   0  0.3311792
+## 7    1   1   1   0   0   0   0   0 -2.0142105
+## 8    0   0   0   0   0   0   0   0  0.2119804
+## 9    1   0   0   1   0   1   0   0  1.2366750
+## 10   0   0   0   0   0   0   0   0  2.0375740</code></pre>
+<p><code>unmarked</code> has generated a presence-absence dataset as well as values for covariate <code>elev</code>.</p>
+<div id="customizing-the-covariates" class="section level3">
+<h3><span class="header-section-number">2.3.1</span> Customizing the covariates</h3>
+<p>By default, a covariate will be continuous and come from a standard normal distribution. However, we can control this using the <code>guide</code> argument. For example, suppose we want elevation to have a mean of 2 and a standard deviation of 0.5, and we also want a categorical covariate called <code>landcover</code>. The corresponding formulas and list to supply to <code>guide</code> would look like this:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">forms2 &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">state=</span><span class="op">~</span>elev<span class="op">+</span>landcover, <span class="dt">det=</span><span class="op">~</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb12-2" title="2">guide &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">landcover=</span><span class="kw">factor</span>(<span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&quot;forest&quot;</span>,<span class="st">&quot;grass&quot;</span>)), <span class="co"># landcover is factor </span></a>
+<a class="sourceLine" id="cb12-3" title="3">              <span class="dt">elev=</span><span class="kw">list</span>(<span class="dt">dist=</span>rnorm, <span class="dt">mean=</span><span class="dv">2</span>, <span class="dt">sd=</span><span class="fl">0.5</span>)) <span class="co"># custom distribution</span></a></code></pre></div>
+<p>We’d also need an updated <code>coefs</code>:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">coefs2 &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">state=</span><span class="kw">c</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">elev=</span><span class="op">-</span><span class="fl">0.4</span>, <span class="dt">landcovergrass=</span><span class="fl">0.2</span>), <span class="dt">det=</span><span class="kw">c</span>(<span class="dt">intercept=</span><span class="dv">0</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">head</span>(<span class="kw">simulate</span>(<span class="st">&quot;occu&quot;</span>, <span class="dt">formulas=</span>forms2, <span class="dt">coefs=</span>coefs2, <span class="dt">design=</span>design, <span class="dt">guide=</span>guide))</a></code></pre></div>
+<pre><code>## Data frame representation of unmarkedFrame object.
+##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8     elev landcover
+## 1    0   0   0   0   0   0   0   0 2.063074    forest
+## 2    0   0   0   0   0   0   0   0 2.236400    forest
+## 3    0   0   0   0   0   0   0   0 1.829623     grass
+## 4    0   0   0   0   0   0   0   0 1.879105    forest
+## 5    0   0   0   0   0   0   0   0 2.689377     grass
+## 6    0   0   0   0   0   0   0   0 1.830558    forest
+## 7    0   0   0   0   0   0   0   0 2.010068    forest
+## 8    0   0   0   0   0   0   0   0 2.188481     grass
+## 9    1   0   1   1   1   0   0   0 1.784138    forest
+## 10   0   0   0   0   0   0   0   0 2.979532     grass</code></pre>
+<p>Our output dataset now includes a new categorical covariate, and the elevation values are adjusted.</p>
+</div>
+<div id="models-that-require-more-information" class="section level3">
+<h3><span class="header-section-number">2.3.2</span> Models that require more information</h3>
+<p>More complex models might require more information for simulation, such as the distribution to use for abundance with <code>pcount</code>. This information is simply added as additional arguments to <code>simulate</code>. For example, we can simulate a <code>pcount</code> dataset using the negative binomial (<code>&quot;NB&quot;</code>) distribution. The negative binomial has an additional parameter to estimate (<code>alpha</code>) so we must also add an element to <code>coefs</code>.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">coefs<span class="op">$</span>alpha &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">alpha=</span><span class="fl">0.5</span>)</a>
+<a class="sourceLine" id="cb16-2" title="2"><span class="kw">head</span>(<span class="kw">simulate</span>(<span class="st">&quot;pcount&quot;</span>, <span class="dt">formulas=</span>forms, <span class="dt">coefs=</span>coefs, <span class="dt">design=</span>design, <span class="dt">mixture=</span><span class="st">&quot;NB&quot;</span>))</a></code></pre></div>
+<pre><code>## Data frame representation of unmarkedFrame object.
+##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
+## 1    0   0   0   0   0   0   0   0 -1.42329439
+## 2    0   0   0   0   0   0   0   0  1.02230366
+## 3    0   1   1   0   1   0   0   0  0.68781508
+## 4    0   0   0   0   0   0   0   0 -0.30745489
+## 5    0   0   1   0   0   1   0   1 -0.01974906
+## 6    0   1   1   1   0   0   1   0  0.48839839
+## 7    0   0   0   0   0   0   0   0  0.66050081
+## 8    0   1   0   1   1   1   0   1 -1.71404333
+## 9    0   0   0   0   0   0   0   0  1.45885698
+## 10   0   0   0   0   0   0   0   0 -1.40789548</code></pre>
+</div>
+</div>
+<div id="conducting-a-power-analysis" class="section level2">
+<h2><span class="header-section-number">2.4</span> Conducting a power analysis</h2>
+<p>Power analyses are conducted with the <code>powerAnalysis</code> function. A <code>powerAnalysis</code> power analysis depends on the input dataset, as well as the covariates of interest and other settings depending on the model (e.g. the distribution used in an N-mixture model or the detection key function in a distance sampling analysis). The easiest way combine all this information and send it to <code>powerAnalysis</code> is to actually fit a model with all the correct settings and our simulated dataset and send <em>that</em> to <code>powerAnalysis</code>. This has the added benefit that it checks to make sure we have all the required information for a valid model. Note that the actual parameter estimates from this model template don’t matter - they aren’t used in the power analysis. Thus, there are two required arguments to <code>powerAnalysis</code>: a fitted model template, and a list of effect sizes.</p>
+<p>The first step is to fit a model:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">template_model &lt;-<span class="st"> </span><span class="kw">occu</span>(<span class="op">~</span><span class="dv">1</span><span class="op">~</span>elev, occu_umf)</a></code></pre></div>
+<p>If we run <code>powerAnalysis</code> on <code>template_model</code> with no other arguments, <code>unmarked</code> will again give us a template for the list of effect sizes, which looks exactly like the one for simulation above.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">powerAnalysis</span>(template_model)</a></code></pre></div>
+<pre><code>## coefs argument should be a named list of named vectors, with the following structure
+##         (replacing 0s with your desired coefficient values):
+## 
+## $state
+## intercept      elev 
+##         0         0 
+## 
+## $det
+## intercept 
+##         0 
+## 
+## Error : Supply coefs argument as specified above</code></pre>
+<p>We will set our desired effect sizes to match what we used for simulation:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">effect_sizes &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">state=</span><span class="kw">c</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">elev=</span><span class="op">-</span><span class="fl">0.4</span>), <span class="dt">det=</span><span class="kw">c</span>(<span class="dt">intercept=</span><span class="dv">0</span>))</a></code></pre></div>
+<p>It is also possible to set the significance level <code>alpha</code>; the default is 0.05. We now have all the required information to conduct the power analysis. Remember, <code>unmarked</code> does this by simulation, so you will see a progress bar as <code>unmarked</code> conducts simulations. You can control how many with the <code>nsim</code> argument; we’ll set <code>nsim=20</code> just to speed things up, but normally you should use more.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">(pa &lt;-<span class="st"> </span><span class="kw">powerAnalysis</span>(template_model, <span class="dt">coefs=</span>effect_sizes, <span class="dt">alpha=</span><span class="fl">0.05</span>, <span class="dt">nsim=</span><span class="dv">20</span>))</a></code></pre></div>
+<pre><code>## 
+## Model:
+## occu(formula = ~1 ~ elev, data = occu_umf)
+## 
+## Power Statistics:
+##  Submodel   Parameter Effect Null Power
+##     state (Intercept)    0.0    0  0.00
+##     state        elev   -0.4    0  0.95
+##       det (Intercept)    0.0    0  0.00</code></pre>
+<p>The result is an object <code>pa</code> of class <code>unmarkedPower</code>. If you look at <code>pa</code> in the console you will get a summary of power for each parameter in the model. The summary includes the submodel, parameter name, supplied effect size, null hypothesis, and the calculated power based on simulation. By default the null for each parameter is 0, you can change this by supplying a list to the <code>nulls</code> argument with the same structure as <code>coefs</code>.</p>
+<p>We have power = 0.95 for the effect of elevation on occupancy probability. This power is calculated by simulating a bunch of datasets based on the template model and supplied effect sizes, fitting a model to each simulated dataset, and then calculating the proportion of these models for which an effect of the covariate would have been detected at the given value of <code>alpha</code>. You can see the raw results from each simulated model with</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">pa<span class="op">@</span>estimates</a></code></pre></div>
+<div id="varying-the-sample-size" class="section level3">
+<h3><span class="header-section-number">2.4.1</span> Varying the sample size</h3>
+<p>One approach to determining how sample size affects power for our model is to simulate a range of <code>unmarkedFrames</code> with varying number of sites, observations, etc. and do a power analysis for each. However <code>powerAnalysis</code> also has a argument <code>design</code> which can help do this automatically.</p>
+<p>The <code>design</code> argument will subsample within the original data to generate datasets which are smaller or larger than the original, and conduct power analyses for each scenario. For example, to test power for a dataset with only 50 sites and 3 sample occasions at each:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="co"># 50 sites and 3 obs per site</span></a>
+<a class="sourceLine" id="cb25-2" title="2">(pa2 &lt;-<span class="st"> </span><span class="kw">powerAnalysis</span>(template_model, effect_sizes, <span class="dt">design=</span><span class="kw">list</span>(<span class="dt">M=</span><span class="dv">50</span>, <span class="dt">J=</span><span class="dv">3</span>), <span class="dt">nsim=</span><span class="dv">20</span>))</a></code></pre></div>
+<pre><code>## 
+## Model:
+## occu(formula = ~1 ~ elev, data = occu_umf)
+## 
+## Power Statistics:
+##  Submodel   Parameter Effect Null Power
+##     state (Intercept)    0.0    0   0.0
+##     state        elev   -0.4    0   0.1
+##       det (Intercept)    0.0    0   0.0</code></pre>
+<p>With fewer sites and sampling occasions, our power to detect the elevation effect is reduced.</p>
+<p>You can also get a larger number of sites via sampling the original sites with replacement:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1">(pa3 &lt;-<span class="st"> </span><span class="kw">powerAnalysis</span>(template_model, effect_sizes, <span class="dt">design=</span><span class="kw">list</span>(<span class="dt">M=</span><span class="dv">400</span>, <span class="dt">J=</span><span class="dv">4</span>), <span class="dt">nsim=</span><span class="dv">20</span>))</a></code></pre></div>
+<pre><code>## 
+## Model:
+## occu(formula = ~1 ~ elev, data = occu_umf)
+## 
+## Power Statistics:
+##  Submodel   Parameter Effect Null Power
+##     state (Intercept)    0.0    0  0.00
+##     state        elev   -0.4    0  0.95
+##       det (Intercept)    0.0    0  0.00</code></pre>
+</div>
+<div id="combining-unmarkedpower-objects" class="section level3">
+<h3><span class="header-section-number">2.4.2</span> Combining unmarkedPower objects</h3>
+<p>The <code>unmarkedPowerList</code> function creates a <code>unmarkedPowerList</code> object for holding multiple <code>unmarkedPower</code> objects so they can be easily compared. The summary of an <code>unmarkedPowerList</code> is a <code>data.frame</code> with all the outputs shown together, including relevant sample sizes.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="kw">unmarkedPowerList</span>(<span class="kw">list</span>(pa, pa2, pa3))</a></code></pre></div>
+<pre><code>##     M T J Submodel   Parameter Effect Null Power
+## 1 300 1 8    state (Intercept)    0.0    0  0.00
+## 2 300 1 8    state        elev   -0.4    0  0.95
+## 3 300 1 8      det (Intercept)    0.0    0  0.00
+## 4  50 1 3    state (Intercept)    0.0    0  0.00
+## 5  50 1 3    state        elev   -0.4    0  0.10
+## 6  50 1 3      det (Intercept)    0.0    0  0.00
+## 7 400 1 4    state (Intercept)    0.0    0  0.00
+## 8 400 1 4    state        elev   -0.4    0  0.95
+## 9 400 1 4      det (Intercept)    0.0    0  0.00</code></pre>
+<p>We can also create an <code>unmarkedPowerList</code> by providing a template model and a range of design scenarios in the <code>design</code> argument. A power analysis will be run for each scenario (sampling the original dataset as shown above) and the results combined.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">scenarios &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">M=</span><span class="kw">c</span>(<span class="dv">50</span>,<span class="dv">200</span>,<span class="dv">400</span>),</a>
+<a class="sourceLine" id="cb31-2" title="2">                         <span class="dt">J=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">8</span>))</a>
+<a class="sourceLine" id="cb31-3" title="3">pl &lt;-<span class="st"> </span><span class="kw">unmarkedPowerList</span>(template_model, effect_sizes, <span class="dt">design=</span>scenarios, <span class="dt">nsim=</span><span class="dv">20</span>)</a></code></pre></div>
+<pre><code>## M = 50, J = 3
+## M = 200, J = 3
+## M = 400, J = 3
+## M = 50, J = 5
+## M = 200, J = 5
+## M = 400, J = 5
+## M = 50, J = 8
+## M = 200, J = 8
+## M = 400, J = 8</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1"><span class="kw">head</span>(<span class="kw">summary</span>(pl))</a></code></pre></div>
+<pre><code>##     M T J Submodel   Parameter Effect Null Power
+## 1  50 1 3    state (Intercept)    0.0    0  0.00
+## 2  50 1 3    state        elev   -0.4    0  0.05
+## 3  50 1 3      det (Intercept)    0.0    0  0.00
+## 4 200 1 3    state (Intercept)    0.0    0  0.00
+## 5 200 1 3    state        elev   -0.4    0  0.70
+## 6 200 1 3      det (Intercept)    0.0    0  0.00</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1"><span class="kw">tail</span>(<span class="kw">summary</span>(pl))</a></code></pre></div>
+<pre><code>##      M T J Submodel   Parameter Effect Null Power
+## 22 200 1 8    state (Intercept)    0.0    0   0.0
+## 23 200 1 8    state        elev   -0.4    0   0.7
+## 24 200 1 8      det (Intercept)    0.0    0   0.0
+## 25 400 1 8    state (Intercept)    0.0    0   0.0
+## 26 400 1 8    state        elev   -0.4    0   1.0
+## 27 400 1 8      det (Intercept)    0.0    0   0.0</code></pre>
+<p>There is a built-in <code>plot</code> method for <code>unmarkedPowerList</code>. You can specify a target power on the plot to the <code>power</code> argument. You also need to specify the parameter of interest (<code>&quot;elev&quot;</code>).</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1"><span class="kw">plot</span>(pl, <span class="dt">power=</span><span class="fl">0.8</span>, <span class="dt">param=</span><span class="st">&quot;elev&quot;</span>)</a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1><span class="header-section-number">3</span> Conclusion</h1>
+<p>Power analysis is an important step in the research process that is often overlooked in studies of animal abundance and occurrence. Getting an estimate of the sample size required to detect a particular effect can help with efficient data collection and set expectations for what covariate relationships might be possible to detect. The power analysis tools in <code>unmarked</code> should help make this part of the research process quick and easy for researchers as the begin to develop study designs.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-Guillera_2012">
+<p>Guillera-Arroita, G., and J. J. Lahoz-Monfort. 2012. Designing studies to detect differences in species occupancy: Power analysis under imperfect detection. Methods in Ecology and Evolution 3:860–869.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

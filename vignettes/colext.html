@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+<meta name="date" content="2016-08-16" />
+
+<title>Dynamic occupancy models in unmarked</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Dynamic occupancy models in unmarked</h1>
+<h4 class="author">Marc Kéry, Swiss Ornithological Institute</h4>
+<h4 class="author">Richard Chandler, University of Georgia</h4>
+<h4 class="date">August 16, 2016</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#introduction"><span class="toc-section-number">2</span> Introduction</a></li>
+<li><a href="#dynamic-occupancy-models"><span class="toc-section-number">3</span> Dynamic occupancy models</a><ul>
+<li><a href="#ecological-or-state-process"><span class="toc-section-number">3.1</span> Ecological or state process</a></li>
+<li><a href="#observation-process"><span class="toc-section-number">3.2</span> Observation process</a></li>
+<li><a href="#modeling-of-parameters"><span class="toc-section-number">3.3</span> Modeling of parameters</a></li>
+</ul></li>
+<li><a href="#dynamic-occupancy-models-for-simulated-data"><span class="toc-section-number">4</span> Dynamic occupancy models for simulated data</a><ul>
+<li><a href="#simulating-formatting-and-summarizing-data"><span class="toc-section-number">4.1</span> Simulating, formatting, and summarizing data</a></li>
+<li><a href="#model-fitting"><span class="toc-section-number">4.2</span> Model fitting</a></li>
+<li><a href="#manipulating-results-prediction-and-plotting"><span class="toc-section-number">4.3</span> Manipulating results: prediction and plotting</a></li>
+<li><a href="#derived-parameters"><span class="toc-section-number">4.4</span> Derived parameters</a></li>
+<li><a href="#goodness-of-fit"><span class="toc-section-number">4.5</span> Goodness-of-fit</a></li>
+</ul></li>
+<li><a href="#dynamic-occupancy-models-for-crossbill-data-from-the-swiss-mhb"><span class="toc-section-number">5</span> Dynamic occupancy models for crossbill data from the Swiss MHB</a><ul>
+<li><a href="#the-crossbill-data-set"><span class="toc-section-number">5.1</span> The crossbill data set</a></li>
+<li><a href="#importing-formatting-and-summarizing-data"><span class="toc-section-number">5.2</span> Importing, formatting, and summarizing data</a></li>
+<li><a href="#model-fitting-1"><span class="toc-section-number">5.3</span> Model fitting</a></li>
+<li><a href="#model-selection"><span class="toc-section-number">5.4</span> Model selection</a></li>
+<li><a href="#manipulating-results-prediction-and-plotting-1"><span class="toc-section-number">5.5</span> Manipulating results: Prediction and plotting</a></li>
+</ul></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="abstract" class="section level1">
+<h1><span class="header-section-number">1</span> Abstract</h1>
+<p>Dynamic occupancy models <span class="citation">(MacKenzie et al. 2003)</span> allow inference about the occurrence of “things” at collections of “sites” and about how changes in occurrence are driven by colonization and local extinction. These models also account for imperfect detection probability. Depending on how “thing” and “site” are defined, occupancy may have vastly different biological meanings, including the presence of a disease in an individual (disease incidence) of a species at a site (occurrence, distribution), or of an individual in a territory. Dynamic occupancy models in <code>unmarked</code> are fit using the function <code>colext</code>. All parameters can be modeled as functions of covariates, i.e., first-year occupancy with covariates varying by site (site-covariates), colonization and survival with site- and yearly-site-covariates and detection with site-, yearly-site- and sample-occasion-covariates. We give two commented example analyses: one for a simulated data set and another for a real data set on crossbills in the Swiss breeding bird survey MHB. We also give examples to show how predictions, along with standard errors and confidence intervals, can be obtained.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">2</span> Introduction</h1>
+<p>Occurrence is a quantity of central importance in many branches of ecology and related sciences. The presence of a disease in an individual or of a species at a site are two common types of occurrence studies. The associated biological metrics are the incidence of the disease and species occurrence or species distribution. Thus, depending on how we define the thing we are looking for and the sample unit, very different biological quantities can be analyzed using statistical models for occupancy.</p>
+<p>If we denote presence of the “thing” as <span class="math inline">\(y=1\)</span> and its absence as <span class="math inline">\(y=0\)</span>, then it is natural to characterize all these metrics by the probability that a randomly chosen sample unit (“site”) is occupied, i.e., has a “thing” present: <span class="math inline">\(Pr(y=1) = \psi\)</span>. We call this the occupancy probability, or occupancy for short, and from now on will call the sample unit, where the presence or absence of a “thing” is assessed, generically a “site”.</p>
+<p>Naturally, we would like to explore factors that affect the likelihood that a site is occupied. A binomial generalized linear model, or logistic regression, is the customary statistical model for occurrence. In this model, we treat occurrence <span class="math inline">\(y\)</span> as a binomial random variable with trial size 1 and success probability <span class="math inline">\(p\)</span>, or, equivalently, a Bernoulli trial with <span class="math inline">\(p\)</span>. “Success” means occurrence, so <span class="math inline">\(p\)</span> is the occurrence probability. It can be modeled as a linear or other function of covariates via a suitable link function, e.g., the logit link. This simple model is described in many places, including <span class="citation">McCullagh and Nelder (1989)</span>, Royle and Dorazio <span class="citation">(2008 chap. 3)</span>, Kéry <span class="citation">(2010 chap. 17)</span> and Kéry and Schaub <span class="citation">(2011 chap. 3)</span>.</p>
+<p>A generalization of this model accounts for changes in the occupancy state of sites by introducing parameters for survival (or alternatively, extinction) and colonization probability. Thus, when we have observations of occurrence for more than a single point in time, we can model the transition of the occupancy state at site <span class="math inline">\(i\)</span> between successive times as another Bernoulli trial. To model the fate of an occupied site, we denote the probability that a site occupied at <span class="math inline">\(t\)</span> is again occupied at <span class="math inline">\(t+1\)</span> as <span class="math inline">\(Pr(y_{i,t+1} = 1 | y_{i,t} = 1 ) = \phi\)</span>. This represents the survival probability of a site that is occupied. Of course, we could also choose to express this component of occupancy dynamics by the converse, extinction probability <span class="math inline">\(\epsilon\)</span> — the parameterization used in <code>unmarked</code>. To model the fate of an unoccupied site, we denote as <span class="math inline">\(Pr(y_{i,t+1} = 1 | y_{i,t} = 0 ) = \gamma\)</span> the probability that an unoccupied site at <span class="math inline">\(t\)</span> becomes occupied at <span class="math inline">\(t+1\)</span>. This is the colonization probability of an empty site. Such a dynamic model of occurrence has become famous in the ecological literature under the name “metapopulation model” <span class="citation">(Hanski 1998)</span>.</p>
+<p>However, when using ecological data collected in the field to fit such models of occurrence, we face the usual challenge of imperfect detection <span class="citation">(e.g. Kéry and Schmidt 2008)</span>. For instance, a species can go unobserved at a surveyed site or an occupied territory can appear unoccupied during a particular survey, perhaps because both birds are away hunting. Not accounting for detection error may seriously bias all parameter estimators of a metapopulation model <span class="citation">(Moilanen 2002, Royle and Dorazio 2008)</span>. To account for this additional stochastic component in the generation of most ecological field data, the classical metapopulation model may be generalized to include a submodel for the observation process, which allows an occupied site to be recorded as unoccupied. This model has been developed by <span class="citation">MacKenzie et al. (2003)</span>. It is described as a hierarchical model by <span class="citation">Royle (2007)</span>, Royle and Dorazio <span class="citation">(2008 chap. 9)</span> and Kéry and Schaub <span class="citation">(2011 chap. 13)</span>. The model is usually called a multi-season, multi-year or a dynamic site-occupancy model. The former terms denote the fact that it is applied to multiple “seasons” or years and the latter emphasizes that the model allows for between-season occurrence dynamics.</p>
+<p>This vignette describes the use of the <code>unmarked</code> function <code>colext</code> to fit dynamic occupancy models. Note that we will use italics for the names of functions. Static occupancy models, i.e., for a single season without changes in the occupancy state <span class="citation">(MacKenzie et al. 2002)</span>, can be fit with <code>occu</code>, for the model described by <span class="citation">MacKenzie et al. (2002)</span> and <span class="citation">Tyre et al. (2003)</span>, and with <code>occuRN</code>, for the heterogeneity occupancy model described by <span class="citation">Royle and Nichols (2003)</span>. In the next section (section 2), we give a more technical description of the dynamic occupancy model. In section 3, we provide R code for generating data under a basic dynamic occupancy model and illustrate use of <code>colext</code> for fitting the model. In section 4, we use real data from the Swiss breeding bird survey MHB <span class="citation">(Schmid et al. 2004)</span> to fit a few more elaborate models with covariates for all parameters. We also give examples illustrating how to compute predictions, with standard errors and 95% confidence intervals, for the parameters.</p>
+</div>
+<div id="dynamic-occupancy-models" class="section level1">
+<h1><span class="header-section-number">3</span> Dynamic occupancy models</h1>
+<p>To be able to estimate the parameters of the dynamic occupancy model (probabilities of occurrence, survival and colonization) separately from the parameters for the observation process (detection probability), replicate observations are required from a period of closure, during which the occupancy state of a site must remain constant, i.e., it is either occupied or unoccupied. The modeled data <span class="math inline">\(y_{ijt}\)</span> are indicators for whether a species is detected at site <span class="math inline">\(i\)</span> (<span class="math inline">\(i = 1, 2, \ldots M\)</span>), during replicate survey <span class="math inline">\(j\)</span> (<span class="math inline">\(j = 1, 2, \ldots J\)</span>) in season <span class="math inline">\(t\)</span> (<span class="math inline">\(t = 1, 2, \ldots T\)</span>). That is, <span class="math inline">\(y_{ijt}=1\)</span> if at least one individual is detected and <span class="math inline">\(y_{ijt}=0\)</span> if none is detected.</p>
+<p>The model makes the following assumptions: * replicate surveys at a site during a single season are independent (or else dependency must be modeled) * occurrence state <span class="math inline">\(z_{it}\)</span> (see below) does not change over replicate surveys at site <span class="math inline">\(i\)</span> during season <span class="math inline">\(t\)</span> * there are no false-positive errors, i.e., a species can only be overlooked where it occurs, but it cannot be detected where it does not in fact occur (i.e., there are no false-positives)</p>
+<p>The complete model consists of one submodel to describe the ecological process, or state, and another submodel for the observation process, which is dependent on the result of the ecological process. The ecological process describes the latent occurrence dynamics for all sites in terms of parameters for the probability of initial occurrence and site survival and colonization. The observation process describes the probability of detecting a presence (i.e., <span class="math inline">\(y = 1\)</span>) at a site that is occupied and takes account of false-negative observation errors.</p>
+<div id="ecological-or-state-process" class="section level2">
+<h2><span class="header-section-number">3.1</span> Ecological or state process</h2>
+<p>This initial state is denoted <span class="math inline">\(z_{i1}\)</span> and represents occurrence at site <span class="math inline">\(i\)</span> during season 1. For this, the model assumes a Bernoulli trial governed by the occupancy probability in the first season <span class="math inline">\(\psi_{i1}\)</span>:</p>
+<p><span class="math display">\[
+z_{i1} = Bernoulli(\psi_{i1})
+\]</span></p>
+<p>We must distinguish the sample quantity “occurrence” at a site, <span class="math inline">\(z\)</span>, from the population quantity “occupancy probability”, <span class="math inline">\(\psi\)</span>. The former is the realization of a Bernoulli random variable with parameter <span class="math inline">\(\psi\)</span>. This distinction becomes important when we want to compute the number of occupied sites among the sample of surveyed sites; see <span class="citation">Royle (2007)</span> and <span class="citation">Weir and Royle (2009)</span> for this distinction.</p>
+<p>For all later seasons (<span class="math inline">\(t = 2, 3, \ldots T\)</span>), occurrence is a function of occurrence at site <span class="math inline">\(i\)</span> at time <span class="math inline">\(t-1\)</span> and one of two parameters that describe the colonization-extinction dynamics of the system. These dynamic parameters are the probability of local survival <span class="math inline">\(\phi_{it}\)</span>, also called probability of persistence (= 1 minus the probability of local extinction), and the probability of colonization <span class="math inline">\(\gamma_{it}\)</span>.</p>
+<p><span class="math display">\[
+z_{it} \sim Bernoulli(z_{i,t-1} \phi_{it} + (1-z_{i,t-1}) \gamma_{it})
+\]</span></p>
+<p>Hence, if site <span class="math inline">\(i\)</span> is unoccupied at <span class="math inline">\(t-1\)</span> , <span class="math inline">\(z_{i,t-1}=0\)</span>, and the success probability of the Bernoulli is <span class="math inline">\(0*\phi_{it} + (1-0) * \gamma_{it}\)</span>, so the site is occupied (=colonized) in season <span class="math inline">\(t\)</span> with probability <span class="math inline">\(\gamma_{it}\)</span> . Conversely, if site <span class="math inline">\(i\)</span> is occupied at <span class="math inline">\(t-1\)</span> , <span class="math inline">\(z_{i,t-1}=1\)</span>, and the success probability of the Bernoulli is given by <span class="math inline">\(1*\phi_{it} + (1-1) * \gamma_{it}\)</span>, so the site is occupied in (=survives to) season <span class="math inline">\(t\)</span> with probability <span class="math inline">\(\phi_{it}\)</span>.</p>
+<p>Occupancy probability (<span class="math inline">\(\psi_{it}\)</span>) and occurrence (<span class="math inline">\(z_{it}\)</span>) at all later times <span class="math inline">\(t\)</span> can be computed recursively from <span class="math inline">\(\psi_{i1}\)</span>, <span class="math inline">\(z_{i1}\)</span> , <span class="math inline">\(\phi_{it}\)</span> and <span class="math inline">\(\gamma_{it}\)</span>. Variances of these derived estimates can be obtained via the delta method or the bootstrap.</p>
+</div>
+<div id="observation-process" class="section level2">
+<h2><span class="header-section-number">3.2</span> Observation process</h2>
+<p>To account for the observation error (specifically, false-negative observations), the conventional Bernoulli detection process is assumed, such that</p>
+<p><span class="math display">\[
+y_{ijt} \sim Bernoulli(z_{it} p_{ijt})
+\]</span></p>
+<p>Here, <span class="math inline">\(y_{ijt}\)</span> is the detection probability at site <span class="math inline">\(i\)</span> during survey <span class="math inline">\(j\)</span> and season <span class="math inline">\(t\)</span>. Detection is conditional on occurrence, and multiplying <span class="math inline">\(p_{ijt}\)</span> with <span class="math inline">\(z_{it}\)</span> ensures that occurrence can only be detected where in fact a species occurs, i.e. where <span class="math inline">\(z_{it}=1\)</span>.</p>
+</div>
+<div id="modeling-of-parameters" class="section level2">
+<h2><span class="header-section-number">3.3</span> Modeling of parameters</h2>
+<p>The preceding, fully general model description allows for site-(<span class="math inline">\(i\)</span>) dependence of all parameters. In addition to that, survival and colonization probabilities may be season-(<span class="math inline">\(t\)</span>)dependent and detection probability season-(<span class="math inline">\(t\)</span>) and survey-(<span class="math inline">\(j\)</span>) dependent. All this complexity may be dropped, especially the dependence on sites. On the other hand, all parameters that are indexed in some way can be modeled, e.g., as functions of covariates that vary along the dimension denoted by an index. We will fit linear functions (on the logit link scale) of covariates into first-year occupancy, survival and colonization and into detection probability. That is, for probabilities of first-year occupancy, survival, colonization and detection, respectively, we will fit models of the form <span class="math inline">\(logit(\psi_{i1}) = \alpha + \beta x_i\)</span>, where <span class="math inline">\(x_i\)</span> may be forest cover or elevation of site <span class="math inline">\(i\)</span> , <span class="math inline">\(logit(\phi_{it}) = \alpha + \beta x_{it}\)</span>, where <span class="math inline">\(x_{it}\)</span> may be tree mast at site <span class="math inline">\(i\)</span> during season <span class="math inline">\(t\)</span>, <span class="math inline">\(logit(\gamma_{it}) = \alpha + \beta x_{it}\)</span>, for a similarly defined covariate <span class="math inline">\(x_{it}\)</span>, or <span class="math inline">\(logit(p_{ijt}) = \alpha + \beta x_{ijt}\)</span> , where <span class="math inline">\(x_{ijt}\)</span> is the Julian date of the survey <span class="math inline">\(j\)</span> at site <span class="math inline">\(i\)</span> in season <span class="math inline">\(t\)</span>.</p>
+<p>We note that for first-year occupancy, only covariates that vary among sites (“site covariates”) can be fitted, while for survival and colonization, covariates that vary by site and by season (“yearly site covariates”) may be fitted as well. For detection, covariates of three formats may be fitted: “site-covariates”, “yearly-site-covariates” and “observation-covariates”, as they are called in <code>unmarked</code>.</p>
+</div>
+</div>
+<div id="dynamic-occupancy-models-for-simulated-data" class="section level1">
+<h1><span class="header-section-number">4</span> Dynamic occupancy models for simulated data</h1>
+<p>We first generate a simple, simulated data set with specified, year-specific values for the parameters as well as design specifications, i.e., number of sites, years and surveys per year. Then, we show how to fit a dynamic occupancy model with year-dependence in the parameters for colonization, extinction and detection probability.</p>
+<div id="simulating-formatting-and-summarizing-data" class="section level2">
+<h2><span class="header-section-number">4.1</span> Simulating, formatting, and summarizing data</h2>
+<p>To simulate the data, we execute the following R code. The actual values for these parameters for each year are drawn randomly from a uniform distribution with the specified bounds.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">M &lt;-<span class="st"> </span><span class="dv">250</span>                                <span class="co"># Number of sites</span></a>
+<a class="sourceLine" id="cb1-2" title="2">J &lt;-<span class="st"> </span><span class="dv">3</span>                                  <span class="co"># num secondary sample periods</span></a>
+<a class="sourceLine" id="cb1-3" title="3">T &lt;-<span class="st"> </span><span class="dv">10</span>                                 <span class="co"># num primary sample periods</span></a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">psi &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, T)                       <span class="co"># Occupancy probability</span></a>
+<a class="sourceLine" id="cb1-6" title="6">muZ &lt;-<span class="st"> </span>z &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="dt">dim =</span> <span class="kw">c</span>(M, T))        <span class="co"># Expected and realized occurrence</span></a>
+<a class="sourceLine" id="cb1-7" title="7">y &lt;-<span class="st"> </span><span class="kw">array</span>(<span class="ot">NA</span>, <span class="dt">dim =</span> <span class="kw">c</span>(M, J, T))        <span class="co"># Detection histories</span></a>
+<a class="sourceLine" id="cb1-8" title="8"></a>
+<a class="sourceLine" id="cb1-9" title="9"><span class="kw">set.seed</span>(<span class="dv">13973</span>)</a>
+<a class="sourceLine" id="cb1-10" title="10">psi[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="fl">0.4</span>                           <span class="co"># Initial occupancy probability</span></a>
+<a class="sourceLine" id="cb1-11" title="11">p &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.3</span>,<span class="fl">0.4</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.1</span>,<span class="fl">0.3</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.6</span>,<span class="fl">0.2</span>)</a>
+<a class="sourceLine" id="cb1-12" title="12">phi &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>T<span class="dv">-1</span>, <span class="dt">min=</span><span class="fl">0.6</span>, <span class="dt">max=</span><span class="fl">0.8</span>)   <span class="co"># Survival probability (1-epsilon)</span></a>
+<a class="sourceLine" id="cb1-13" title="13">gamma &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dt">n=</span>T<span class="dv">-1</span>, <span class="dt">min=</span><span class="fl">0.1</span>, <span class="dt">max=</span><span class="fl">0.2</span>) <span class="co"># Colonization probability</span></a>
+<a class="sourceLine" id="cb1-14" title="14"></a>
+<a class="sourceLine" id="cb1-15" title="15"><span class="co"># Generate latent states of occurrence</span></a>
+<a class="sourceLine" id="cb1-16" title="16"><span class="co"># First year</span></a>
+<a class="sourceLine" id="cb1-17" title="17">z[,<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">rbinom</span>(M, <span class="dv">1</span>, psi[<span class="dv">1</span>])           <span class="co"># Initial occupancy state</span></a>
+<a class="sourceLine" id="cb1-18" title="18"><span class="co"># Later years</span></a>
+<a class="sourceLine" id="cb1-19" title="19"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>M){                          <span class="co"># Loop over sites</span></a>
+<a class="sourceLine" id="cb1-20" title="20">   <span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span>T){                        <span class="co"># Loop over years</span></a>
+<a class="sourceLine" id="cb1-21" title="21">      muZ[k] &lt;-<span class="st"> </span>z[i, k<span class="dv">-1</span>]<span class="op">*</span>phi[k<span class="dv">-1</span>] <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>z[i, k<span class="dv">-1</span>])<span class="op">*</span>gamma[k<span class="dv">-1</span>]</a>
+<a class="sourceLine" id="cb1-22" title="22">      z[i,k] &lt;-<span class="st"> </span><span class="kw">rbinom</span>(<span class="dv">1</span>, <span class="dv">1</span>, muZ[k])</a>
+<a class="sourceLine" id="cb1-23" title="23">   }</a>
+<a class="sourceLine" id="cb1-24" title="24">}</a>
+<a class="sourceLine" id="cb1-25" title="25"></a>
+<a class="sourceLine" id="cb1-26" title="26"><span class="co"># Generate detection/non-detection data</span></a>
+<a class="sourceLine" id="cb1-27" title="27"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>M){</a>
+<a class="sourceLine" id="cb1-28" title="28">   <span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>T){</a>
+<a class="sourceLine" id="cb1-29" title="29">      prob &lt;-<span class="st"> </span>z[i,k] <span class="op">*</span><span class="st"> </span>p[k]</a>
+<a class="sourceLine" id="cb1-30" title="30">      <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>J){</a>
+<a class="sourceLine" id="cb1-31" title="31">         y[i,j,k] &lt;-<span class="st"> </span><span class="kw">rbinom</span>(<span class="dv">1</span>, <span class="dv">1</span>, prob)</a>
+<a class="sourceLine" id="cb1-32" title="32">      }</a>
+<a class="sourceLine" id="cb1-33" title="33">   }</a>
+<a class="sourceLine" id="cb1-34" title="34">}</a>
+<a class="sourceLine" id="cb1-35" title="35"></a>
+<a class="sourceLine" id="cb1-36" title="36"><span class="co"># Compute annual population occupancy</span></a>
+<a class="sourceLine" id="cb1-37" title="37"><span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span>T){</a>
+<a class="sourceLine" id="cb1-38" title="38">   psi[k] &lt;-<span class="st"> </span>psi[k<span class="dv">-1</span>]<span class="op">*</span>phi[k<span class="dv">-1</span>] <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>psi[k<span class="dv">-1</span>])<span class="op">*</span>gamma[k<span class="dv">-1</span>]</a>
+<a class="sourceLine" id="cb1-39" title="39">   }</a></code></pre></div>
+<p>We have now generated a single realization from the stochastic system thus defined. Figure 1 illustrates the fundamental issue of imperfect detection — the actual proportion of sites occupied differs greatly from the observed proportion of sites occupied, and because <span class="math inline">\(p\)</span> varies among years, the observed data cannot be used as a valid index of the parameter of interest <span class="math inline">\(\psi_i\)</span>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span>T, <span class="kw">colMeans</span>(z), <span class="dt">type =</span> <span class="st">&quot;b&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Year&quot;</span>,</a>
+<a class="sourceLine" id="cb2-2" title="2">     <span class="dt">ylab =</span> <span class="st">&quot;Proportion of sites occupied&quot;</span>,</a>
+<a class="sourceLine" id="cb2-3" title="3">     <span class="dt">col =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">xlim=</span><span class="kw">c</span>(<span class="fl">0.5</span>, <span class="fl">10.5</span>), <span class="dt">xaxp=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">10</span>,<span class="dv">9</span>),</a>
+<a class="sourceLine" id="cb2-4" title="4">     <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="fl">0.6</span>), <span class="dt">lwd =</span> <span class="dv">2</span>, <span class="dt">lty =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb2-5" title="5">     <span class="dt">frame.plot =</span> <span class="ot">FALSE</span>, <span class="dt">las =</span> <span class="dv">1</span>, <span class="dt">pch=</span><span class="dv">16</span>)</a>
+<a class="sourceLine" id="cb2-6" title="6"></a>
+<a class="sourceLine" id="cb2-7" title="7">psi.app &lt;-<span class="st"> </span><span class="kw">colMeans</span>(<span class="kw">apply</span>(y, <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>), max))</a>
+<a class="sourceLine" id="cb2-8" title="8"><span class="kw">lines</span>(<span class="dv">1</span><span class="op">:</span>T, psi.app, <span class="dt">type =</span> <span class="st">&quot;b&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">lty=</span><span class="dv">3</span>, <span class="dt">lwd =</span> <span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb2-9" title="9"><span class="kw">legend</span>(<span class="dv">1</span>, <span class="fl">0.6</span>, <span class="kw">c</span>(<span class="st">&quot;truth&quot;</span>, <span class="st">&quot;observed&quot;</span>),</a>
+<a class="sourceLine" id="cb2-10" title="10">       <span class="dt">col=</span><span class="kw">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;blue&quot;</span>), <span class="dt">lty=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>), <span class="dt">pch=</span><span class="kw">c</span>(<span class="dv">16</span>,<span class="dv">1</span>))</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Figure 1. Summary of the multi-year occupancy data set generated." />
+<p class="caption">Figure 1. Summary of the multi-year occupancy data set generated.</p>
+</div>
+<p>To analyze this data set with a dynamic occupancy model in <code>unmarked</code>, we first load the package.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">library</span>(unmarked)</a></code></pre></div>
+<p>Next, we reformat the detection/non-detection data from a 3-dimensional array (as generated) into a 2-dimensional matrix with M rows. That is, we put the annual tables of data (the slices of the former 3-D array) sideways to produce a “wide” layout of the data.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">yy &lt;-<span class="st"> </span><span class="kw">matrix</span>(y, M, J<span class="op">*</span>T)</a></code></pre></div>
+<p>Next, we create a matrix indicating the year each site was surveyed.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">year &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="st">&#39;01&#39;</span>,<span class="st">&#39;02&#39;</span>,<span class="st">&#39;03&#39;</span>,<span class="st">&#39;04&#39;</span>,<span class="st">&#39;05&#39;</span>,<span class="st">&#39;06&#39;</span>,<span class="st">&#39;07&#39;</span>,<span class="st">&#39;08&#39;</span>,<span class="st">&#39;09&#39;</span>,<span class="st">&#39;10&#39;</span>),</a>
+<a class="sourceLine" id="cb5-2" title="2">               <span class="kw">nrow</span>(yy), T, <span class="dt">byrow=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<p>To organize the data in the format required by <code>colext</code>, we make use of the function <code>unmarkedMultFrame</code>. The only required arguments are <code>y</code>, the detection/non-detection data, and <code>numPrimary</code>, the number of seasons. The three types of covariates described earlier can also be supplied using the arguments <code>siteCovs</code>, <code>yearlySiteCovs</code>, and <code>obsCovs</code>. In this case, we only make use of the second type, which must have M rows and T columns.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">simUMF &lt;-<span class="st"> </span><span class="kw">unmarkedMultFrame</span>(</a>
+<a class="sourceLine" id="cb6-2" title="2">    <span class="dt">y =</span> yy,</a>
+<a class="sourceLine" id="cb6-3" title="3">    <span class="dt">yearlySiteCovs =</span> <span class="kw">list</span>(<span class="dt">year =</span> year),</a>
+<a class="sourceLine" id="cb6-4" title="4">    <span class="dt">numPrimary=</span>T)</a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="kw">summary</span>(simUMF)</a></code></pre></div>
+<pre><code>## unmarkedFrame Object
+## 
+## 250 sites
+## Maximum number of observations per site: 30 
+## Mean number of observations per site: 30 
+## Number of primary survey periods: 10 
+## Number of secondary survey periods: 3 
+## Sites with at least one detection: 195 
+## 
+## Tabulation of y observations:
+##    0    1 
+## 6430 1070 
+## 
+## Yearly-site-level covariates:
+##       year     
+##  01     : 250  
+##  02     : 250  
+##  03     : 250  
+##  04     : 250  
+##  05     : 250  
+##  06     : 250  
+##  (Other):1000</code></pre>
+</div>
+<div id="model-fitting" class="section level2">
+<h2><span class="header-section-number">4.2</span> Model fitting</h2>
+<p>We are ready to fit a few dynamic occupancy models. We will fit a model with constant values for all parameters and another with full time-dependence for colonization, extinction and detection probability. We also time the calculations.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="co"># Model with all constant parameters</span></a>
+<a class="sourceLine" id="cb8-2" title="2">m0 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="dt">psiformula=</span> <span class="op">~</span><span class="dv">1</span>, <span class="dt">gammaformula =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">epsilonformula =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb8-3" title="3">             <span class="dt">pformula =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">data =</span> simUMF, <span class="dt">method=</span><span class="st">&quot;BFGS&quot;</span>)</a>
+<a class="sourceLine" id="cb8-4" title="4"><span class="kw">summary</span>(m0)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## colext(psiformula = ~1, gammaformula = ~1, epsilonformula = ~1, 
+##     pformula = ~1, data = simUMF, method = &quot;BFGS&quot;)
+## 
+## Initial (logit-scale):
+##  Estimate    SE     z  P(&gt;|z|)
+##    -0.813 0.158 -5.16 2.46e-07
+## 
+## Colonization (logit-scale):
+##  Estimate     SE   z   P(&gt;|z|)
+##     -1.77 0.0807 -22 2.75e-107
+## 
+## Extinction (logit-scale):
+##  Estimate    SE     z  P(&gt;|z|)
+##     -0.59 0.102 -5.79 7.04e-09
+## 
+## Detection (logit-scale):
+##  Estimate     SE     z P(&gt;|z|)
+##   -0.0837 0.0562 -1.49   0.137
+## 
+## AIC: 4972.597 
+## Number of sites: 250
+## optim convergence code: 0
+## optim iterations: 27 
+## Bootstrap iterations: 0</code></pre>
+<p>The computation time was only a few seconds. Note that all parameters were estimated on the logit scale. To back-transform to the original scale, we can simply use the inverse-logit function, named <code>plogis</code> in R.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">plogis</span>(<span class="op">-</span><span class="fl">0.813</span>)</a></code></pre></div>
+<pre><code>## [1] 0.3072516</code></pre>
+<p>Alternatively, we can use <code>backTransform</code>, which computes standard errors using the delta method. Confidence intervals are also easily obtained using the function <code>confint</code>. We first remind ourselves of the names of parameters, which can all be used as arguments for these functions.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">names</span>(m0)</a></code></pre></div>
+<pre><code>## [1] &quot;psi&quot; &quot;col&quot; &quot;ext&quot; &quot;det&quot;</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">backTransform</span>(m0, <span class="dt">type=</span><span class="st">&quot;psi&quot;</span>)</a></code></pre></div>
+<pre><code>## Backtransformed linear combination(s) of Initial estimate(s)
+## 
+##  Estimate     SE LinComb (Intercept)
+##     0.307 0.0335  -0.813           1
+## 
+## Transformation: logistic</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">confint</span>(<span class="kw">backTransform</span>(m0, <span class="dt">type=</span><span class="st">&quot;psi&quot;</span>))</a></code></pre></div>
+<pre><code>##      0.025     0.975
+##  0.2457313 0.3765804</code></pre>
+<p>Next, we fit the dynamic occupancy model with full year-dependence in the parameters describing occupancy dynamics and also in detection. This is the same model under which we generated the data set, so we would expect accurate estimates.</p>
+<p>By default in R, a factor such as year in this analysis, is a parameterized in terms of an intercept and effects representing differences. This would mean that the parameter for the first year is the intercept and the effects would denote the differences between the parameter values in all other years, relative to the parameter value in the first year, which serves as a reference level. This treatment or effects parameterization is useful for testing for differences. For simple presentation, a means parameterization is more practical. It can be specified by adding a -1 to the formula for the time-dependent parameters.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">m1 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="dt">psiformula =</span> <span class="op">~</span><span class="dv">1</span>,   <span class="co"># First-year occupancy</span></a>
+<a class="sourceLine" id="cb18-2" title="2">    <span class="dt">gammaformula =</span> <span class="op">~</span><span class="st"> </span>year<span class="dv">-1</span>,    <span class="co"># Colonization</span></a>
+<a class="sourceLine" id="cb18-3" title="3">    <span class="dt">epsilonformula =</span> <span class="op">~</span><span class="st"> </span>year<span class="dv">-1</span>,  <span class="co"># Extinction</span></a>
+<a class="sourceLine" id="cb18-4" title="4">    <span class="dt">pformula =</span> <span class="op">~</span><span class="st"> </span>year<span class="dv">-1</span>,        <span class="co"># Detection</span></a>
+<a class="sourceLine" id="cb18-5" title="5">    <span class="dt">data =</span> simUMF)</a>
+<a class="sourceLine" id="cb18-6" title="6">m1</a></code></pre></div>
+<pre><code>## 
+## Call:
+## colext(psiformula = ~1, gammaformula = ~year - 1, epsilonformula = ~year - 
+##     1, pformula = ~year - 1, data = simUMF)
+## 
+## Initial:
+##  Estimate    SE      z P(&gt;|z|)
+##    -0.273 0.302 -0.906   0.365
+## 
+## Colonization:
+##        Estimate    SE     z  P(&gt;|z|)
+## year01    -2.08 0.951 -2.19 2.86e-02
+## year02    -2.18 0.365 -5.96 2.52e-09
+## year03    -1.98 0.274 -7.23 4.88e-13
+## year04    -2.32 0.678 -3.42 6.37e-04
+## year05    -1.89 0.478 -3.95 7.78e-05
+## year06    -1.76 0.294 -5.97 2.44e-09
+## year07    -1.55 0.230 -6.73 1.75e-11
+## year08    -1.43 0.228 -6.29 3.19e-10
+## year09    -2.35 0.470 -5.00 5.64e-07
+## 
+## Extinction:
+##        Estimate    SE      z  P(&gt;|z|)
+## year01  -1.4209 0.418 -3.401 6.72e-04
+## year02  -0.4808 0.239 -2.009 4.45e-02
+## year03  -1.2606 0.366 -3.440 5.83e-04
+## year04  -0.0907 0.650 -0.139 8.89e-01
+## year05  -0.6456 0.599 -1.078 2.81e-01
+## year06  -0.9586 0.378 -2.539 1.11e-02
+## year07  -1.2279 0.365 -3.362 7.74e-04
+## year08  -1.1894 0.292 -4.076 4.58e-05
+## year09  -0.6292 0.635 -0.991 3.22e-01
+## 
+## Detection:
+##        Estimate    SE      z  P(&gt;|z|)
+## year01  -1.0824 0.244 -4.434 9.26e-06
+## year02  -0.2232 0.148 -1.508 1.32e-01
+## year03   0.2951 0.154  1.918 5.52e-02
+## year04   0.0662 0.161  0.412 6.81e-01
+## year05  -2.0396 0.433 -4.706 2.52e-06
+## year06  -0.6982 0.232 -3.005 2.66e-03
+## year07   0.2413 0.165  1.466 1.43e-01
+## year08   0.0847 0.155  0.548 5.84e-01
+## year09   0.6052 0.140  4.338 1.44e-05
+## year10  -1.1699 0.306 -3.828 1.29e-04
+## 
+## AIC: 4779.172</code></pre>
+</div>
+<div id="manipulating-results-prediction-and-plotting" class="section level2">
+<h2><span class="header-section-number">4.3</span> Manipulating results: prediction and plotting</h2>
+<p>Again, all estimates are shown on the logit-scale. Back-transforming estimates when covariates, such as year, are present involves an extra step. Specifically, we need to tell <code>unmarked</code> the values of our covariate at which we want an estimate. This can be done using <code>backTransform</code> in combination with <code>linearComb</code>, although it can be easier to use <code>predict</code>. <code>predict</code> allows the user to supply a data.frame in which each row represents a combination of covariate values of interest. Below, we create data.frames called <code>nd</code> with each row representing a year. Then we request yearly estimates of the probability of extinction, colonization and detection, and compare them to “truth”, i.e., the values with which we simulated the data set. Note that there are T-1 extinction and colonization parameters in this case, so we do not need to include year 10 in <code>nd</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">nd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">year=</span><span class="kw">c</span>(<span class="st">&#39;01&#39;</span>,<span class="st">&#39;02&#39;</span>,<span class="st">&#39;03&#39;</span>,<span class="st">&#39;04&#39;</span>,<span class="st">&#39;05&#39;</span>,<span class="st">&#39;06&#39;</span>,<span class="st">&#39;07&#39;</span>,<span class="st">&#39;08&#39;</span>,<span class="st">&#39;09&#39;</span>))</a>
+<a class="sourceLine" id="cb20-2" title="2">E.ext &lt;-<span class="st"> </span><span class="kw">predict</span>(m1, <span class="dt">type=</span><span class="st">&#39;ext&#39;</span>, <span class="dt">newdata=</span>nd)</a>
+<a class="sourceLine" id="cb20-3" title="3">E.col &lt;-<span class="st"> </span><span class="kw">predict</span>(m1, <span class="dt">type=</span><span class="st">&#39;col&#39;</span>, <span class="dt">newdata=</span>nd)</a>
+<a class="sourceLine" id="cb20-4" title="4">nd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">year=</span><span class="kw">c</span>(<span class="st">&#39;01&#39;</span>,<span class="st">&#39;02&#39;</span>,<span class="st">&#39;03&#39;</span>,<span class="st">&#39;04&#39;</span>,<span class="st">&#39;05&#39;</span>,<span class="st">&#39;06&#39;</span>,<span class="st">&#39;07&#39;</span>,<span class="st">&#39;08&#39;</span>,<span class="st">&#39;09&#39;</span>,<span class="st">&#39;10&#39;</span>))</a>
+<a class="sourceLine" id="cb20-5" title="5">E.det &lt;-<span class="st"> </span><span class="kw">predict</span>(m1, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>, <span class="dt">newdata=</span>nd)</a></code></pre></div>
+<p><code>predict</code> returns the predictions along with standard errors and confidence intervals. These can be used to create plots. The <code>with</code> function is used to simplify the process of requesting the columns of <code>data.frame</code> returned by <code>predict</code>.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">op &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">1</span>), <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">0.6</span>, <span class="fl">0.6</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>))</a>
+<a class="sourceLine" id="cb21-2" title="2"></a>
+<a class="sourceLine" id="cb21-3" title="3"><span class="kw">with</span>(E.ext, {   <span class="co"># Plot for extinction probability</span></a>
+<a class="sourceLine" id="cb21-4" title="4">  <span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, Predicted, <span class="dt">pch=</span><span class="dv">1</span>, <span class="dt">xaxt=</span><span class="st">&#39;n&#39;</span>, <span class="dt">xlab=</span><span class="st">&#39;Year&#39;</span>,</a>
+<a class="sourceLine" id="cb21-5" title="5">    <span class="dt">ylab=</span><span class="kw">expression</span>(<span class="kw">paste</span>(<span class="st">&#39;Extinction probability ( &#39;</span>, epsilon, <span class="st">&#39; )&#39;</span>)),</a>
+<a class="sourceLine" id="cb21-6" title="6">    <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">col=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb21-7" title="7">  <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, <span class="dt">labels=</span>nd<span class="op">$</span>year[<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>])</a>
+<a class="sourceLine" id="cb21-8" title="8">  <span class="kw">arrows</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, lower, <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, upper, <span class="dt">code=</span><span class="dv">3</span>, <span class="dt">angle=</span><span class="dv">90</span>, <span class="dt">length=</span><span class="fl">0.03</span>, <span class="dt">col=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb21-9" title="9">  <span class="kw">points</span>((<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>)<span class="op">-</span><span class="fl">0.1</span>, <span class="dv">1</span><span class="op">-</span>phi, <span class="dt">col=</span><span class="dv">1</span>, <span class="dt">lwd =</span> <span class="dv">1</span>, <span class="dt">pch=</span><span class="dv">16</span>)</a>
+<a class="sourceLine" id="cb21-10" title="10">  <span class="kw">legend</span>(<span class="dv">7</span>, <span class="dv">1</span>, <span class="kw">c</span>(<span class="st">&#39;Parameter&#39;</span>, <span class="st">&#39;Estimate&#39;</span>), <span class="dt">col=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">4</span>), <span class="dt">pch=</span><span class="kw">c</span>(<span class="dv">16</span>, <span class="dv">1</span>),</a>
+<a class="sourceLine" id="cb21-11" title="11">         <span class="dt">cex=</span><span class="fl">0.8</span>)</a>
+<a class="sourceLine" id="cb21-12" title="12">  })</a>
+<a class="sourceLine" id="cb21-13" title="13"></a>
+<a class="sourceLine" id="cb21-14" title="14"><span class="kw">with</span>(E.col, {   <span class="co"># Plot for colonization probability</span></a>
+<a class="sourceLine" id="cb21-15" title="15">  <span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, Predicted, <span class="dt">pch=</span><span class="dv">1</span>, <span class="dt">xaxt=</span><span class="st">&#39;n&#39;</span>, <span class="dt">xlab=</span><span class="st">&#39;Year&#39;</span>,</a>
+<a class="sourceLine" id="cb21-16" title="16">    <span class="dt">ylab=</span><span class="kw">expression</span>(<span class="kw">paste</span>(<span class="st">&#39;Colonization probability ( &#39;</span>, gamma, <span class="st">&#39; )&#39;</span>)),</a>
+<a class="sourceLine" id="cb21-17" title="17">    <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">col=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb21-18" title="18">  <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, <span class="dt">labels=</span>nd<span class="op">$</span>year[<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>])</a>
+<a class="sourceLine" id="cb21-19" title="19">  <span class="kw">arrows</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, lower, <span class="dv">1</span><span class="op">:</span><span class="dv">9</span>, upper, <span class="dt">code=</span><span class="dv">3</span>, <span class="dt">angle=</span><span class="dv">90</span>, <span class="dt">length=</span><span class="fl">0.03</span>, <span class="dt">col=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb21-20" title="20">  <span class="kw">points</span>((<span class="dv">1</span><span class="op">:</span><span class="dv">9</span>)<span class="op">-</span><span class="fl">0.1</span>, gamma, <span class="dt">col=</span><span class="dv">1</span>, <span class="dt">lwd =</span> <span class="dv">1</span>, <span class="dt">pch=</span><span class="dv">16</span>)</a>
+<a class="sourceLine" id="cb21-21" title="21">  <span class="kw">legend</span>(<span class="dv">7</span>, <span class="dv">1</span>, <span class="kw">c</span>(<span class="st">&#39;Parameter&#39;</span>, <span class="st">&#39;Estimate&#39;</span>), <span class="dt">col=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">4</span>), <span class="dt">pch=</span><span class="kw">c</span>(<span class="dv">16</span>, <span class="dv">1</span>),</a>
+<a class="sourceLine" id="cb21-22" title="22">         <span class="dt">cex=</span><span class="fl">0.8</span>)</a>
+<a class="sourceLine" id="cb21-23" title="23">  })</a>
+<a class="sourceLine" id="cb21-24" title="24"></a>
+<a class="sourceLine" id="cb21-25" title="25"><span class="kw">with</span>(E.det, {   <span class="co"># Plot for detection probability: note 10 years</span></a>
+<a class="sourceLine" id="cb21-26" title="26">  <span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, Predicted, <span class="dt">pch=</span><span class="dv">1</span>, <span class="dt">xaxt=</span><span class="st">&#39;n&#39;</span>, <span class="dt">xlab=</span><span class="st">&#39;Year&#39;</span>,</a>
+<a class="sourceLine" id="cb21-27" title="27">    <span class="dt">ylab=</span><span class="kw">expression</span>(<span class="kw">paste</span>(<span class="st">&#39;Detection probability ( &#39;</span>, p, <span class="st">&#39; )&#39;</span>)),</a>
+<a class="sourceLine" id="cb21-28" title="28">    <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">col=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb21-29" title="29">  <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="dt">labels=</span>nd<span class="op">$</span>year)</a>
+<a class="sourceLine" id="cb21-30" title="30">  <span class="kw">arrows</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, lower, <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, upper, <span class="dt">code=</span><span class="dv">3</span>, <span class="dt">angle=</span><span class="dv">90</span>, <span class="dt">length=</span><span class="fl">0.03</span>, <span class="dt">col=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb21-31" title="31">  <span class="kw">points</span>((<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)<span class="op">-</span><span class="fl">0.1</span>, p, <span class="dt">col=</span><span class="dv">1</span>, <span class="dt">lwd =</span> <span class="dv">1</span>, <span class="dt">pch=</span><span class="dv">16</span>)</a>
+<a class="sourceLine" id="cb21-32" title="32">  <span class="kw">legend</span>(<span class="fl">7.5</span>, <span class="dv">1</span>, <span class="kw">c</span>(<span class="st">&#39;Parameter&#39;</span>,<span class="st">&#39;Estimate&#39;</span>), <span class="dt">col=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">4</span>), <span class="dt">pch=</span><span class="kw">c</span>(<span class="dv">16</span>, <span class="dv">1</span>),</a>
+<a class="sourceLine" id="cb21-33" title="33">         <span class="dt">cex=</span><span class="fl">0.8</span>)</a>
+<a class="sourceLine" id="cb21-34" title="34">  })</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Figure 2. Yearly estimates of parameters" />
+<p class="caption">Figure 2. Yearly estimates of parameters</p>
+</div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">par</span>(op)</a></code></pre></div>
+<p>Figure 2 shows that the 95% confidence intervals include the true parameter values, and the point estimates are not too far off.</p>
+</div>
+<div id="derived-parameters" class="section level2">
+<h2><span class="header-section-number">4.4</span> Derived parameters</h2>
+<p>Estimates of occupancy probability in years <span class="math inline">\(T&gt;1\)</span> must be derived from the estimates of first-year occupancy and the two parameters governing the dynamics, extinction/survival and colonization. <code>unmarked</code> does this automatically in two ways. First, the population-level estimates of occupancy probability <span class="math inline">\(\psi_t = \psi_{t-1}\phi_{t-1} + (1-\phi_{t-1})\gamma\)</span> are calculated and stored in the slot named . Slots can be accessed using the <code>@</code> operator, e.g. <code>fm@projected</code>. In some cases, interest may lie in making inference about the proportion of the sampled sites that are occupied, rather than the entire population of sites. These estimates are contained in the <code>smoothed</code> slot of the fitted model. Thus, the <code>projected</code> values are estimates of population parameters, and the <code>smoothed</code> estimates are of the finite-sample quantities. Discussions of the differences can be found in <span class="citation">Weir and Royle (2009)</span>.</p>
+<p>Bootstrap methods can be used to compute standard errors of derived parameter estimates. Here we employ a non-parametric bootstrap to obtain standard errors of the smoothed estimates of occupancy probability during each year.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1">m1 &lt;-<span class="st"> </span><span class="kw">nonparboot</span>(m1, <span class="dt">B =</span> <span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb23-2" title="2"><span class="kw">cbind</span>(<span class="dt">psi=</span>psi, <span class="dt">smoothed=</span><span class="kw">smoothed</span>(m1)[<span class="dv">2</span>,], <span class="dt">SE=</span>m1<span class="op">@</span>smoothed.mean.bsse[<span class="dv">2</span>,])</a></code></pre></div>
+<pre><code>##          psi  smoothed         SE
+## 1  0.4000000 0.4320671 0.06783911
+## 2  0.3493746 0.4110124 0.03786402
+## 3  0.2977125 0.3139967 0.02780818
+## 4  0.3148447 0.3278179 0.04303542
+## 5  0.3192990 0.2316695 0.10858419
+## 6  0.2915934 0.2528485 0.04179036
+## 7  0.3114415 0.2928429 0.03113920
+## 8  0.3636580 0.3504885 0.04224678
+## 9  0.3654064 0.3936991 0.02103870
+## 10 0.3460641 0.3095786 0.06830698</code></pre>
+<p>In practice, <code>B</code> should be much higher, possibly &gt;1000 for complex models .</p>
+<p>Another derived parameters of interest is turnover probability</p>
+<p><span class="math display">\[
+\tau_t = \frac{\gamma_{t-1}(1-\psi_{t-1})}{\gamma_{t-1}(1-\psi_{t-1})
+  + \phi_{t-1}\psi_{t-1}}
+\]</span></p>
+<p>The following function returns these estimates.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">turnover &lt;-<span class="st"> </span><span class="cf">function</span>(fm) {</a>
+<a class="sourceLine" id="cb25-2" title="2">    psi.hat &lt;-<span class="st"> </span><span class="kw">plogis</span>(<span class="kw">coef</span>(fm, <span class="dt">type=</span><span class="st">&quot;psi&quot;</span>))</a>
+<a class="sourceLine" id="cb25-3" title="3">    <span class="cf">if</span>(<span class="kw">length</span>(psi.hat) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb25-4" title="4">        <span class="kw">stop</span>(<span class="st">&quot;this function only works if psi is scalar&quot;</span>)</a>
+<a class="sourceLine" id="cb25-5" title="5">    T &lt;-<span class="st"> </span><span class="kw">getData</span>(fm)<span class="op">@</span>numPrimary</a>
+<a class="sourceLine" id="cb25-6" title="6">    tau.hat &lt;-<span class="st"> </span><span class="kw">numeric</span>(T<span class="dv">-1</span>)</a>
+<a class="sourceLine" id="cb25-7" title="7">    gamma.hat &lt;-<span class="st"> </span><span class="kw">plogis</span>(<span class="kw">coef</span>(fm, <span class="dt">type=</span><span class="st">&quot;col&quot;</span>))</a>
+<a class="sourceLine" id="cb25-8" title="8">    phi.hat &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span><span class="kw">plogis</span>(<span class="kw">coef</span>(fm, <span class="dt">type=</span><span class="st">&quot;ext&quot;</span>))</a>
+<a class="sourceLine" id="cb25-9" title="9">    <span class="cf">if</span>(<span class="kw">length</span>(gamma.hat) <span class="op">!=</span><span class="st"> </span>T<span class="dv">-1</span> <span class="op">|</span><span class="st"> </span><span class="kw">length</span>(phi.hat) <span class="op">!=</span><span class="st"> </span>T<span class="dv">-1</span>)</a>
+<a class="sourceLine" id="cb25-10" title="10">        <span class="kw">stop</span>(<span class="st">&quot;this function only works if gamma and phi T-1 vectors&quot;</span>)</a>
+<a class="sourceLine" id="cb25-11" title="11">    <span class="cf">for</span>(t <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span>T) {</a>
+<a class="sourceLine" id="cb25-12" title="12">        psi.hat[t] &lt;-<span class="st"> </span>psi.hat[t<span class="dv">-1</span>]<span class="op">*</span>phi.hat[t<span class="dv">-1</span>] <span class="op">+</span></a>
+<a class="sourceLine" id="cb25-13" title="13"><span class="st">            </span>(<span class="dv">1</span><span class="op">-</span>psi.hat[t<span class="dv">-1</span>])<span class="op">*</span>gamma.hat[t<span class="dv">-1</span>]</a>
+<a class="sourceLine" id="cb25-14" title="14">        tau.hat[t<span class="dv">-1</span>] &lt;-<span class="st"> </span>gamma.hat[t<span class="dv">-1</span>]<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>psi.hat[t<span class="dv">-1</span>]) <span class="op">/</span><span class="st"> </span>psi.hat[t]</a>
+<a class="sourceLine" id="cb25-15" title="15">        }</a>
+<a class="sourceLine" id="cb25-16" title="16">    <span class="kw">return</span>(tau.hat)</a>
+<a class="sourceLine" id="cb25-17" title="17">    }</a></code></pre></div>
+<p>The bootstrap again offers a means of estimating variance. Here we show how to generate 95% confidence intervals for the turnover estimates using the parametric bootstrap.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">pb &lt;-<span class="st"> </span><span class="kw">parboot</span>(m1, <span class="dt">statistic=</span>turnover, <span class="dt">nsim=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb26-2" title="2">turnCI &lt;-<span class="st"> </span><span class="kw">cbind</span>(pb<span class="op">@</span>t0,</a>
+<a class="sourceLine" id="cb26-3" title="3">  <span class="kw">t</span>(<span class="kw">apply</span>(pb<span class="op">@</span>t.star, <span class="dv">2</span>, quantile, <span class="dt">probs=</span><span class="kw">c</span>(<span class="fl">0.025</span>, <span class="fl">0.975</span>))))</a>
+<a class="sourceLine" id="cb26-4" title="4"><span class="kw">colnames</span>(turnCI) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;tau&quot;</span>, <span class="st">&quot;lower&quot;</span>, <span class="st">&quot;upper&quot;</span>)</a>
+<a class="sourceLine" id="cb26-5" title="5">turnCI</a></code></pre></div>
+<pre><code>##           tau      lower     upper
+## t*1 0.1532645 0.00536045 0.1974714
+## t*2 0.1911530 0.07881180 0.2119585
+## t*3 0.2537292 0.19777204 0.2785973
+## t*4 0.2604356 0.04063769 0.4197328
+## t*5 0.3989303 0.34078483 0.4720357
+## t*6 0.3758690 0.32703698 0.5370796
+## t*7 0.3537473 0.32696166 0.3564059
+## t*8 0.3174983 0.32925238 0.4139696
+## t*9 0.1704449 0.18946470 0.3186236</code></pre>
+<p>Which bootstrap method is most appropriate for variance estimation? For detailed distinctions between the non-parametric and the parametric bootstrap, see <span class="citation">Davison and Hinkley (1997)</span>. We note simply that the parametric bootstrap resamples from the fitted model, and thus the measures of uncertainty are purely functions of the distributions assumed by the model. Non-parametric bootstrap samples, in contrast, are obtained by resampling the data, not the model, and thus are not necessarily affected by the variance formulas of the model’s distributions.</p>
+</div>
+<div id="goodness-of-fit" class="section level2">
+<h2><span class="header-section-number">4.5</span> Goodness-of-fit</h2>
+<p>In addition to estimating the variance of an estimate, the parametric bootstrap can be used to assess goodness-of-fit. For this purpose, a fit-statistic, i.e. one that compares observed and expected values, is evaluated using the original fitted model, and numerous other models fitted to simulated datasets. The simulation yields an approximation of the distribution of the fit-statistic, and a -value can be computed as the proportion of simulated values greater than the observed value.</p>
+<p><span class="citation">Hosmer et al. (1997)</span> found that a <span class="math inline">\(\chi^2\)</span> statistic performed reasonably well in assessing lack of fit for logistic regression models. We know of no studies formally evaluating the performance of various fit-statistics for dynamic occupancy models, so this approach should be considered experimental. Fit-statistics applied to aggregated encounter histories offer an alternative approach <span class="citation">(MacKenzie and Bailey 2004)</span>, but are difficult to implement when J*T is high and missing values or continuous covariates are present.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">chisq &lt;-<span class="st"> </span><span class="cf">function</span>(fm) {</a>
+<a class="sourceLine" id="cb28-2" title="2">    umf &lt;-<span class="st"> </span><span class="kw">getData</span>(fm)</a>
+<a class="sourceLine" id="cb28-3" title="3">    y &lt;-<span class="st"> </span><span class="kw">getY</span>(umf)</a>
+<a class="sourceLine" id="cb28-4" title="4">    sr &lt;-<span class="st"> </span>fm<span class="op">@</span>sitesRemoved</a>
+<a class="sourceLine" id="cb28-5" title="5">    <span class="cf">if</span>(<span class="kw">length</span>(sr)<span class="op">&gt;</span><span class="dv">0</span>)</a>
+<a class="sourceLine" id="cb28-6" title="6">        y &lt;-<span class="st"> </span>y[<span class="op">-</span>sr,,drop=<span class="ot">FALSE</span>]</a>
+<a class="sourceLine" id="cb28-7" title="7">    fv &lt;-<span class="st"> </span><span class="kw">fitted</span>(fm, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb28-8" title="8">    y[<span class="kw">is.na</span>(fv)] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
+<a class="sourceLine" id="cb28-9" title="9">    <span class="kw">sum</span>((y<span class="op">-</span>fv)<span class="op">^</span><span class="dv">2</span><span class="op">/</span>(fv<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>fv)))</a>
+<a class="sourceLine" id="cb28-10" title="10">    }</a>
+<a class="sourceLine" id="cb28-11" title="11"></a>
+<a class="sourceLine" id="cb28-12" title="12"><span class="kw">set.seed</span>(<span class="dv">344</span>)</a>
+<a class="sourceLine" id="cb28-13" title="13">pb.gof &lt;-<span class="st"> </span><span class="kw">parboot</span>(m0, <span class="dt">statistic=</span>chisq, <span class="dt">nsim=</span><span class="dv">100</span>)</a>
+<a class="sourceLine" id="cb28-14" title="14"></a>
+<a class="sourceLine" id="cb28-15" title="15"><span class="kw">plot</span>(pb.gof, <span class="dt">xlab=</span><span class="kw">expression</span>(chi<span class="op">^</span><span class="dv">2</span>), <span class="dt">main=</span><span class="st">&quot;&quot;</span>, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.95</span>),</a>
+<a class="sourceLine" id="cb28-16" title="16">     <span class="dt">xlim=</span><span class="kw">c</span>(<span class="dv">7300</span>, <span class="dv">7700</span>))</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Figure 3. Goodness-of-fit" />
+<p class="caption">Figure 3. Goodness-of-fit</p>
+</div>
+<p>Figure 3 indicates that, as expected, the constant parameter model does not fit the data well.</p>
+</div>
+</div>
+<div id="dynamic-occupancy-models-for-crossbill-data-from-the-swiss-mhb" class="section level1">
+<h1><span class="header-section-number">5</span> Dynamic occupancy models for crossbill data from the Swiss MHB</h1>
+<div id="the-crossbill-data-set" class="section level2">
+<h2><span class="header-section-number">5.1</span> The crossbill data set</h2>
+<p>The crossbill data are included with the <code>unmarked</code> package. The dataset contains the results of nine years of surveys (1999–2007) for the European crossbill (<em>Loxia curvirostra</em>), a pine-seed eating finch, in 267 1-km<span class="math inline">\(^2\)</span> sample quadrats in Switzerland. Quadrats are surveyed annually as part of the Swiss breeding bird survey MHB <span class="citation">(Schmid et al. 2004)</span>. They are laid out as a grid over Switzerland and surveyed 2 or 3 times every breeding season (mid-April to late June) by experienced field ornithologists along a haphazard survey route of length 1-9 km (average 5 km). High-elevation sites are only surveyed twice per breeding season.</p>
+</div>
+<div id="importing-formatting-and-summarizing-data" class="section level2">
+<h2><span class="header-section-number">5.2</span> Importing, formatting, and summarizing data</h2>
+<p>The data can be loaded into an open R workspace using the <code>data</code> command.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="kw">data</span>(crossbill)</a>
+<a class="sourceLine" id="cb29-2" title="2"><span class="kw">colnames</span>(crossbill)</a></code></pre></div>
+<pre><code>##  [1] &quot;id&quot;      &quot;ele&quot;     &quot;forest&quot;  &quot;surveys&quot; &quot;det991&quot;  &quot;det992&quot;  &quot;det993&quot; 
+##  [8] &quot;det001&quot;  &quot;det002&quot;  &quot;det003&quot;  &quot;det011&quot;  &quot;det012&quot;  &quot;det013&quot;  &quot;det021&quot; 
+## [15] &quot;det022&quot;  &quot;det023&quot;  &quot;det031&quot;  &quot;det032&quot;  &quot;det033&quot;  &quot;det041&quot;  &quot;det042&quot; 
+## [22] &quot;det043&quot;  &quot;det051&quot;  &quot;det052&quot;  &quot;det053&quot;  &quot;det061&quot;  &quot;det062&quot;  &quot;det063&quot; 
+## [29] &quot;det071&quot;  &quot;det072&quot;  &quot;det073&quot;  &quot;date991&quot; &quot;date992&quot; &quot;date993&quot; &quot;date001&quot;
+## [36] &quot;date002&quot; &quot;date003&quot; &quot;date011&quot; &quot;date012&quot; &quot;date013&quot; &quot;date021&quot; &quot;date022&quot;
+## [43] &quot;date023&quot; &quot;date031&quot; &quot;date032&quot; &quot;date033&quot; &quot;date041&quot; &quot;date042&quot; &quot;date043&quot;
+## [50] &quot;date051&quot; &quot;date052&quot; &quot;date053&quot; &quot;date061&quot; &quot;date062&quot; &quot;date063&quot; &quot;date071&quot;
+## [57] &quot;date072&quot; &quot;date073&quot;</code></pre>
+<p>We have three covariates that vary by site: median elevation of the quadrat (<code>ele</code>, in metres), forest cover of the quadrat (<code>forest</code>, in percent) and the number of surveys per season (i.e., 2 or 3, surveys). These are called site covariates, because they vary by sites only. The 27 columns entitled <code>det991</code> - <code>det073</code> contain the crossbill detection/nondetection data during all surveys over the 9 years. They contain a 1 when at least one crossbill was recorded during a survey and a 0 otherwise. <code>NA</code>s indicate surveys that did not take place, either because a site is high-elevation and has no third survey or because it failed to be surveyed altogether in a year. The final 27 columns entitled <code>date991</code> - <code>date073</code> give the Julian date of each survey. They represent a “survey-covariate” or “observation covariate”. We note that the paper by <span class="citation">Royle (2007)</span> used a subset of this data set.</p>
+<p>AIC-based model selection (see section 5.4) requires that all models are fit to the same data. <code>unmarked</code> removes missing data in a context specific way. For missing <code>siteCovs</code>, the entire row of data must be removed. However, for missing <code>yearlySiteCovs</code> or <code>obsCovs</code>, only the corresponding observation are removed. Thus, if <code>unmarked</code> removes different observations from different models, the models cannot be compared using AIC. A way around this is to remove the detection data corresponding to missing covariates before fitting the models. The crossbill data have missing dates and so we remove the associated detection/non-detection data.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">DATE &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(crossbill[,<span class="dv">32</span><span class="op">:</span><span class="dv">58</span>])</a>
+<a class="sourceLine" id="cb31-2" title="2">y.cross &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(crossbill[,<span class="dv">5</span><span class="op">:</span><span class="dv">31</span>])</a>
+<a class="sourceLine" id="cb31-3" title="3">y.cross[<span class="kw">is.na</span>(DATE) <span class="op">!=</span><span class="st"> </span><span class="kw">is.na</span>(y.cross)] &lt;-<span class="st"> </span><span class="ot">NA</span></a></code></pre></div>
+<p>In addition, continuous covariates should be transformed in a way that brings their values close to zero in order to improve or even enable numerical convergence of the maximum-likelihood routine. We do this “by hand” and note that we could also have used the R function <code>scale</code>. We subtract the mean and divide by the standard deviation.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">sd.DATE &lt;-<span class="st"> </span><span class="kw">sd</span>(<span class="kw">c</span>(DATE), <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb32-2" title="2">mean.DATE &lt;-<span class="st"> </span><span class="kw">mean</span>(DATE, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb32-3" title="3">DATE &lt;-<span class="st"> </span>(DATE <span class="op">-</span><span class="st"> </span>mean.DATE) <span class="op">/</span><span class="st"> </span>sd.DATE</a></code></pre></div>
+<p>Before we can fit occupancy models, we need to format this data set appropriately.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">years &lt;-<span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1999</span><span class="op">:</span><span class="dv">2007</span>)</a>
+<a class="sourceLine" id="cb33-2" title="2">years &lt;-<span class="st"> </span><span class="kw">matrix</span>(years, <span class="kw">nrow</span>(crossbill), <span class="dv">9</span>, <span class="dt">byrow=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb33-3" title="3">umf &lt;-<span class="st"> </span><span class="kw">unmarkedMultFrame</span>(<span class="dt">y=</span>y.cross,</a>
+<a class="sourceLine" id="cb33-4" title="4">    <span class="dt">siteCovs=</span>crossbill[,<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>], <span class="dt">yearlySiteCovs=</span><span class="kw">list</span>(<span class="dt">year=</span>years),</a>
+<a class="sourceLine" id="cb33-5" title="5">    <span class="dt">obsCovs=</span><span class="kw">list</span>(<span class="dt">date=</span>DATE),</a>
+<a class="sourceLine" id="cb33-6" title="6">    <span class="dt">numPrimary=</span><span class="dv">9</span>)</a></code></pre></div>
+</div>
+<div id="model-fitting-1" class="section level2">
+<h2><span class="header-section-number">5.3</span> Model fitting</h2>
+<p>We fit a series of models that represent different hypotheses about the colonization-extinction dynamics of Swiss crossbills at a spatial scale of 1 km<span class="math inline">\(^2\)</span>. We fit year effects on colonization and extinction in the means parameterization, but for detection probability, we choose an effects parameterization. The latter is more useful for getting predictions in the presence of other explanatory variables for that parameter. For model <code>fm5</code> with more complex covariate relationships, we use as starting values for the optimization routine the solution from a “neighboring” model with slightly less complexity, model <code>fm4</code>. Wise choice of starting values can be decisive for success or failure of maximum likelihood estimation.</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="co"># A model with constant parameters</span></a>
+<a class="sourceLine" id="cb34-2" title="2">fm0 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span><span class="dv">1</span>, <span class="op">~</span><span class="dv">1</span>, <span class="op">~</span><span class="dv">1</span>, <span class="op">~</span><span class="dv">1</span>, umf)</a>
+<a class="sourceLine" id="cb34-3" title="3"></a>
+<a class="sourceLine" id="cb34-4" title="4"><span class="co"># Like fm0, but with year-dependent detection</span></a>
+<a class="sourceLine" id="cb34-5" title="5">fm1 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span><span class="dv">1</span>, <span class="op">~</span><span class="dv">1</span>, <span class="op">~</span><span class="dv">1</span>, <span class="op">~</span>year, umf)</a>
+<a class="sourceLine" id="cb34-6" title="6"></a>
+<a class="sourceLine" id="cb34-7" title="7"><span class="co"># Like fm0, but with year-dependent colonization and extinction</span></a>
+<a class="sourceLine" id="cb34-8" title="8">fm2 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span><span class="dv">1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span><span class="dv">1</span>, umf)</a>
+<a class="sourceLine" id="cb34-9" title="9"></a>
+<a class="sourceLine" id="cb34-10" title="10"><span class="co"># A fully time-dependent model</span></a>
+<a class="sourceLine" id="cb34-11" title="11">fm3 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span><span class="dv">1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year, umf)</a>
+<a class="sourceLine" id="cb34-12" title="12"></a>
+<a class="sourceLine" id="cb34-13" title="13"><span class="co"># Like fm3 with forest-dependence of 1st-year occupancy</span></a>
+<a class="sourceLine" id="cb34-14" title="14">fm4 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span>forest, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year, umf)</a>
+<a class="sourceLine" id="cb34-15" title="15"></a>
+<a class="sourceLine" id="cb34-16" title="16"><span class="co"># Like fm4 with date- and year-dependence of detection</span></a>
+<a class="sourceLine" id="cb34-17" title="17">fm5 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span>forest, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year <span class="op">+</span><span class="st"> </span>date <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(date<span class="op">^</span><span class="dv">2</span>),</a>
+<a class="sourceLine" id="cb34-18" title="18">              umf, <span class="dt">starts=</span><span class="kw">c</span>(<span class="kw">coef</span>(fm4), <span class="dv">0</span>, <span class="dv">0</span>))</a>
+<a class="sourceLine" id="cb34-19" title="19"></a>
+<a class="sourceLine" id="cb34-20" title="20"><span class="co"># Same as fm5, but with detection in addition depending on forest cover</span></a>
+<a class="sourceLine" id="cb34-21" title="21">fm6 &lt;-<span class="st"> </span><span class="kw">colext</span>(<span class="op">~</span>forest, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year<span class="dv">-1</span>, <span class="op">~</span>year <span class="op">+</span><span class="st"> </span>date <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(date<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb34-22" title="22"><span class="st">              </span>forest, umf)</a></code></pre></div>
+</div>
+<div id="model-selection" class="section level2">
+<h2><span class="header-section-number">5.4</span> Model selection</h2>
+<p>We can compare models using the Akaike information criterion (<span class="math inline">\(AIC\)</span>). Note that <code>unmarked</code> yields <span class="math inline">\(AIC\)</span>, not <span class="math inline">\(AIC_c\)</span> because the latter would require the sample size, which is not really known for hierarchical models such as the dynamic occupancy model.</p>
+<p>Model selection and model-averaged prediction in <code>unmarked</code> require that we create a list of models using <code>fitList</code>. This function organizes models and conducts a series of tests to ensure that the models were fit to the same data.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">models &lt;-<span class="st"> </span><span class="kw">fitList</span>(<span class="st">&#39;psi(.)gam(.)eps(.)p(.)&#39;</span>    =<span class="st"> </span>fm0,</a>
+<a class="sourceLine" id="cb35-2" title="2">                  <span class="st">&#39;psi(.)gam(.)eps(.)p(Y)&#39;</span>    =<span class="st"> </span>fm1,</a>
+<a class="sourceLine" id="cb35-3" title="3">                  <span class="st">&#39;psi(.)gam(Y)eps(Y)p(.)&#39;</span>    =<span class="st"> </span>fm2,</a>
+<a class="sourceLine" id="cb35-4" title="4">                  <span class="st">&#39;psi(.)gam(Y)eps(Y)p(Y)&#39;</span>    =<span class="st"> </span>fm3,</a>
+<a class="sourceLine" id="cb35-5" title="5">                  <span class="st">&#39;psi(F)gam(Y)eps(Y)p(Y)&#39;</span>    =<span class="st"> </span>fm4,</a>
+<a class="sourceLine" id="cb35-6" title="6">                  <span class="st">&#39;psi(F)gam(Y)eps(Y)p(YD2)&#39;</span>  =<span class="st"> </span>fm5,</a>
+<a class="sourceLine" id="cb35-7" title="7">                  <span class="st">&#39;psi(F)gam(Y)eps(Y)p(YD2F)&#39;</span> =<span class="st"> </span>fm6)</a>
+<a class="sourceLine" id="cb35-8" title="8">ms &lt;-<span class="st"> </span><span class="kw">modSel</span>(models)</a>
+<a class="sourceLine" id="cb35-9" title="9">ms</a></code></pre></div>
+<pre><code>##                           nPars     AIC  delta   AICwt cumltvWt
+## psi(F)gam(Y)eps(Y)p(YD2F)    30 4986.39   0.00 1.0e+00     1.00
+## psi(F)gam(Y)eps(Y)p(YD2)     29 5059.30  72.91 1.5e-16     1.00
+## psi(F)gam(Y)eps(Y)p(Y)       27 5095.38 108.99 2.2e-24     1.00
+## psi(.)gam(.)eps(.)p(Y)       12 5111.32 124.93 7.5e-28     1.00
+## psi(.)gam(Y)eps(Y)p(Y)       26 5127.63 141.24 2.1e-31     1.00
+## psi(.)gam(Y)eps(Y)p(.)       18 5170.54 184.15 1.0e-40     1.00
+## psi(.)gam(.)eps(.)p(.)        4 5193.50 207.11 1.1e-45     1.00</code></pre>
+<p>One model has overwhelming support, so we can base inference on that one alone. Before doing so, we point out how to extract coefficients from a <code>fitList</code> object, and convert the results to a <code>data.frame</code>, which could be exported from R.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1"><span class="kw">coef</span>(ms)                            <span class="co"># Estimates only</span></a>
+<a class="sourceLine" id="cb37-2" title="2"><span class="kw">SE</span>(ms)                              <span class="co"># Standard errors only</span></a>
+<a class="sourceLine" id="cb37-3" title="3">toExport &lt;-<span class="st"> </span><span class="kw">as</span>(ms, <span class="st">&quot;data.frame&quot;</span>)    <span class="co"># Everything</span></a></code></pre></div>
+</div>
+<div id="manipulating-results-prediction-and-plotting-1" class="section level2">
+<h2><span class="header-section-number">5.5</span> Manipulating results: Prediction and plotting</h2>
+<p>Fitted models can be used to predict expected outcomes when given new data. For example, one could ask “how many crossbills would you expect to find in a quadrat with 50% forest cover?” Prediction also offers a way of presenting the results of an analysis. We illustrate by plotting the predictions of <span class="math inline">\(\psi\)</span> and <span class="math inline">\(p\)</span> over the range of covariate values studied. Note that because we standardized date, we need to transform it back to its original scale after obtaining predictions on the standardized scale.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1">op &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">0.8</span>,<span class="fl">0.8</span>,<span class="fl">0.1</span>,<span class="fl">0.1</span>))</a>
+<a class="sourceLine" id="cb38-2" title="2"></a>
+<a class="sourceLine" id="cb38-3" title="3">nd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">forest=</span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dt">length=</span><span class="dv">50</span>))</a>
+<a class="sourceLine" id="cb38-4" title="4">E.psi &lt;-<span class="st"> </span><span class="kw">predict</span>(fm6, <span class="dt">type=</span><span class="st">&quot;psi&quot;</span>, <span class="dt">newdata=</span>nd, <span class="dt">appendData=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb38-5" title="5"></a>
+<a class="sourceLine" id="cb38-6" title="6"><span class="kw">with</span>(E.psi, {</a>
+<a class="sourceLine" id="cb38-7" title="7">    <span class="kw">plot</span>(forest, Predicted, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>,</a>
+<a class="sourceLine" id="cb38-8" title="8">         <span class="dt">xlab=</span><span class="st">&quot;Percent cover of forest&quot;</span>,</a>
+<a class="sourceLine" id="cb38-9" title="9">         <span class="dt">ylab=</span><span class="kw">expression</span>(<span class="kw">hat</span>(psi)), <span class="dt">cex.lab=</span><span class="fl">0.8</span>, <span class="dt">cex.axis=</span><span class="fl">0.8</span>)</a>
+<a class="sourceLine" id="cb38-10" title="10">    <span class="kw">lines</span>(forest, Predicted<span class="fl">+1.96</span><span class="op">*</span>SE, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.7</span>))</a>
+<a class="sourceLine" id="cb38-11" title="11">    <span class="kw">lines</span>(forest, Predicted<span class="fl">-1.96</span><span class="op">*</span>SE, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.7</span>))</a>
+<a class="sourceLine" id="cb38-12" title="12">    })</a>
+<a class="sourceLine" id="cb38-13" title="13"></a>
+<a class="sourceLine" id="cb38-14" title="14">nd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">date=</span><span class="kw">seq</span>(<span class="op">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="dt">length=</span><span class="dv">50</span>),</a>
+<a class="sourceLine" id="cb38-15" title="15">                 <span class="dt">year=</span><span class="kw">factor</span>(<span class="st">&quot;2005&quot;</span>, <span class="dt">levels=</span><span class="kw">c</span>(<span class="kw">unique</span>(years))),</a>
+<a class="sourceLine" id="cb38-16" title="16">                 <span class="dt">forest=</span><span class="dv">50</span>)</a>
+<a class="sourceLine" id="cb38-17" title="17">E.p &lt;-<span class="st"> </span><span class="kw">predict</span>(fm6, <span class="dt">type=</span><span class="st">&quot;det&quot;</span>, <span class="dt">newdata=</span>nd, <span class="dt">appendData=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb38-18" title="18">E.p<span class="op">$</span>dateOrig &lt;-<span class="st"> </span>E.p<span class="op">$</span>date<span class="op">*</span>sd.DATE <span class="op">+</span><span class="st"> </span>mean.DATE</a>
+<a class="sourceLine" id="cb38-19" title="19"></a>
+<a class="sourceLine" id="cb38-20" title="20"><span class="kw">with</span>(E.p, {</a>
+<a class="sourceLine" id="cb38-21" title="21">    <span class="kw">plot</span>(dateOrig, Predicted, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">type=</span><span class="st">&quot;l&quot;</span>,</a>
+<a class="sourceLine" id="cb38-22" title="22">         <span class="dt">xlab=</span><span class="st">&quot;Julian date&quot;</span>, <span class="dt">ylab=</span><span class="kw">expression</span>( <span class="kw">italic</span>(p) ),</a>
+<a class="sourceLine" id="cb38-23" title="23">         <span class="dt">cex.lab=</span><span class="fl">0.8</span>, <span class="dt">cex.axis=</span><span class="fl">0.8</span>)</a>
+<a class="sourceLine" id="cb38-24" title="24">    <span class="kw">lines</span>(dateOrig, Predicted<span class="fl">+1.96</span><span class="op">*</span>SE, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.7</span>))</a>
+<a class="sourceLine" id="cb38-25" title="25">    <span class="kw">lines</span>(dateOrig, Predicted<span class="fl">-1.96</span><span class="op">*</span>SE, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.7</span>))</a>
+<a class="sourceLine" id="cb38-26" title="26">    })</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Figure 4. Covariates" />
+<p class="caption">Figure 4. Covariates</p>
+</div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="kw">par</span>(op)</a></code></pre></div>
+<p><strong>Acknowledgments</strong></p>
+<p>Special thanks goes to Ian Fiske, the author of <code>colext</code> and the original developer of <code>unmarked</code>. Andy Royle provided the initial funding and support for the package. The questions of many people on the users’ list motivated the writing of this document.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-Davison_1997">
+<p>Davison, A. C., and D. V. Hinkley. 1997. Bootstrap methods and their application. Cambridge University Press.</p>
+</div>
+<div id="ref-Hanski_1998">
+<p>Hanski, I. 1998. Metapopulation dynamics. Nature 396:41–49.</p>
+</div>
+<div id="ref-Hosmer_1997">
+<p>Hosmer, D. W., T. Hosmer, S. le Cressie, and S. Lemeshow. 1997. A comparision of goodness-of-fit tests for the logistic regression model. Statistics in Medicine 16:965–980.</p>
+</div>
+<div id="ref-Kery_2010">
+<p>Kéry, M. 2010. Introduction to WinBUGS for Ecologists. Academic Press.</p>
+</div>
+<div id="ref-Kery_2011">
+<p>Kéry, M., and M. Schaub. 2011. Bayesian Population Analysis using WinBUGS: A Hierarchical Perspective. Academic Press.</p>
+</div>
+<div id="ref-Kery_2008">
+<p>Kéry, M., and B. R. Schmidt. 2008. Imperfect detection and its consequences for monitoring for conservation. Community Ecology 9:207–2016.</p>
+</div>
+<div id="ref-MacKenzie_2004">
+<p>MacKenzie, D. I., and L. Bailey. 2004. Assessing the fit of site-occupancy models. Journal of Agricultural, Biological, and Environmental Statistics 9:300–318.</p>
+</div>
+<div id="ref-mackenzie_estimating_2003">
+<p>MacKenzie, D. I., J. D. Nichols, J. E. Hines, M. G. Knutson, and A. B. Franklin. 2003. Estimating site occupancy, colonization, and local extinction when a species is detected imperfectly. Ecology 84:2200–2207.</p>
+</div>
+<div id="ref-mackenzie_estimating_2002">
+<p>MacKenzie, D. I., J. D. Nichols, G. B. Lachman, S. Droege, J. A. Royle, and C. A. Langtimm. 2002. Estimating site occupancy rates when detection probabilities are less than one. Ecology 83:2248–2255.</p>
+</div>
+<div id="ref-McCullagh_1989">
+<p>McCullagh, P., and J. A. Nelder. 1989. Generalized linear models. Chapman; Hall.</p>
+</div>
+<div id="ref-Moilanen_2002">
+<p>Moilanen, A. 2002. Implications of empirical data quality to metapopulation model parameter estimation and application. Oikos 96:516–530.</p>
+</div>
+<div id="ref-Royle_2007">
+<p>Royle, and K., J. A. 2007. A Bayesian state-space formulation of dynamic occupancy models. Ecology 88:1813–1823.</p>
+</div>
+<div id="ref-royle_dorazio:2008">
+<p>Royle, J. A., and R. M. Dorazio. 2008. Hierarchical modeling and inference in ecology: The analysis of data from populations, metapopulations and communities. Academic Press.</p>
+</div>
+<div id="ref-royle_estimating_2003">
+<p>Royle, J. A., and J. D. Nichols. 2003. Estimating abundance from repeated presence-absence data or point counts. Ecology 84:777–790.</p>
+</div>
+<div id="ref-schmid_etal:2004">
+<p>Schmid, H., N. Zbinden, and V. Keller. 2004. Überwachung der bestandsentwicklung häufiger brutvögel in der schweiz. Swiss Ornithological Institute Sempach Switzerland.</p>
+</div>
+<div id="ref-Tyre_2002">
+<p>Tyre, A. J., B. Tenhumberg, S. A. Field, D. Niejalke, Parris K., and H. P. Possingham. 2003. Improving precision and reducing bias in biological surveys: Estimating false-negative error rates. Ecological Applications 13:1790–1801.</p>
+</div>
+<div id="ref-Weir_2009">
+<p>Weir, I. J. F., L., and J. A. Royle. 2009. Trends in anuran occupancy from northeastern states of the North American Amphibian Monitoring Program. Herpetological Conservation and Biology 4:389–402.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

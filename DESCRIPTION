@@ -1,14 +1,14 @@
 Package: unmarked
-Version: 1.2.3
-Date: 2022-04-25
+Version: 1.2.5
+Date: 2022-05-10
 Type: Package
 Title: Models for Data from Unmarked Animals
 Authors@R: c(
     person("Richard", "Chandler", role="aut"), 
-    person("Ken", "Kellner", role="aut"),
+    person("Ken", "Kellner", email="contact@kenkellner.com", role=c("cre", "aut")),
     person("Ian", "Fiske", role="aut"), 
     person("David", "Miller", role="aut"),
-    person("Andy", "Royle", email="aroyle@usgs.gov", role=c("cre", "aut")),
+    person("Andy", "Royle", role="aut"),
     person("Jeff", "Hostetler", role="aut"),
     person("Rebecca", "Hutchinson", role="aut"),
     person("Adam", "Smith", role="aut"),
@@ -21,8 +21,8 @@ Authors@R: c(
 Depends: R (>= 2.12.0), methods
 Imports: graphics, lattice, lme4, MASS, Matrix, parallel, pbapply,
         plyr, Rcpp (>= 0.8.0), stats, TMB (>= 1.7.18), utils
-Suggests: AHMbook, pkgdown, raster, testthat
-Description: Fits hierarchical models of animal abundance and occurrence to data collected using survey methods such as point counts, site occupancy sampling, distance sampling, removal sampling, and double observer sampling. Parameters governing the state and observation processes can be modeled as functions of covariates.
+Suggests: knitr, rmarkdown, pkgdown, raster, testthat
+Description: Fits hierarchical models of animal abundance and occurrence to data collected using survey methods such as point counts, site occupancy sampling, distance sampling, removal sampling, and double observer sampling. Parameters governing the state and observation processes can be modeled as functions of covariates. Reference: Fiske and Chandler (2011) <doi:10.18637/jss.v043.i10>.
 License: GPL (>= 3)
 LazyLoad: yes
 LazyData: yes
@@ -43,13 +43,14 @@ URL: https://groups.google.com/d/forum/unmarked,
         https://github.com/ianfiske/unmarked,
         https://github.com/rbchan/unmarked
 BugReports: https://github.com/rbchan/unmarked/issues
+VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2022-04-25 20:46:25 UTC; ken
+Packaged: 2022-05-10 20:22:24 UTC; ken
 Author: Richard Chandler [aut],
-  Ken Kellner [aut],
+  Ken Kellner [cre, aut],
   Ian Fiske [aut],
   David Miller [aut],
-  Andy Royle [cre, aut],
+  Andy Royle [aut],
   Jeff Hostetler [aut],
   Rebecca Hutchinson [aut],
   Adam Smith [aut],
@@ -58,6 +59,6 @@ Author: Richard Chandler [aut],
   Auriel Fournier [ctb],
   Ariel Muldoon [ctb],
   Chris Baker [ctb]
-Maintainer: Andy Royle <aroyle@usgs.gov>
+Maintainer: Ken Kellner <contact@kenkellner.com>
 Repository: CRAN
-Date/Publication: 2022-04-26 08:40:02 UTC
+Date/Publication: 2022-05-13 09:10:05 UTC

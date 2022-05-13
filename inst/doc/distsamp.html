@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Richard Chandler, USGS Patuxent Wildlife Research Center" />
+
+<meta name="date" content="2020-03-04" />
+
+<title>Distance sampling analysis in unmarked</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Distance sampling analysis in unmarked</h1>
+<h4 class="author">Richard Chandler, USGS Patuxent Wildlife Research Center</h4>
+<h4 class="date">March 4, 2020</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#introduction"><span class="toc-section-number">2</span> Introduction</a></li>
+<li><a href="#importing-formatting-and-summarizing-data"><span class="toc-section-number">3</span> Importing, formatting, and summarizing data</a></li>
+<li><a href="#model-fitting"><span class="toc-section-number">4</span> Model fitting</a></li>
+<li><a href="#manipulating-results"><span class="toc-section-number">5</span> Manipulating results</a></li>
+<li><a href="#prediction-and-plotting"><span class="toc-section-number">6</span> Prediction and plotting</a></li>
+<li><a href="#model-extensions"><span class="toc-section-number">7</span> Model extensions</a></li>
+<li><a href="#conclusion"><span class="toc-section-number">8</span> Conclusion</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="abstract" class="section level1">
+<h1><span class="header-section-number">1</span> Abstract</h1>
+<p>Distance sampling is a wildlife sampling technique used to estimate population size or density. Describing how density varies spatially is often of equal interest; however, conventional methods of analysis do not allow for explicit modeling of both density and detection probability. The function <code>distsamp</code> implements the multinomial-Poisson mixture model of <span class="citation">Royle et al. (2004)</span>, which was developed to overcome this limitation. This model requires that line- or point-transects are spatially replicated and that distance data are recorded in discrete intervals. The function  extends this basic model, by introducing the parameter <span class="math inline">\(\phi\)</span>, the probability of being available for detection <span class="citation">(Chandler et al. 2011)</span>. Furthermore, this function allows abundance to be modeled using the negative binomial distribution, which may be useful for dealing with over-dispersion. This document describes how to format data, fit models, and manipulate results in package . It does not cover the statistical theory and assumptions underlying distance sampling <span class="citation">(Buckland et al. 2001)</span>, which the user is expected to be familiar with.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">2</span> Introduction</h1>
+<p>Spatial variation in density is common to virtually all wildlife populations, and describing this variation is a central objective of much research. To accurately estimate and model density, it is often necessary to account for individuals present but not detected. Distance from observer is a ubiquitous source of variation in detection probability, and thus distance sampling has become a commonly used survey methodology. Numerous options exist for analyzing distance sampling data, but here the focus is on the model of <span class="citation">Royle et al. (2004)</span>, which assumes that multiple transects have been surveyed and distance data are recorded in discrete intervals. The details of the model formulation are as follows:</p>
+<p>The latent transect-level abundance distribution is currently assumed to be <span class="math display">\[
+  \label{eq:1}
+  N_{i} \sim \mathrm{Poisson}(\lambda)
+  \quad  i=1,\dots,M\
+\]</span> The detection process is modeled as <span class="math display">\[
+  \label{eq:2}
+  y_{ij} \sim \mathrm{Multinomial}(N_{i}, \pi_{ij})
+  \quad  i=1,\dots,M\;j=1,\dots,J
+\]</span> where <span class="math inline">\(\pi_{ij}\)</span> is the multinomial cell probability for transect <span class="math inline">\(i\)</span> in distance class <span class="math inline">\(j\)</span>. These are computed by integrating a detection function such as the half-normal (with scale parameter <span class="math inline">\(\sigma\)</span>) over each distance interval.</p>
+<p>Parameters <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\sigma\)</span> can be vectors affected by transect-specific covariates using the log link.</p>
+</div>
+<div id="importing-formatting-and-summarizing-data" class="section level1">
+<h1><span class="header-section-number">3</span> Importing, formatting, and summarizing data</h1>
+<p>The first step is to import the data into R. The simplest option is to use the <code>read.csv</code> function to import a .csv file that has been formatted so that each row represents a transect, and columns describe either the number of individuals detected in each distance interval or transect-specific covariates. Alternatively, if data were not recorded in discrete distance intervals, a .csv file could be imported that contains a row for each individual detected and columns for the distances and transect names. This could then be converted to transect-level data using the function <code>formatDistData</code>. For example,</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(unmarked)</a>
+<a class="sourceLine" id="cb1-2" title="2">dists &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>, <span class="st">&quot;distdata.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>),</a>
+<a class="sourceLine" id="cb1-3" title="3">                  <span class="dt">stringsAsFactors=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="kw">head</span>(dists, <span class="dv">10</span>)</a></code></pre></div>
+<pre><code>##    distance transect
+## 1         1        a
+## 2        18        a
+## 3         7        a
+## 4         2        a
+## 5        13        b
+## 6         3        b
+## 7         5        b
+## 8        10        b
+## 9         6        c
+## 10        9        c</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">levels</span>(dists<span class="op">$</span>transect) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">levels</span>(dists<span class="op">$</span>transect), <span class="st">&quot;g&quot;</span>)</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">levels</span>(dists<span class="op">$</span>transect)</a></code></pre></div>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; &quot;e&quot; &quot;f&quot; &quot;g&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">yDat &lt;-<span class="st"> </span><span class="kw">formatDistData</span>(dists, <span class="dt">distCol=</span><span class="st">&quot;distance&quot;</span>,</a>
+<a class="sourceLine" id="cb5-2" title="2">    <span class="dt">transectNameCol=</span><span class="st">&quot;transect&quot;</span>, <span class="dt">dist.breaks=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>))</a>
+<a class="sourceLine" id="cb5-3" title="3">yDat</a></code></pre></div>
+<pre><code>##   [0,5] (5,10] (10,15] (15,20]
+## a     2      1       0       1
+## b     2      1       1       0
+## c     2      2       0       0
+## d     2      1       1       0
+## e     1      0       1       2
+## f     2      1       1       0
+## g     0      0       0       0</code></pre>
+<p>Here we have created an object called <code>yDat</code> that contains counts for each transect (row) in each distance interval (columns). Note the method used to include transect <code>&quot;g&quot;</code>, which was surveyed but where no individuals were detected. It is important that all surveyed transects are included in the analysis.</p>
+<p>Suppose there also exists transect-specific covariate data.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">(covs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">canopyHt =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">8</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">7</span>, <span class="dv">5</span>),</a>
+<a class="sourceLine" id="cb7-2" title="2">    <span class="dt">habitat =</span> <span class="kw">c</span>(<span class="st">&#39;A&#39;</span>,<span class="st">&#39;A&#39;</span>,<span class="st">&#39;A&#39;</span>,<span class="st">&#39;A&#39;</span>,<span class="st">&#39;B&#39;</span>,<span class="st">&#39;B&#39;</span>,<span class="st">&#39;B&#39;</span>), <span class="dt">row.names=</span>letters[<span class="dv">1</span><span class="op">:</span><span class="dv">7</span>]))</a></code></pre></div>
+<pre><code>##   canopyHt habitat
+## a        5       A
+## b        8       A
+## c        3       A
+## d        2       A
+## e        4       B
+## f        7       B
+## g        5       B</code></pre>
+<p>The function <code>unmarkedFrameDS</code> can now be used to organize these data along with their metadata (study design (line- or point-transect), distance class break points, transect lengths, and units of measurement) into an object to be used as the <code>data</code> argument in <code>distsamp</code>. By organizing the data this way, the user does not need to repetitively specify these arguments during each call to <code>distsamp</code>, thereby reducing the potential for errors and facilitating data summary and manipulation.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">umf &lt;-<span class="st"> </span><span class="kw">unmarkedFrameDS</span>(<span class="dt">y=</span><span class="kw">as.matrix</span>(yDat), <span class="dt">siteCovs=</span>covs, <span class="dt">survey=</span><span class="st">&quot;line&quot;</span>,</a>
+<a class="sourceLine" id="cb9-2" title="2">    <span class="dt">dist.breaks=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>), <span class="dt">tlength=</span><span class="kw">rep</span>(<span class="dv">100</span>, <span class="dv">7</span>),</a>
+<a class="sourceLine" id="cb9-3" title="3">    <span class="dt">unitsIn=</span><span class="st">&quot;m&quot;</span>)</a></code></pre></div>
+<pre><code>## Warning: siteCovs contains characters. Converting them to factors.</code></pre>
+<p>Note that there is no <code>obsCovs</code> argument, meaning that distance-interval-level covariates cannot be included in the analysis. The call to <code>unmarkedFrameDS</code> indicates that the data were collected on seven line transects, each 100 meters long, and detections were tabulated into distance intervals defined by the <code>dist.breaks</code> cutpoints. It is important that both transect lengths and distance break points are provided in the same units specified by <code>unitsIn</code>.</p>
+<p>We can look at these data using a variety of methods.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">summary</span>(umf)</a></code></pre></div>
+<pre><code>## unmarkedFrameDS Object
+## 
+## line-transect survey design
+## Distance class cutpoints (m):  0 5 10 15 20 
+## 
+## 7 sites
+## Maximum number of distance classes per site: 4 
+## Mean number of distance classes per site: 4 
+## Sites with at least one detection: 6 
+## 
+## Tabulation of y observations:
+##  0  1  2 
+## 11 10  7 
+## 
+## Site-level covariates:
+##     canopyHt     habitat
+##  Min.   :2.000   A:4    
+##  1st Qu.:3.500   B:3    
+##  Median :5.000          
+##  Mean   :4.857          
+##  3rd Qu.:6.000          
+##  Max.   :8.000</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">hist</span>(umf, <span class="dt">xlab=</span><span class="st">&quot;distance (m)&quot;</span>, <span class="dt">main=</span><span class="st">&quot;&quot;</span>, <span class="dt">cex.lab=</span><span class="fl">0.8</span>, <span class="dt">cex.axis=</span><span class="fl">0.8</span>)</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Figure 1. Histogram of detection distances" />
+<p class="caption">Figure 1. Histogram of detection distances</p>
+</div>
+</div>
+<div id="model-fitting" class="section level1">
+<h1><span class="header-section-number">4</span> Model fitting</h1>
+<p>Now that we have put our data into an object of class <code>unmarkedFrameDS</code>, we are ready to fit some models with <code>distsamp</code>. The first argument is a <code>formula</code> which specifies the detection covariates followed by the density (or abundance) covariates. The only other required argument is the <code>data</code>, but several other optional arguments exist. By default, the half-normal detection function is used to model density in animals / ha. The detection function can be selected using the <code>keyfun</code> argument. The response can be changed from <code>&quot;density&quot;</code>, to <code>&quot;abund&quot;</code> with the <code>output</code> argument. When modeling density, the output units can be changed from <code>&quot;ha&quot;</code> to <code>&quot;kmsq&quot;</code> using the <code>unitsOut</code> argument. <code>distsamp</code> also includes the arguments <code>starts</code>, <code>method</code>, and <code>control</code>, which are common to all unmarked fitting functions.</p>
+<p>Below is a series of models that demonstrates <code>distsamp</code>’s arguments and defaults.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">hn_Null &lt;-<span class="st"> </span><span class="kw">distsamp</span>(<span class="op">~</span><span class="dv">1</span><span class="op">~</span><span class="dv">1</span>, umf)</a>
+<a class="sourceLine" id="cb14-2" title="2">hn_Null &lt;-<span class="st"> </span><span class="kw">distsamp</span>(<span class="op">~</span><span class="dv">1</span><span class="op">~</span><span class="dv">1</span>, umf, <span class="dt">keyfun=</span><span class="st">&quot;halfnorm&quot;</span>, <span class="dt">output=</span><span class="st">&quot;density&quot;</span>,</a>
+<a class="sourceLine" id="cb14-3" title="3">    <span class="dt">unitsOut=</span><span class="st">&quot;ha&quot;</span>)</a>
+<a class="sourceLine" id="cb14-4" title="4">haz_Null &lt;-<span class="st"> </span><span class="kw">distsamp</span>(<span class="op">~</span><span class="dv">1</span><span class="op">~</span><span class="dv">1</span>, umf, <span class="dt">keyfun=</span><span class="st">&quot;hazard&quot;</span>)</a>
+<a class="sourceLine" id="cb14-5" title="5">hn_Hab.Ht &lt;-<span class="st"> </span><span class="kw">distsamp</span>(<span class="op">~</span>canopyHt <span class="op">~</span>habitat, umf)</a></code></pre></div>
+<p>The first two models are the same, a null half-normal detection function with density returned in animals / ha (on the log-scale). The third model uses the hazard-rate detection function, and the fourth model includes covariates affecting the Poisson mean (<span class="math inline">\(\lambda\)</span>) and the half-normal scale parameter (<span class="math inline">\(\sigma\)</span>).</p>
+<p>Once a model has been fit, typing its name will display parameter estimate information and AIC. A summary method shows extra details including the scale on which parameters were estimated and convergence results.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">haz_Null</a></code></pre></div>
+<pre><code>## 
+## Call:
+## distsamp(formula = ~1 ~ 1, data = umf, keyfun = &quot;hazard&quot;)
+## 
+## Density:
+##  Estimate    SE    z P(&gt;|z|)
+##      2.97 0.959 3.09 0.00198
+## 
+## Detection:
+##  Estimate   SE     z P(&gt;|z|)
+##      1.44 2.37 0.606   0.544
+## 
+## Hazard-rate(scale):
+##  Estimate   SE       z P(&gt;|z|)
+##   -0.0223 1.21 -0.0185   0.985
+## 
+## AIC: 65.17091</code></pre>
+</div>
+<div id="manipulating-results" class="section level1">
+<h1><span class="header-section-number">5</span> Manipulating results</h1>
+<p>Back-transforming estimates to the original scale and obtaining standard errors via the delta method is easily accomplished:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">names</span>(haz_Null)</a></code></pre></div>
+<pre><code>## [1] &quot;state&quot; &quot;det&quot;   &quot;scale&quot;</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">backTransform</span>(haz_Null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>)</a></code></pre></div>
+<pre><code>## Backtransformed linear combination(s) of Density estimate(s)
+## 
+##  Estimate   SE LinComb (Intercept)
+##      19.4 18.6    2.97           1
+## 
+## Transformation: exp</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">backTransform</span>(haz_Null, <span class="dt">type=</span><span class="st">&quot;det&quot;</span>)</a></code></pre></div>
+<pre><code>## Backtransformed linear combination(s) of Detection estimate(s)
+## 
+##  Estimate   SE LinComb (Intercept)
+##      4.21 9.99    1.44           1
+## 
+## Transformation: exp</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">backTransform</span>(haz_Null, <span class="dt">type=</span><span class="st">&quot;scale&quot;</span>)</a></code></pre></div>
+<pre><code>## Backtransformed linear combination(s) of Hazard-rate(scale) estimate(s)
+## 
+##  Estimate   SE LinComb scale
+##     0.978 1.18 -0.0223     1
+## 
+## Transformation: exp</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="kw">backTransform</span>(<span class="kw">linearComb</span>(hn_Hab.Ht[<span class="st">&#39;det&#39;</span>], <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)))</a></code></pre></div>
+<pre><code>## Backtransformed linear combination(s) of Detection estimate(s)
+## 
+##  Estimate   SE LinComb (Intercept) canopyHt
+##      10.3 2.54    2.33           1        5
+## 
+## Transformation: exp</code></pre>
+<p>The first back-transformation returns population density, since this is the default state parameter modeled when <code>distsamp</code>’s <code>output</code> argument is set to <code>&quot;density&quot;</code>. The second back-transformation returns the hazard-rate shape parameter, and third is the hazard-rate scale parameter. When covariates are present, <code>backTransform</code> in conjunction with <code>linearComb</code> should be used. Here, we requested the value of sigma when canopy height was 5 meters tall. Note that the intercept was included in the calculation by setting the first value in the linear equation to 1.</p>
+<p>Parameters that do not occur in the likelihood may also be of interest. For example, the number of individuals occurring in the sampled plots (local population size) is a fundamental parameter in monitoring and conservation efforts. The following commands can be used to derive this parameter from our model of density:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1">site.level.density &lt;-<span class="st"> </span><span class="kw">predict</span>(hn_Hab.Ht, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>)<span class="op">$</span>Predicted</a>
+<a class="sourceLine" id="cb27-2" title="2">plotArea.inHectares &lt;-<span class="st"> </span><span class="dv">100</span> <span class="op">*</span><span class="st"> </span><span class="dv">40</span> <span class="op">/</span><span class="st"> </span><span class="dv">10000</span></a>
+<a class="sourceLine" id="cb27-3" title="3">site.level.abundance &lt;-<span class="st"> </span>site.level.density <span class="op">*</span><span class="st"> </span>plotArea.inHectares</a>
+<a class="sourceLine" id="cb27-4" title="4">(N.hat &lt;-<span class="st"> </span><span class="kw">sum</span>(site.level.abundance))</a></code></pre></div>
+<pre><code>## [1] 39.06128</code></pre>
+<p>To describe the uncertainty of <code>N.hat</code>, or any other derived parameter, we can use a parametric bootstrap approach. First we define a function to estimate <code>N.hat</code>, and then we apply this function to numerous models fit to data simulated from our original model.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">getN.hat &lt;-<span class="st"> </span><span class="cf">function</span>(fit) {</a>
+<a class="sourceLine" id="cb29-2" title="2">    d &lt;-<span class="st"> </span><span class="kw">predict</span>(fit, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>)<span class="op">$</span>Predicted</a>
+<a class="sourceLine" id="cb29-3" title="3">    a &lt;-<span class="st"> </span>d <span class="op">*</span><span class="st"> </span>(<span class="dv">100</span> <span class="op">*</span><span class="st"> </span><span class="dv">40</span> <span class="op">/</span><span class="st"> </span><span class="dv">10000</span>)</a>
+<a class="sourceLine" id="cb29-4" title="4">    N.hat &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">N.hat =</span> <span class="kw">sum</span>(a))</a>
+<a class="sourceLine" id="cb29-5" title="5">    <span class="kw">return</span>(N.hat)</a>
+<a class="sourceLine" id="cb29-6" title="6">    }</a>
+<a class="sourceLine" id="cb29-7" title="7">pb &lt;-<span class="st"> </span><span class="kw">parboot</span>(hn_Hab.Ht, <span class="dt">statistic=</span>getN.hat, <span class="dt">nsim=</span><span class="dv">25</span>)</a>
+<a class="sourceLine" id="cb29-8" title="8">pb</a></code></pre></div>
+<pre><code>## 
+## Call: parboot(object = hn_Hab.Ht, statistic = getN.hat, nsim = 25)
+## 
+## Parametric Bootstrap Statistics:
+##         t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B &gt; t0)
+## N.hat 39.1          0.556             11.9        0.423
+## 
+## t_B quantiles:
+##       0% 2.5% 25% 50% 75% 97.5% 100%
+## N.hat 21   23  28  34  47    61   64
+## 
+## t0 = Original statistic computed from data
+## t_B = Vector of bootstrap samples</code></pre>
+<p>Here, <code>t_B</code> is an approximation of the sampling distribution for <code>N.hat</code>, conditioned on our fitted model. Confidence intervals can be calculated from the quantiles of <code>t_B</code>. Note that in practice <code>nsim</code> should be set to a much larger value and a goodness-of-fit test should be performed before making inference from a fitted model. Parametric bootstrapping can be used for the latter by supplying a fit statistic such as <code>SSE</code> instead of <code>getN.hat</code>. See <code>?parboot</code> and <code>vignette(&#39;unmarked&#39;)</code> for examples.</p>
+</div>
+<div id="prediction-and-plotting" class="section level1">
+<h1><span class="header-section-number">6</span> Prediction and plotting</h1>
+<p>A <code>predict</code> method exits for all <code>unmarkedFit</code> objects, which is useful when multiple covariate combinations exist. This method also facilitates plotting. Suppose we wanted model predictions from the covariate model along the range of covariate values studied. First we need to make new <code>data.frame</code>s holding the desired covariate combinations. Note that column names must match those of the original data, and factor variables must contain the same levels.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="kw">head</span>(habConstant &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">canopyHt =</span> <span class="kw">seq</span>(<span class="dv">2</span>, <span class="dv">8</span>, <span class="dt">length=</span><span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb31-2" title="2">    <span class="dt">habitat=</span><span class="kw">factor</span>(<span class="st">&quot;A&quot;</span>, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>))))</a></code></pre></div>
+<pre><code>##   canopyHt habitat
+## 1 2.000000       A
+## 2 2.315789       A
+## 3 2.631579       A
+## 4 2.947368       A
+## 5 3.263158       A
+## 6 3.578947       A</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">(htConstant &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">canopyHt =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb33-2" title="2">    <span class="dt">habitat=</span><span class="kw">factor</span>(<span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>))))</a></code></pre></div>
+<pre><code>##   canopyHt habitat
+## 1        5       A
+## 2        5       B</code></pre>
+<p>Now <code>predict</code> can be used to estimate density and <span class="math inline">\(\sigma\)</span> for each row of our new <code>data.frame</code>s.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">(Elambda &lt;-<span class="st"> </span><span class="kw">predict</span>(hn_Hab.Ht, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">newdata=</span>htConstant,</a>
+<a class="sourceLine" id="cb35-2" title="2">    <span class="dt">appendData=</span><span class="ot">TRUE</span>))</a></code></pre></div>
+<pre><code>##   Predicted       SE    lower    upper canopyHt habitat
+## 1  16.22835 5.058481 8.809465 29.89506        5       A
+## 2  10.91326 4.370499 4.978158 23.92436        5       B</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1"><span class="kw">head</span>(Esigma &lt;-<span class="st"> </span><span class="kw">predict</span>(hn_Hab.Ht, <span class="dt">type=</span><span class="st">&quot;det&quot;</span>, <span class="dt">newdata=</span>habConstant,</a>
+<a class="sourceLine" id="cb37-2" title="2">    <span class="dt">appendData=</span><span class="ot">TRUE</span>))</a></code></pre></div>
+<pre><code>##   Predicted       SE    lower    upper canopyHt habitat
+## 1  10.76998 4.259542 4.960935 23.38117 2.000000       A
+## 2  10.72259 3.968438 5.191220 22.14777 2.315789       A
+## 3  10.67541 3.693948 5.418117 21.03394 2.631579       A
+## 4  10.62844 3.439012 5.637007 20.03965 2.947368       A
+## 5  10.58167 3.207199 5.842026 19.16659 3.263158       A
+## 6  10.53511 3.002718 6.026005 18.41826 3.578947       A</code></pre>
+<p>Once predictions have been made, plotting is straight-forward. Figure 2a shows density as a function of habitat type, and Figure 2b shows that <span class="math inline">\(\sigma\)</span> is not related to canopy height.</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</a>
+<a class="sourceLine" id="cb39-2" title="2"><span class="kw">with</span>(Elambda, {</a>
+<a class="sourceLine" id="cb39-3" title="3">    x &lt;-<span class="st"> </span><span class="kw">barplot</span>(Predicted, <span class="dt">names=</span>habitat, <span class="dt">xlab=</span><span class="st">&quot;Habitat&quot;</span>,</a>
+<a class="sourceLine" id="cb39-4" title="4">        <span class="dt">ylab=</span><span class="st">&quot;Density (animals / ha)&quot;</span>, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">25</span>), <span class="dt">cex.names=</span><span class="fl">0.7</span>,</a>
+<a class="sourceLine" id="cb39-5" title="5">        <span class="dt">cex.lab=</span><span class="fl">0.7</span>, <span class="dt">cex.axis=</span><span class="fl">0.7</span>)</a>
+<a class="sourceLine" id="cb39-6" title="6">    <span class="kw">arrows</span>(x, Predicted, x, Predicted<span class="op">+</span>SE, <span class="dt">code=</span><span class="dv">3</span>, <span class="dt">angle=</span><span class="dv">90</span>, <span class="dt">length=</span><span class="fl">0.05</span>)</a>
+<a class="sourceLine" id="cb39-7" title="7">    <span class="kw">box</span>()</a>
+<a class="sourceLine" id="cb39-8" title="8">    })</a>
+<a class="sourceLine" id="cb39-9" title="9"><span class="kw">with</span>(Esigma, {</a>
+<a class="sourceLine" id="cb39-10" title="10">    <span class="kw">plot</span>(canopyHt, Predicted, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">xlab=</span><span class="st">&quot;Canopy height&quot;</span>,</a>
+<a class="sourceLine" id="cb39-11" title="11">        <span class="dt">ylab=</span><span class="kw">expression</span>(<span class="kw">paste</span>(<span class="st">&quot;Half-normal scale parameter (&quot;</span>, sigma, <span class="st">&quot;)&quot;</span>,</a>
+<a class="sourceLine" id="cb39-12" title="12">        <span class="dt">sep=</span><span class="st">&quot;&quot;</span>)), <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">20</span>), <span class="dt">cex=</span><span class="fl">0.7</span>, <span class="dt">cex.lab=</span><span class="fl">0.7</span>,</a>
+<a class="sourceLine" id="cb39-13" title="13">    <span class="dt">cex.axis=</span><span class="fl">0.7</span>)</a>
+<a class="sourceLine" id="cb39-14" title="14">    <span class="kw">lines</span>(canopyHt, Predicted<span class="op">+</span>SE, <span class="dt">lty=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb39-15" title="15">    <span class="kw">lines</span>(canopyHt, Predicted<span class="op">-</span>SE, <span class="dt">lty=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb39-16" title="16">    })</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAkAAAAEgCAMAAABrWDzDAAAC/VBMVEUAAAABAQECAgIDAwMEBAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8RERESEhITExMUFBQVFRUWFhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJycoKCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6Ojo7Ozs8PDw9PT0+Pj4/Pz9AQEBBQUFCQkJDQ0NERERFRUVGRkZHR0dISEhJSUlKSkpLS0tMTExNTU1OTk5PT09QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1dYWFhZWVlaWlpbW1tcXFxdXV1eXl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29wcHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OUlJSVlZWWlpaXl5eYmJiZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vMzMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7///8GTIkYAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAW4UlEQVR4nO2dC1wU1f7A8cpNLUqMENR4+QiD8rFW3KLEXP+poGKKGWmSEZmZGj7Wq/jIR21KV8wySIR8leKrtK4mZVp2hVxSyx5mlLfUq4AIggricj7/WZZFpJnZM/ObcWbP/r6fj8MyZ2bO2eOX2bNzzvkdD4IgADy0LgDi2qBACAgUCAGBAiEgUCAEBAqEgECBEBAoEAICBUJAoEAICBQIAYECISBQIAQECoSAQIEQECgQAgIFQkCgQAgIFAgBgQIhIFAgBAQKhIBAgRAQKBACAgVCQKBACAgUCAGBAiEgUCAEBAqEgECBEBAoEAICBUJAoEAICBQIAYECISBQIAQECoSAQIEQECgQAgIFQkCgQAgIFAgBgQIhIFAgBAQKhIBAgRAQKBACAgVCQKBACAgUCAGBAiEgUCAEBAqEgECBEBAoEAICBaJk9+yh3WJTdmldDN2BAlGxM3rapkNFhzebondqXRSdgQJRsbqq/kXVak3LoT9QIGrW1xZpXQQdggJRMyj873f9rHUhdAcKRE34N9aKDK0LoTtQIGpszefPtC6E7kCBqPmS+zdX60LoDhSImqzEqfebtS6E7kCB6NkxY5PWRdAfKBAV53heITZQIComjLPUcD9qLONe1LooOgMFoqPwufDQ3qFhib9qXRC9gQJRU/VLlfOD3A4UCAGBAiEgJAu0hdRmj4hfU6tCWRAXRLJAnsTcc+2WAbPUKIyeKZmhdQn0iQyBev2Xa1B2VqMwesbaA3vi+ZAsUHMSX0jIeT81CqNrhnr1iYmJ0boUukOyQJ38g/uS77tPVaMwuiavDufHHUwZO2aWRf3y6ATp38Kqjn5Gvtl83a4DBge3hhpcg8gzUt+3NfWJmrevOj1syV3zsrLmh7/Bn5qs9fumhbp+JAt0ce6ordyP0Y33XbY4uHmWxTXofETqG08eGW4dNs7pYcEX6moknD81IlvrN04Jdf1IFmj0wEzDakJa8qd6rZR6PY24V7JAHSujSM2dTg/r/IdtW9SNPzXigNRsNYK6fiQL5HeBFAefdkOBAouiyLm7nB62wW/0rFlj2m/kT2VaILqpc8HnCMke4oYCpXULeqXrO86PK8pesDDr+vkbR+IceK2Xmq1GSBeIdurcv3xSCInv58mfyrBAZM9s87fOj+JrI57LcdCSwkBdIF0g6qlzh7dz30i2TOZPZFigeNsm1ulh7tZGbNwGqt63a9eOXqB82augeoKCWgQFBXWIcHqgu7URGwv07H0+sYGpoHzZq6B6yspGlHFYnR7obm3ExgJ1qlmUf2owKF/2KqgBygeJ7tZGbCyQ3+Vdb5AwUL7sVVADlA8S3a2N2Figl6NKuk40gPJlr4IaoHyQKA579XPdg8SfSP6rJ0D5sldBDVA+SBSHvfppLFBRRhoHKF/2KqgB2geJorBXP40FGhg9jwOUL3sVdA26B4nisFc/jQXqAh/ozF4FNXD6TdufVw0sW/bqp7FAo34A50tVQb/mcqyzbY6BM5SLdIHCpr3FAfwbY1igmJiYqGYGikGboiPuqCponpGj+aPcZgplKZVHukBDlMiWYYHyHDg5QXzEHX0FtbpEe6QqSBdoQeZ/T548CcyWYYFoER9xx7BA43y6cwCzRYGcjLhjWKCHnXdjOIdhgSooTxAfccewQGNpa0gMhgWanLiMLnQJz4i732aY6rnpTdoSupxA0bf169+/PzBbhgUi5LvXEk1fOH3OwTfi7nezgxbLaUvocgLRzgsThWmBOErWjXPW36zUiDuXE0iB4XbsC8Th7Bak1Ig7lxOIcridePQSNxDIGUqNuHM5gSiH24lHL0GBFBtx53ICUQ63E49ewr5A552eodCIO5cTiHK4nXj0ErYF2pZAHvKi/hrFC8MCUQ63E49ewrZAgV/vHXouBJQvuwJRRyjjiV6yL8TB3163/b6yTf85O/Qd8lWWQP61M1aS9qB82RUIEqHMWujgFnv9nNme8thXhBz6qlL2NVVGlkCDhweUJz8EypddgZSJUHZ9/WRHeIWNKQFeUh1kCXThnSNkwR+gfBkWiPJJ9D1BdvhTm9ZPzeG1Fwl5MSFtr/NvLzcU6QLFOgDly7BAlE+iS+7NPHlScOAQf/388u74B4NrCMmH/fUqiXSB9joA5cuwQLQTv/+VK5IoXj8j/LwfniOxWApTWf8IXf/BFVxOIAUmfjuvn+I9H3L/iWEDpmb+CMxJImevErJ1SPc2XvWDlfUfXMHlBFJg4jdt/fyx/fWx0wgpmpC648dqYI7ilB3lvgduebRLS599hBRsLSh2JOg/uILLCaTAxG+JDxKr3p08oMt4Qv73+saDkoPKil74xNfbuObWhq633Hb357ZZMj/95T9DveAKNL3NHxpF6diGo5ltEyx+4AeUb0IGqj2JFkfWk+gi0/Ced0wnpHB2+seWi/IzP/9R5qLJXBt3TYuAf8R+zf3+o/AgS/WCK9D0Ns8csESMaUkcw22bZNHjHh9P+SZkIF2gyld6R86GDmsFdWWcWfDcwO5cE+OryMfHz8wnpCLvx1OlIhGLqg7kblr9AyEHBkWGtUsnZPegZ0xvHKfLS73gCjS9zTOf3aMEk3QlUPz0wwefigdmq0hfWPW+TcsXcHeS/Q+E+nunEbLTP6SLIYuQz2wRwjO539t4t/Dg9udGGIeN3s2J9+GX3590HhrrOmQJRDV5l6a3mUmB+nD/rIHAbFXpTK09XXjMcp4Tq8BisVzgSllaCu5okyUQ1eRdmt5mLQT62TYk+3kTt1lM00yQLtDwckJOwjp6WO+Np5u8y9PbfOnz3HpavWv7XROBbDNDwqO5zVx1BHop8IUk39gZsGXD2BZI9uTdvIbvTc3rHiNp9hH2tJMQxdeQLlBmPVLPuw62BVJg8q7GbSA1BVIEtgWimrxL09uMAgnBtkBUk3dpeptRICHYFohu8i5FbzOTAlHGiRaHbYEUmLzLsEC0caLhAbj0gAyBwo/H1AHKl2GBKONE0wTguloKDLWoPjIE2lyOdyAxKONE0wTgWuXd3KOVt29IR4Ohj3FQXHxSksm00JyWsSonZ3fuAcv3hSdKS5WIRgRAXpzoFakcoD8OhgWijBNNG4DrYumZwuMWy57cj3LWZ6SbzbNME5PGxsUZjRGGsJBAb++/cYrdERLS0/CIcWBcXFJSsmmOeXFGxgc5O3K/sFiOF/6v9ILUdyAFebMyEhZygOKQMiwQZZxopQJw2RQ7W1hYYNmX+0nOxoyMVPM809SkpJFxMcYog6FjiJ/3rR4erb3bhXQ2GB7lbmMjk5Kmmuaal9gc2577ucVyrPDP0lL63JogSyDYePo6WBVIwpQDngBc1t+bzAtTivOlJwuPWSyf527PeT8jY7F5rt2xQcY+BkOXkPbe3h4eN9vuY90NDxn7xcU9k/SiyfSaeVlGZk7OrtwvLZZfC0+XlvFeWZZApmLBw2hhVSDYlIO9TWam3kgqS4sKC7+17M/9NCcnK2O52TzD9JLts/Ix48MGQwh3I2vt4eHFtcc4yR40GuPixsyvO02WQHFtjPgtTBCGA0xV2D4sbZLtzsl576O6XfgcyAmqTeuRNrFQt2g7rYdJgSinHMiZWKhDtJ3Ww6RAtNN6ABMLdYS203qYFOjGT+vREhXXTKXo61FHoIpSp4xc4fyYKmkVdA3NpvVogXrTemj6elQR6BfPW8Vo5eGgmZfYcV7B0iroGn9UX/5J8km89eMCqDeth6avRxWBDnVS5KLbfKRVUAPLfM+X3rlU6lm89eMCSBfoHPnrKz5o+nqYFMj/DCFlAVLP4q0fF0C6QBPGWWzdqDWWcS+KnkDT18OkQCGXCanqKPUs3vpxAWR8hBU+Fx7aOzQs0dmSKzx9PXu8HTSre1TPpEDzHsle3dck9awmyBXo0hnbjX/Xm2bTnCuE/HOI0RhdTcgLRqMxlvu5IGmqabmVkKOWX4sUGgYirw1U9YvMGY1ljq84DN+ByPYJ4zZAlyWWJtCxD1fMn8Hd+Abf3NL3nkucKBNM5rc4UfZty839D5d+ODc3dx/3898ZS16by31+jDWE+Phygk16btbSHbCCqhepXhyWBSI0Ydip6scZu1LG9L+fa4pOHPJ8ytucGGUSg7nue2fBpETO9fvDBzwj8HXZGeoJpNm0Hq0FUiAMuzOBPnwhOrztKULS52f/W4kIZWXffbLqbUJqA+6MHL1M2qnqCaTZtB6tBVIgDLuQQHunDO1+xzFCtr6144j8MWDC1JzYtzqLa6Hc2e3x6ZQfbbIEooukrdW0Hq0FUiAMe1OBClckD7o7n7u5Ld5coIY4TSkvyHl1KSFnI0cv2vSn+KGyBOoamaVMACUmBVIgDLujfq4UvD9n5FeEvJ+0ZNtRaLtcBvmrTEOnEXJ69hqLUOtK3kdY/viAsftBRWNYIAXCsDvqZ3W3uJR12kcWL1v0ZI+bUwipLPhrvEqZbaCzabe1C90DKBPDAimC7h4kWqu5+0a3Vp2Hfn79flkCZfYLSLaQ74MB5UGBxNGdQHZqftx0lJD1PZ5e8ull+x5ZAiXuqQukB4mNigKJo1OB7Fw5uGpy393217IEqosgqcRaGewJpMxKIjoXqDEyBAoKahEUFNQhApQvqwLRT+tx31Wby8pGlHFIDAfbBFYFItRTDtx31Wa9R+fQWiDKKQd8cbTP5zho5XxyvT5gMDqH1gJRTjngi6N9KM6Bp8y+zRuOist+i8KwQJTTetx51WbFlv1mUiDaaT08cbSb1o8LoO2y30wKhNN6eFFl2W8mBaJaSYSuflwA9Zb9pnnOwaRAVCuJOINtgaj6m6nWC2NRILqVRJzAtkBUMRL5nnN8e+1rqnprZWgtkOyVRBrDtkBUMRL5nnOUbWp4UJZu+51JgRRYSYR1gah6CjVbL0xrgahWEnEG2wLRxUikeM7BpEBUK4k4g22B9B0jUWuB6FYSoaofF4DBGIlaC6RA7bAukALr0bArUAlsrcvr6scFkCUQ7Xo0IrArkLUH3bQ5mvpxAWQJRLkejRjsCkSGevWBthBZF4hyPRoxGBYI20C8NBaIcj0aMRgWyLo6YXQWrljYlOsGlNGtRyMGwwIl99u46bFkWPWwLdAPG9I2/ADMl2GBgqoIqcYQd01pEKi8f9vY52L9+peD8mVYIFt42orOzo+jqB8XQLpAo16o5rZXXhwNypdhgRb0WJpmmA+qHaYFamvv6qn0EzyUBoYFIjunT/sEVDmEaYFur//ZFpQvwwLRrijrrst+315lBwUSgHJFWZqlIFwA6QI1LDUBypdhgSjjKvAtBXHc5OCmN6VmqxHSBbrqAJQvwwJRrijLtxTEn2YHvuBW1A1CxTjRWi33pLVAlKOlxJeCiDggNVuNUE8gzZZ70log2r4wnqUgroEC8X7Gn85w0CLeth3QyagEoVEZjUi5VZGL9vaqu1p7GRHKnK0iQkHEDFvmLw0ZJUBsjFDKsIFCKSMeE0oZ2U8oJb6vUMpTA6XVj2SB+D7jf34+qZ67R9q2g7sqQ3RSIxLClLno/XVXmyjjiTt0zW+OlXWZd/YVKpxvG6GUdq2FUu70EkoJaiWUEnKTUEoXT2n1I1kg8c94plFAIDszFwmlpE4RSslOEErZPkgo5esHhVJ+Fhy1U+wjlMKP9Ea06Gc807yr1IXcWyC3pPdVMly5q6FAbsdUX7+/+9lQ5GookPtRe3UM/DGrAxTI7VAqTrQdFMjtoI8TTQMK5I5QxommAQVyRyjjRNMwZ7FQyjLBZaHXJQql7BwqlJL/iFDKr4LhZs9L/J6AAtFCGSeahot/XZ+rnsuCy+teEXw0fFUwNHPtOcEilMhI4QUFooUyTrS7gQLRQhsn2s1AgahRIk40e6BAVFgcaF0Q3YECURHK0dy20bogugMFokbiAxI3AQWiBgXiAwWiBgXiAwWiBgXiAwWioiWHh22jdUF0BwpERYkDrQuiO1AgBAQKhIBAgRAQKBACQiuBipvDQuLzcKKZz+23PXFR6csiomgl0MoH/KwKX/KEDyG5vsqMGVSVpcH+Y/g9T/ZvN1kohNXiUfz7Ozb39NzCm5Jv8BvDO41kvqenZ/OevOcs6dBuoqR1YbUSqP/2sP0KX9ImEJkgOCZUNxy+vaR84Dy+lI/vKS0P+5j/LEtrfoGq/YXyqQo8UmXMFkqd9QFv2fxLKnvx6yiARgKV+VbPhgbtbopNoO/ugy5GoD7bUwjJ5LXhyH5SM2An70kV95n5BToa/NR9i3nvGdtGEHJZ6BP92NO8u78LqLgSuVXgHF40EmhtAjkUpPA1uTaQz80GujhiGlNsEPhPev2mx/kTxmzYwC/QZ30LT/R4jy8ldUivtiMuCJQg+jf+/VNatZa2PLVGAsX6dOrocUjZa9ruQOXDopW9qCq8F8z7P26j4N5svt3vP0MEBLKxdgTf3rldf68clsJ/xqdP8u//stfBn/uvFcyIB20EqvTmbq2TZit70bo2UEE7ZS+qAtZRg0/zp2zcS8jysXwpsf5Bd9wykC/lm+8J2RLPl7JiAiHrBKbSJvC2gAgxLeA++iSFkdBGoE3/x212KjzFoU4gMyzS/o1gq1EoJT2qpmzocoFEgTvQ5u7nqwes4Uv5/a7fKmLMvCdV3yEwFWhNj+ILT/M28IXQRqAnl3KbSy2VWAPwGiea+fm1e1boQ18/vOzZsmVLXs9rxga3nyAUylzoI2yKX6eZ/F+8s4PbJ1XzpuzoI5BJral9u2cEZ63xgU+iERAoEAICBUJAoEAICBQIAYECISBQIAQECoSAQIEQECgQAgIFQkCgQAgIFAgBgQIhIFAgBAQKhIBAgRAQKBACAgVCQKBACAgUCAGBAiEgUCAEBAqEgECBEBAoEAICBUJAoEAICBQIAaFDgUrqFqQIrV8cMH2GlmXRAbWL7vGJ+s75cXkxdPsUxkUE2hxe5oiIV6Z0aDydM3nQ2drMwMtOj2ssy+bwxvtUrTEXEaj8uLsKdOr2Mm4b+5XTAxsLVH688T63FWiKv+8T1elP9u4QV54XM6JFvH2H7YUbsdkR9LHuzeeNMMUOLiILQ4KnWjMnDu/zVGXiKkK62iJ15UWNCokoJsuCO02x5sXUzgjskWC271O1xvQokIcPR3PLT1GXa+7bl9721NX46Xkx3J+RfYeb3YHSEu0/7W8+r00xSVixq3t5lXF1ZkA5mT5/Tz+SH2k7IK/ZD7XRGV/ce7ZyZGpeTE6fqiI/s32f296BSj5d5LMrPYkQS0SdQPYdbibQ+3VRd48etb/5vL6ELEydvpSQjQmZLxByuLc14Oz4LNsheQZC5qXNDoqKCn8iLyZxLSFPm+373FWg/LtT82J3pQ/nBHq4TiD7DjcT6JhPBbftn2V/87ZGzcLUaWmEbBqd+TwhByNJclqA7Yi69s68NPN8Qqw1eTEJ6wmZarbvc1eBXp1ITgftSG99yjpqPidQB2Lfwb1wK0YPP0c2+xbb37xdoI8NFdWPZWW25WomhVhuswcGtstS0LW0ZtjbeTFr+l0p7egQSM0a07FAv/cMG7Sk14aZ/wgccykvxvpArH0H90LrEt5Qakxd2kZ+Q+xv3i4QeaVjyMtXM2MfChjJ3Xza2RcdsctCVnTp8Dx3B7JOCuwzKd2+T9Ua06FAiDi19YGAM+2PWI+G8h20fyWxDj5wA0qDArksdoE+CNrDl1g2tHvPmTeiFCgQAgIFQkCgQAgIFAgBgQIhIFAgBAQKhIBAgRAQKBACAgVCQKBACAgUCAGBAiEgUCAEBAqEgECBEBAoEAICBUJAoEAICBQIAYECISBQIAQECoSA+H+dbcBvOGwzwQAAAABJRU5ErkJggg==" alt="Figure 2. Predicted covariate relationships" />
+<p class="caption">Figure 2. Predicted covariate relationships</p>
+</div>
+<p>Plots of the detection function parameters can be less informative than plots of the detection functions themselves. To do the latter, we can plug predicted values of <span class="math inline">\(\sigma\)</span> at given covariate values into the <code>gxhn</code> function. For instance, Figure 3a shows to the half-normal function at a canopy height of 2m. This was plotted by setting <span class="math inline">\(\sigma\)</span> to 10.8, the predicted value shown above. The available detection functions are described on the <code>detFuns</code> help page. Probability density functions such as <code>dxhn</code> can be plotted with the distance histogram using the <code>hist</code> method for <code>unmarkedFitDS</code> objects (Figure 3b). This only works for models without detection covariates; however, probability density functions at specific covariate values can be added in a fashion similar to that above (Figure 3b).</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</a>
+<a class="sourceLine" id="cb40-2" title="2"><span class="kw">plot</span>(<span class="cf">function</span>(x) <span class="kw">gxhn</span>(x, <span class="dt">sigma=</span><span class="fl">10.8</span>), <span class="dv">0</span>, <span class="dv">20</span>, <span class="dt">xlab=</span><span class="st">&quot;Distance (m)&quot;</span>,</a>
+<a class="sourceLine" id="cb40-3" title="3">    <span class="dt">ylab=</span><span class="st">&quot;Detection prob. at 2m canopy ht.&quot;</span>, <span class="dt">cex.lab=</span><span class="fl">0.7</span>,</a>
+<a class="sourceLine" id="cb40-4" title="4">    <span class="dt">cex.axis=</span><span class="fl">0.7</span>, <span class="dt">las=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb40-5" title="5"><span class="kw">hist</span>(hn_Null, <span class="dt">xlab=</span><span class="st">&quot;Distance (m)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Probability density&quot;</span>, <span class="dt">main=</span><span class="st">&quot;&quot;</span>,</a>
+<a class="sourceLine" id="cb40-6" title="6">    <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>), <span class="dt">cex.lab=</span><span class="fl">0.7</span>, <span class="dt">cex.axis=</span><span class="fl">0.7</span>, <span class="dt">las=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb40-7" title="7"><span class="kw">plot</span>(<span class="cf">function</span>(x) <span class="kw">dxhn</span>(x, <span class="dt">sigma=</span><span class="fl">10.8</span>), <span class="dv">0</span>, <span class="dv">20</span>, <span class="dt">add=</span><span class="ot">TRUE</span>, <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>)</a>
+<a class="sourceLine" id="cb40-8" title="8"><span class="kw">plot</span>(<span class="cf">function</span>(x) <span class="kw">dxhn</span>(x, <span class="dt">sigma=</span><span class="fl">9.9</span>), <span class="dv">0</span>, <span class="dv">20</span>, <span class="dt">add=</span><span class="ot">TRUE</span>, <span class="dt">col=</span><span class="st">&quot;green&quot;</span>)</a>
+<a class="sourceLine" id="cb40-9" title="9"><span class="kw">legend</span>(<span class="st">&#39;topright&#39;</span>, <span class="kw">c</span>(<span class="st">&quot;Canopy ht. = 2m&quot;</span>, <span class="st">&quot;Null&quot;</span>, <span class="st">&quot;Canopy ht. = 8m&quot;</span>),</a>
+<a class="sourceLine" id="cb40-10" title="10">    <span class="dt">col=</span><span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;black&quot;</span>, <span class="st">&quot;green&quot;</span>), <span class="dt">lty=</span><span class="dv">1</span>, <span class="dt">cex=</span><span class="fl">0.4</span>)</a></code></pre></div>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Figure 3. Detection and probability density functions" />
+<p class="caption">Figure 3. Detection and probability density functions</p>
+</div>
+</div>
+<div id="model-extensions" class="section level1">
+<h1><span class="header-section-number">7</span> Model extensions</h1>
+<p>A common criticism of distance sampling is that all individuals must be available for detection. Similarly, the probability of detecting an individual a distance of 0 must be 1. These assumptions often cannot be met. For instance, when counting cues such as bird songs or whale blows, the probability that an individual will produce a cue (and thus be available for detection) is rarely 1 during the sampling interval. Recently developed methods <span class="citation">(Chandler et al. 2011)</span> allow for the estimation of the probability of being available for detection <span class="math inline">\(\phi\)</span>. To do so, replicate distance sampling observations must be collected at each transect. These replicates could be collected using repeated visits or multiple observers working independently. Implementation of this model in <code>unmarked</code> is accomplished using the <code>gdistsamp</code> function. The function also provides the option to model abundance using the negative binomial distribution. Formatting data and specifying models is similar to methods described above and is more fully outlined in the help pages.</p>
+</div>
+<div id="conclusion" class="section level1">
+<h1><span class="header-section-number">8</span> Conclusion</h1>
+<p>This document has emphasized methods tailored to distance sampling analysis; however, the more general methods available in package <code>unmarked</code> can also be applied to models fitted using <code>distsamp</code> and <code>gdistsamp</code>. For example, model-selection and model-averaging can be accomplished using the <code>fitList</code> function and the <code>modSel</code> and <code>predict</code> methods.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-buckland_distsamp_2001">
+<p>Buckland, S. T., D. R. Anderson, K. P. Burnham, J. L. Laake, D. L. Borchers, and L. Thomas. 2001. Introduction to distance sampling – estimating abundance of biological populations. Oxford University Press.</p>
+</div>
+<div id="ref-chandlerEA_2011">
+<p>Chandler, R. B., J. A. Royle, and D. I. King. 2011. Inference about density and temporary emigration in unmarked populations. Ecology 92:1429–1435.</p>
+</div>
+<div id="ref-royle_modeling_2004">
+<p>Royle, J. A., D. K. Dawson, and S. Bates. 2004. Modeling abundance effects in distance sampling. Ecology 85:1591–1597.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

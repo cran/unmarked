@@ -1,15 +1,7 @@
-### R code from vignette source 'distsamp.Rnw'
+## ----echo=FALSE---------------------------------------------------------------
+options(rmarkdown.html_vignette.check_title = FALSE)
 
-###################################################
-### code chunk number 1: distsamp.Rnw:1-3
-###################################################
-options(width=70)
-options(continue=" ")
-
-
-###################################################
-### code chunk number 2: distsamp.Rnw:107-116
-###################################################
+## -----------------------------------------------------------------------------
 library(unmarked)
 dists <- read.csv(system.file("csv", "distdata.csv", package="unmarked"),
                   stringsAsFactors=TRUE)
@@ -20,67 +12,43 @@ yDat <- formatDistData(dists, distCol="distance",
 	transectNameCol="transect", dist.breaks=c(0, 5, 10, 15, 20))
 yDat
 
-
-###################################################
-### code chunk number 3: distsamp.Rnw:127-129
-###################################################
+## -----------------------------------------------------------------------------
 (covs <- data.frame(canopyHt = c(5, 8, 3, 2, 4, 7, 5),
 	habitat = c('A','A','A','A','B','B','B'), row.names=letters[1:7]))
 
-
-###################################################
-### code chunk number 4: distsamp.Rnw:141-144
-###################################################
+## -----------------------------------------------------------------------------
 umf <- unmarkedFrameDS(y=as.matrix(yDat), siteCovs=covs, survey="line",
 	dist.breaks=c(0, 5, 10, 15, 20), tlength=rep(100, 7),
 	unitsIn="m")
 
-
-###################################################
-### code chunk number 5: umfhist
-###################################################
+## ---- fig.height=4, fig.width=4, fig.cap="Figure 1. Histogram of detection distances"----
 summary(umf)
 hist(umf, xlab="distance (m)", main="", cex.lab=0.8, cex.axis=0.8)
 
-
-###################################################
-### code chunk number 6: distsamp.Rnw:190-195
-###################################################
+## -----------------------------------------------------------------------------
 hn_Null <- distsamp(~1~1, umf)
 hn_Null <- distsamp(~1~1, umf, keyfun="halfnorm", output="density",
 	unitsOut="ha")
 haz_Null <- distsamp(~1~1, umf, keyfun="hazard")
 hn_Hab.Ht <- distsamp(~canopyHt ~habitat, umf)
 
-
-###################################################
-### code chunk number 7: distsamp.Rnw:210-211
-###################################################
+## -----------------------------------------------------------------------------
 haz_Null
 
-
-###################################################
-### code chunk number 8: distsamp.Rnw:219-224
-###################################################
+## -----------------------------------------------------------------------------
 names(haz_Null)
 backTransform(haz_Null, type="state")
 backTransform(haz_Null, type="det")
 backTransform(haz_Null, type="scale")
 backTransform(linearComb(hn_Hab.Ht['det'], c(1, 5)))
 
-
-###################################################
-### code chunk number 9: distsamp.Rnw:243-247
-###################################################
+## -----------------------------------------------------------------------------
 site.level.density <- predict(hn_Hab.Ht, type="state")$Predicted
 plotArea.inHectares <- 100 * 40 / 10000
 site.level.abundance <- site.level.density * plotArea.inHectares
 (N.hat <- sum(site.level.abundance))
 
-
-###################################################
-### code chunk number 10: distsamp.Rnw:255-263
-###################################################
+## -----------------------------------------------------------------------------
 getN.hat <- function(fit) {
     d <- predict(fit, type="state")$Predicted
     a <- d * (100 * 40 / 10000)
@@ -90,28 +58,19 @@ getN.hat <- function(fit) {
 pb <- parboot(hn_Hab.Ht, statistic=getN.hat, nsim=25)
 pb
 
-
-###################################################
-### code chunk number 11: distsamp.Rnw:286-290
-###################################################
+## -----------------------------------------------------------------------------
 head(habConstant <- data.frame(canopyHt = seq(2, 8, length=20),
 	habitat=factor("A", levels=c("A", "B"))))
 (htConstant <- data.frame(canopyHt = 5,
 	habitat=factor(c("A", "B"))))
 
-
-###################################################
-### code chunk number 12: distsamp.Rnw:296-300
-###################################################
+## -----------------------------------------------------------------------------
 (Elambda <- predict(hn_Hab.Ht, type="state", newdata=htConstant,
 	appendData=TRUE))
 head(Esigma <- predict(hn_Hab.Ht, type="det", newdata=habConstant,
 	appendData=TRUE))
 
-
-###################################################
-### code chunk number 13: predplot
-###################################################
+## ---- fig.height=3, fig.width=6, fig.cap="Figure 2. Predicted covariate relationships"----
 par(mfrow=c(1, 2))
 with(Elambda, {
 	x <- barplot(Predicted, names=habitat, xlab="Habitat",
@@ -129,10 +88,7 @@ with(Esigma, {
 	lines(canopyHt, Predicted-SE, lty=2)
 	})
 
-
-###################################################
-### code chunk number 14: detplot
-###################################################
+## ---- fig.width=6, fig.height=3, fig.cap="Figure 3. Detection and probability density functions"----
 par(mfrow=c(1, 2))
 plot(function(x) gxhn(x, sigma=10.8), 0, 20, xlab="Distance (m)",
 	ylab="Detection prob. at 2m canopy ht.", cex.lab=0.7,
@@ -143,5 +99,4 @@ plot(function(x) dxhn(x, sigma=10.8), 0, 20, add=TRUE, col="blue")
 plot(function(x) dxhn(x, sigma=9.9), 0, 20, add=TRUE, col="green")
 legend('topright', c("Canopy ht. = 2m", "Null", "Canopy ht. = 8m"),
 	col=c("blue", "black", "green"), lty=1, cex=0.4)
-
 
