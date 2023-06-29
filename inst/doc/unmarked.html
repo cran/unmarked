@@ -15,6 +15,35 @@
 
 <title>Overview of unmarked: an R Package for the Analysis of Data from Unmarked Animals</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -36,26 +65,27 @@
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -64,9 +94,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -106,13 +136,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -326,7 +363,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <ul>
 <li><a href="#abstract"><span class="toc-section-number">1</span> Abstract</a></li>
 <li><a href="#overview-of-unmarked"><span class="toc-section-number">2</span> Overview of unmarked</a></li>
-<li><a href="#typical-unmarked-session"><span class="toc-section-number">3</span> Typical unmarked session</a><ul>
+<li><a href="#typical-unmarked-session"><span class="toc-section-number">3</span> Typical unmarked session</a>
+<ul>
 <li><a href="#importing-and-formatting-data"><span class="toc-section-number">3.1</span> Importing and formatting data</a></li>
 <li><a href="#fitting-models"><span class="toc-section-number">3.2</span> Fitting models</a></li>
 <li><a href="#back-transforming-parameter-estimates"><span class="toc-section-number">3.3</span> Back-transforming parameter estimates</a></li>
@@ -337,12 +375,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </ul>
 </div>
 
-<div id="abstract" class="section level1">
-<h1><span class="header-section-number">1</span> Abstract</h1>
+<div id="abstract" class="section level1" number="1">
+<h1 number="1"><span class="header-section-number">1</span> Abstract</h1>
 <p><code>unmarked</code> aims to be a complete environment for the statistical analysis of data from surveys of unmarked animals. Currently, the focus is on hierarchical models that separately model a latent state (or states) and an observation process. This vignette provides a brief overview of the package - for a more thorough treatment see <span class="citation">Fiske and Chandler (2011)</span>.</p>
 </div>
-<div id="overview-of-unmarked" class="section level1">
-<h1><span class="header-section-number">2</span> Overview of unmarked</h1>
+<div id="overview-of-unmarked" class="section level1" number="2">
+<h1 number="2"><span class="header-section-number">2</span> Overview of unmarked</h1>
 <p>Unmarked provides methods to estimate site occupancy, abundance, and density of animals (or possibly other organisms/objects) that cannot be detected with certainty. Numerous models are available that correspond to specialized survey methods such as temporally replicated surveys, distance sampling, removal sampling, and double observer sampling. These data are often associated with metadata related to the design of the study. For example, in distance sampling, the study design (line- or point-transect), distance class break points, transect lengths, and units of measurement need to be accounted for in the analysis. Unmarked uses S4 classes to store data and metadata in a way that allows for easy data manipulation, summarization, and model specification. Table 1 lists the currently implemented models and their associated fitting functions and data classes.</p>
 <table>
 <caption>Table 1. Models handled by unmarked.</caption>
@@ -413,19 +451,19 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </table>
 <p>Each data class can be created with a call to the constructor function of the same name as described in the examples below.</p>
 </div>
-<div id="typical-unmarked-session" class="section level1">
-<h1><span class="header-section-number">3</span> Typical unmarked session</h1>
+<div id="typical-unmarked-session" class="section level1" number="3">
+<h1 number="3"><span class="header-section-number">3</span> Typical unmarked session</h1>
 <p>The first step is to import the data into R, which we do below using the <code>read.csv</code> function. Next, the data need to be formatted for use with a specific model fitting function. This can be accomplished with a call to the appropriate type of <code>unmarkedFrame</code>. For example, to prepare the data for a single-season site-occupancy analysis, the function <code>unmarkedFrameOccu</code> is used.</p>
-<div id="importing-and-formatting-data" class="section level2">
-<h2><span class="header-section-number">3.1</span> Importing and formatting data</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(unmarked)</a>
-<a class="sourceLine" id="cb1-2" title="2">wt &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;widewt.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>))</a>
-<a class="sourceLine" id="cb1-3" title="3">y &lt;-<span class="st"> </span>wt[,<span class="dv">2</span><span class="op">:</span><span class="dv">4</span>]</a>
-<a class="sourceLine" id="cb1-4" title="4">siteCovs &lt;-<span class="st">  </span>wt[,<span class="kw">c</span>(<span class="st">&quot;elev&quot;</span>, <span class="st">&quot;forest&quot;</span>, <span class="st">&quot;length&quot;</span>)]</a>
-<a class="sourceLine" id="cb1-5" title="5">obsCovs &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">date=</span>wt[,<span class="kw">c</span>(<span class="st">&quot;date.1&quot;</span>, <span class="st">&quot;date.2&quot;</span>, <span class="st">&quot;date.3&quot;</span>)],</a>
-<a class="sourceLine" id="cb1-6" title="6">    <span class="dt">ivel=</span>wt[,<span class="kw">c</span>(<span class="st">&quot;ivel.1&quot;</span>,  <span class="st">&quot;ivel.2&quot;</span>, <span class="st">&quot;ivel.3&quot;</span>)])</a>
-<a class="sourceLine" id="cb1-7" title="7">wt &lt;-<span class="st"> </span><span class="kw">unmarkedFrameOccu</span>(<span class="dt">y =</span> y, <span class="dt">siteCovs =</span> siteCovs, <span class="dt">obsCovs =</span> obsCovs)</a>
-<a class="sourceLine" id="cb1-8" title="8"><span class="kw">summary</span>(wt)</a></code></pre></div>
+<div id="importing-and-formatting-data" class="section level2" number="3.1">
+<h2 number="3.1"><span class="header-section-number">3.1</span> Importing and formatting data</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(unmarked)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>wt &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;widewt.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>y &lt;-<span class="st"> </span>wt[,<span class="dv">2</span><span class="op">:</span><span class="dv">4</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>siteCovs &lt;-<span class="st">  </span>wt[,<span class="kw">c</span>(<span class="st">&quot;elev&quot;</span>, <span class="st">&quot;forest&quot;</span>, <span class="st">&quot;length&quot;</span>)]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>obsCovs &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">date=</span>wt[,<span class="kw">c</span>(<span class="st">&quot;date.1&quot;</span>, <span class="st">&quot;date.2&quot;</span>, <span class="st">&quot;date.3&quot;</span>)],</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>    <span class="dt">ivel=</span>wt[,<span class="kw">c</span>(<span class="st">&quot;ivel.1&quot;</span>,  <span class="st">&quot;ivel.2&quot;</span>, <span class="st">&quot;ivel.3&quot;</span>)])</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>wt &lt;-<span class="st"> </span><span class="kw">unmarkedFrameOccu</span>(<span class="dt">y =</span> y, <span class="dt">siteCovs =</span> siteCovs, <span class="dt">obsCovs =</span> obsCovs)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="kw">summary</span>(wt)</span></code></pre></div>
 <pre><code>## unmarkedFrame Object
 ## 
 ## 237 sites
@@ -456,24 +494,24 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##  Max.   : 3.80995   Max.   : 5.9795  
 ##  NA&#39;s   :42         NA&#39;s   :46</code></pre>
 <p>Alternatively, the convenience function <code>csvToUMF</code> can be used</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">wt &lt;-<span class="st"> </span><span class="kw">csvToUMF</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;widewt.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>),</a>
-<a class="sourceLine" id="cb3-2" title="2">               <span class="dt">long =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;unmarkedFrameOccu&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>wt &lt;-<span class="st"> </span><span class="kw">csvToUMF</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;widewt.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>               <span class="dt">long =</span> <span class="ot">FALSE</span>, <span class="dt">type =</span> <span class="st">&quot;unmarkedFrameOccu&quot;</span>)</span></code></pre></div>
 <p>If not all sites have the same numbers of observations, then manual importation of data in long format can be tricky. <code>csvToUMF</code> seamlessly handles this situation.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">pcru &lt;-<span class="st"> </span><span class="kw">csvToUMF</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;frog2001pcru.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>),</a>
-<a class="sourceLine" id="cb4-2" title="2">                 <span class="dt">long =</span> <span class="ot">TRUE</span>, <span class="dt">type =</span> <span class="st">&quot;unmarkedFrameOccu&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>pcru &lt;-<span class="st"> </span><span class="kw">csvToUMF</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;frog2001pcru.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>),</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>                 <span class="dt">long =</span> <span class="ot">TRUE</span>, <span class="dt">type =</span> <span class="st">&quot;unmarkedFrameOccu&quot;</span>)</span></code></pre></div>
 <p>To help stabilize the numerical optimization algorithm, we recommend standardizing the covariates.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">obsCovs</span>(pcru) &lt;-<span class="st"> </span><span class="kw">scale</span>(<span class="kw">obsCovs</span>(pcru))</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">obsCovs</span>(pcru) &lt;-<span class="st"> </span><span class="kw">scale</span>(<span class="kw">obsCovs</span>(pcru))</span></code></pre></div>
 </div>
-<div id="fitting-models" class="section level2">
-<h2><span class="header-section-number">3.2</span> Fitting models</h2>
+<div id="fitting-models" class="section level2" number="3.2">
+<h2 number="3.2"><span class="header-section-number">3.2</span> Fitting models</h2>
 <p>Occupancy models can then be fit with the occu() function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">fm1 &lt;-<span class="st"> </span><span class="kw">occu</span>(<span class="op">~</span><span class="dv">1</span> <span class="op">~</span><span class="dv">1</span>, pcru)</a></code></pre></div>
-<pre><code>## Warning in truncateToBinary(designMats$y): Some observations were &gt; 1. These
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>fm1 &lt;-<span class="st"> </span><span class="kw">occu</span>(<span class="op">~</span><span class="dv">1</span> <span class="op">~</span><span class="dv">1</span>, pcru)</span></code></pre></div>
+<pre><code>## Warning in truncateToBinary(designMats$y): Some observations were &gt; 1.  These
 ## were truncated to 1.</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">fm2 &lt;-<span class="st"> </span><span class="kw">occu</span>(<span class="op">~</span><span class="st"> </span>MinAfterSunset <span class="op">+</span><span class="st"> </span>Temperature <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, pcru)</a></code></pre></div>
-<pre><code>## Warning in truncateToBinary(designMats$y): Some observations were &gt; 1. These
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>fm2 &lt;-<span class="st"> </span><span class="kw">occu</span>(<span class="op">~</span><span class="st"> </span>MinAfterSunset <span class="op">+</span><span class="st"> </span>Temperature <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, pcru)</span></code></pre></div>
+<pre><code>## Warning in truncateToBinary(designMats$y): Some observations were &gt; 1.  These
 ## were truncated to 1.</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">fm2</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>fm2</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## occu(formula = ~MinAfterSunset + Temperature ~ 1, data = pcru)
@@ -491,10 +529,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## AIC: 356.7591</code></pre>
 <p>Here, we have specified that the detection process is modeled with the <code>MinAfterSunset</code> and <code>Temperature</code> covariates. No covariates are specified for occupancy here. See <code>?occu</code> for more details.</p>
 </div>
-<div id="back-transforming-parameter-estimates" class="section level2">
-<h2><span class="header-section-number">3.3</span> Back-transforming parameter estimates</h2>
+<div id="back-transforming-parameter-estimates" class="section level2" number="3.3">
+<h2 number="3.3"><span class="header-section-number">3.3</span> Back-transforming parameter estimates</h2>
 <p><code>unmarked</code> fitting functions return <code>unmarkedFit</code> objects which can be queried to investigate the model fit. Variables can be back-transformed to the unconstrained scale using <code>backTransform</code>. Standard errors are computed using the delta method.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">backTransform</span>(fm2, <span class="st">&#39;state&#39;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">backTransform</span>(fm2, <span class="st">&#39;state&#39;</span>)</span></code></pre></div>
 <pre><code>## Backtransformed linear combination(s) of Occupancy estimate(s)
 ## 
 ##  Estimate     SE LinComb (Intercept)
@@ -503,7 +541,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## Transformation: logistic</code></pre>
 <p>The expected probability that a site was occupied is 0.823. This estimate applies to the hypothetical population of all possible sites, not the sites found in our sample. For a good discussion of population-level vs finite-sample inference, see <span class="citation">Royle and Dorazio (2008)</span> page 117. Note also that finite-sample quantities can be computed in <code>unmarked</code> using empirical Bayes methods as demonstrated at the end of this document.</p>
 <p>Back-transforming the estimate of <span class="math inline">\(\psi\)</span> was easy because there were no covariates. Because the detection component was modeled with covariates, <span class="math inline">\(p\)</span> is a function, not just a scalar quantity, and so we need to be provide values of our covariates to obtain an estimate of <span class="math inline">\(p\)</span>. Here, we request the probability of detection given a site is occupied and all covariates are set to 0.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">backTransform</span>(<span class="kw">linearComb</span>(fm2, <span class="dt">coefficients =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">type =</span> <span class="st">&#39;det&#39;</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="kw">backTransform</span>(<span class="kw">linearComb</span>(fm2, <span class="dt">coefficients =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">type =</span> <span class="st">&#39;det&#39;</span>))</span></code></pre></div>
 <pre><code>## Backtransformed linear combination(s) of Detection estimate(s)
 ## 
 ##  Estimate    SE LinComb (Intercept) MinAfterSunset Temperature
@@ -511,8 +549,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## Transformation: logistic</code></pre>
 <p>Thus, we can say that the expected probability of detection was 0.552 when time of day and temperature are fixed at their mean value. A <code>predict</code> method also exists, which can be used to obtain estimates of parameters at specific covariate values.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">newData &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">MinAfterSunset =</span> <span class="dv">0</span>, <span class="dt">Temperature =</span> <span class="dv">-2</span><span class="op">:</span><span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb16-2" title="2"><span class="kw">round</span>(<span class="kw">predict</span>(fm2, <span class="dt">type =</span> <span class="st">&#39;det&#39;</span>, <span class="dt">newdata =</span> newData, <span class="dt">appendData=</span><span class="ot">TRUE</span>), <span class="dv">2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>newData &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">MinAfterSunset =</span> <span class="dv">0</span>, <span class="dt">Temperature =</span> <span class="dv">-2</span><span class="op">:</span><span class="dv">2</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a><span class="kw">round</span>(<span class="kw">predict</span>(fm2, <span class="dt">type =</span> <span class="st">&#39;det&#39;</span>, <span class="dt">newdata =</span> newData, <span class="dt">appendData=</span><span class="ot">TRUE</span>), <span class="dv">2</span>)</span></code></pre></div>
 <pre><code>##   Predicted   SE lower upper MinAfterSunset Temperature
 ## 1      0.98 0.01  0.93  1.00              0          -2
 ## 2      0.89 0.04  0.78  0.95              0          -1
@@ -520,8 +558,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 4      0.16 0.03  0.10  0.23              0           1
 ## 5      0.03 0.01  0.01  0.07              0           2</code></pre>
 <p>Confidence intervals are requested with <code>confint</code>, using either the asymptotic normal approximation or profiling.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">confint</span>(fm2, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>)</a>
-<a class="sourceLine" id="cb18-2" title="2"><span class="kw">confint</span>(fm2, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>, <span class="dt">method =</span> <span class="st">&quot;profile&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="kw">confint</span>(fm2, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a><span class="kw">confint</span>(fm2, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>, <span class="dt">method =</span> <span class="st">&quot;profile&quot;</span>)</span></code></pre></div>
 <pre><code>##                        0.025      0.975
 ## p(Int)            -0.1946871  0.6142292
 ## p(MinAfterSunset) -0.3985642  0.2274722
@@ -531,15 +569,15 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## p(MinAfterSunset) -0.4044794  0.2244221
 ## p(Temperature)    -2.5189984 -1.3789261</code></pre>
 </div>
-<div id="model-selection-and-model-fit" class="section level2">
-<h2><span class="header-section-number">3.4</span> Model selection and model fit</h2>
+<div id="model-selection-and-model-fit" class="section level2" number="3.4">
+<h2 number="3.4"><span class="header-section-number">3.4</span> Model selection and model fit</h2>
 <p>Model selection and multi-model inference can be implemented after organizing models using the <code>fitList</code> function.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">fms &lt;-<span class="st"> </span><span class="kw">fitList</span>(<span class="st">&#39;psi(.)p(.)&#39;</span> =<span class="st"> </span>fm1, <span class="st">&#39;psi(.)p(Time+Temp)&#39;</span> =<span class="st"> </span>fm2)</a>
-<a class="sourceLine" id="cb21-2" title="2"><span class="kw">modSel</span>(fms)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>fms &lt;-<span class="st"> </span><span class="kw">fitList</span>(<span class="st">&#39;psi(.)p(.)&#39;</span> =<span class="st"> </span>fm1, <span class="st">&#39;psi(.)p(Time+Temp)&#39;</span> =<span class="st"> </span>fm2)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="kw">modSel</span>(fms)</span></code></pre></div>
 <pre><code>##                    nPars    AIC  delta   AICwt cumltvWt
 ## psi(.)p(Time+Temp)     4 356.76   0.00 1.0e+00     1.00
 ## psi(.)p(.)             2 461.00 104.25 2.3e-23     1.00</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">predict</span>(fms, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>, <span class="dt">newdata =</span> newData)</a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a><span class="kw">predict</span>(fms, <span class="dt">type=</span><span class="st">&#39;det&#39;</span>, <span class="dt">newdata =</span> newData)</span></code></pre></div>
 <pre><code>##    Predicted         SE     lower      upper
 ## 1 0.98196076 0.01266193 0.9306044 0.99549474
 ## 2 0.89123189 0.04248804 0.7763166 0.95084836
@@ -547,19 +585,19 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 4 0.15658708 0.03298276 0.1021713 0.23248007
 ## 5 0.02718682 0.01326263 0.0103505 0.06948653</code></pre>
 <p>The parametric bootstrap can be used to check the adequacy of model fit. Here we use a <span class="math inline">\(\chi^2\)</span> statistic appropriate for binary data.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">chisq &lt;-<span class="st"> </span><span class="cf">function</span>(fm) {</a>
-<a class="sourceLine" id="cb25-2" title="2">    umf &lt;-<span class="st"> </span>fm<span class="op">@</span>data</a>
-<a class="sourceLine" id="cb25-3" title="3">    y &lt;-<span class="st"> </span>umf<span class="op">@</span>y</a>
-<a class="sourceLine" id="cb25-4" title="4">    y[y<span class="op">&gt;</span><span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb25-5" title="5">    sr &lt;-<span class="st"> </span>fm<span class="op">@</span>sitesRemoved</a>
-<a class="sourceLine" id="cb25-6" title="6">    <span class="cf">if</span>(<span class="kw">length</span>(sr)<span class="op">&gt;</span><span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb25-7" title="7">        y &lt;-<span class="st"> </span>y[<span class="op">-</span>sr,,drop=<span class="ot">FALSE</span>]</a>
-<a class="sourceLine" id="cb25-8" title="8">    fv &lt;-<span class="st"> </span><span class="kw">fitted</span>(fm, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb25-9" title="9">    y[<span class="kw">is.na</span>(fv)] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
-<a class="sourceLine" id="cb25-10" title="10">    <span class="kw">sum</span>((y<span class="op">-</span>fv)<span class="op">^</span><span class="dv">2</span><span class="op">/</span>(fv<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>fv)), <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb25-11" title="11">    }</a>
-<a class="sourceLine" id="cb25-12" title="12"></a>
-<a class="sourceLine" id="cb25-13" title="13">(pb &lt;-<span class="st"> </span><span class="kw">parboot</span>(fm2, <span class="dt">statistic=</span>chisq, <span class="dt">nsim=</span><span class="dv">100</span>, <span class="dt">parallel=</span><span class="ot">FALSE</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>chisq &lt;-<span class="st"> </span><span class="cf">function</span>(fm) {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a>    umf &lt;-<span class="st"> </span>fm<span class="op">@</span>data</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true"></a>    y &lt;-<span class="st"> </span>umf<span class="op">@</span>y</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true"></a>    y[y<span class="op">&gt;</span><span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true"></a>    sr &lt;-<span class="st"> </span>fm<span class="op">@</span>sitesRemoved</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true"></a>    <span class="cf">if</span>(<span class="kw">length</span>(sr)<span class="op">&gt;</span><span class="dv">0</span>)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true"></a>        y &lt;-<span class="st"> </span>y[<span class="op">-</span>sr,,drop=<span class="ot">FALSE</span>]</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true"></a>    fv &lt;-<span class="st"> </span><span class="kw">fitted</span>(fm, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true"></a>    y[<span class="kw">is.na</span>(fv)] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true"></a>    <span class="kw">sum</span>((y<span class="op">-</span>fv)<span class="op">^</span><span class="dv">2</span><span class="op">/</span>(fv<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>fv)), <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true"></a>    }</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true"></a></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true"></a>(pb &lt;-<span class="st"> </span><span class="kw">parboot</span>(fm2, <span class="dt">statistic=</span>chisq, <span class="dt">nsim=</span><span class="dv">100</span>, <span class="dt">parallel=</span><span class="ot">FALSE</span>))</span></code></pre></div>
 <pre><code>## 
 ## Call: parboot(object = fm2, statistic = chisq, nsim = 100, parallel = FALSE)
 ## 
@@ -568,27 +606,27 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 1 356           17.5             17.6        0.149
 ## 
 ## t_B quantiles:
-##      0% 2.5% 25% 50% 75% 97.5% 100%
-## t*1 302  312 327 334 347   379  391
+##       0% 2.5% 25% 50% 75% 97.5% 100%
+## [1,] 302  312 327 334 347   379  391
 ## 
 ## t0 = Original statistic computed from data
 ## t_B = Vector of bootstrap samples</code></pre>
 <p>We fail to reject the null hypothesis, and conclude that the model fit is adequate.</p>
 </div>
-<div id="derived-parameters-and-empirical-bayes-methods" class="section level2">
-<h2><span class="header-section-number">3.5</span> Derived parameters and empirical Bayes methods</h2>
+<div id="derived-parameters-and-empirical-bayes-methods" class="section level2" number="3.5">
+<h2 number="3.5"><span class="header-section-number">3.5</span> Derived parameters and empirical Bayes methods</h2>
 <p>The <code>parboot</code> function can be also be used to compute confidence intervals for estimates of derived parameters, such as the proportion of <span class="math inline">\(N\)</span> sites occupied <span class="math inline">\(\mbox{PAO} = \frac{\sum_i z_i}{N}\)</span> where <span class="math inline">\(z_i\)</span> is the true occurrence state at site <span class="math inline">\(i\)</span>, which is unknown at sites where no individuals were detected. The <code>colext</code> vignette shows examples of using <code>parboot</code> to obtain confidence intervals for such derived quantities. An alternative way achieving this goal is to use empirical Bayes methods, which were introduced in <code>unmarked</code> version 0.9-5. These methods estimate the posterior distribution of the latent variable given the data and the estimates of the fixed effects (the MLEs). The mean or the mode of the estimated posterior distibution is referred to as the empirical best unbiased predictor (EBUP), which in <code>unmarked</code> can be obtained by applying the <code>bup</code> function to the estimates of the posterior distributions returned by the <code>ranef</code> function. The following code returns an estimate of PAO using EBUP.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1">re &lt;-<span class="st"> </span><span class="kw">ranef</span>(fm2)</a>
-<a class="sourceLine" id="cb27-2" title="2">EBUP &lt;-<span class="st"> </span><span class="kw">bup</span>(re, <span class="dt">stat=</span><span class="st">&quot;mode&quot;</span>)</a>
-<a class="sourceLine" id="cb27-3" title="3"><span class="kw">sum</span>(EBUP) <span class="op">/</span><span class="st"> </span><span class="kw">numSites</span>(pcru)</a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a>re &lt;-<span class="st"> </span><span class="kw">ranef</span>(fm2)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true"></a>EBUP &lt;-<span class="st"> </span><span class="kw">bup</span>(re, <span class="dt">stat=</span><span class="st">&quot;mode&quot;</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true"></a><span class="kw">sum</span>(EBUP) <span class="op">/</span><span class="st"> </span><span class="kw">numSites</span>(pcru)</span></code></pre></div>
 <pre><code>## [1] 0.8076923</code></pre>
 <p>Note that this is similar, but slightly lower than the population-level estimate of <span class="math inline">\(\psi\)</span> obtained above.</p>
 <p>A plot method also exists for objects returned by <code>ranef</code>, but distributions of binary variables are not so pretty. Try it out on a fitted abundance model instead.</p>
 </div>
 </div>
-<div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<div id="refs" class="references">
+<div id="references" class="section level1 unnumbered" number>
+<h1 class="unnumbered" number>References</h1>
+<div id="refs" class="references hanging-indent">
 <div id="ref-chandlerEA_2011">
 <p>Chandler, R. B., J. A. Royle, and D. I. King. 2011. Inference about density and temporary emigration in unmarked populations. Ecology 92:1429–1435.</p>
 </div>

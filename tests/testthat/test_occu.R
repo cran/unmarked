@@ -126,7 +126,11 @@ test_that("occu can fit models with covariates",{
   stMat <- fm@estimates@estimates$state@covMat
   expect_equivalent(detMat, matrix(rep(NA,9),nrow=3))
   expect_equivalent(stMat, matrix(rep(NA,4),nrow=2))
-
+  
+  # Trap attempts to use a variable in formula that isn't in covariates
+  fake <- rnorm(3)
+  expect_error(fm <- occu(~ o1 + o2 ~ fake, data = umf))
+  expect_error(fm <- occu(~ o1 + fake ~ o1, data = umf))
 })
 
 test_that("occu handles NAs",{
@@ -246,8 +250,7 @@ test_that("occu cloglog link function works",{
 
 test_that("occu predict works",{
   skip_on_cran()
-  if(!require(raster))
-        stop("raster package required")
+  skip_if(!require(raster), "raster package unavailable")
   set.seed(55)
   R <- 20
   J <- 4

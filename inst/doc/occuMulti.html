@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Ken Kellner" />
+
+<meta name="date" content="2021-11-15" />
+
+<title>Multispecies occupancy models with occuMulti</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Multispecies occupancy models with occuMulti</h1>
+<h4 class="author">Ken Kellner</h4>
+<h4 class="date">November 15, 2021</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#simple-multispecies-analysis"><span class="toc-section-number">2</span> Simple multispecies analysis</a>
+<ul>
+<li><a href="#formatting-the-data"><span class="toc-section-number">2.1</span> Formatting the data</a></li>
+<li><a href="#occupancy-formulas"><span class="toc-section-number">2.2</span> Occupancy formulas</a></li>
+<li><a href="#detection-formulas"><span class="toc-section-number">2.3</span> Detection formulas</a></li>
+<li><a href="#fit-the-model"><span class="toc-section-number">2.4</span> Fit the model</a></li>
+<li><a href="#occupancy-probabilities"><span class="toc-section-number">2.5</span> Occupancy probabilities</a></li>
+<li><a href="#marginal-occupancy"><span class="toc-section-number">2.6</span> Marginal occupancy</a></li>
+<li><a href="#plotting-marginal-occupancy"><span class="toc-section-number">2.7</span> Plotting marginal occupancy</a></li>
+<li><a href="#conditional-occupancy"><span class="toc-section-number">2.8</span> Conditional occupancy</a></li>
+<li><a href="#plotting-conditional-occupancy"><span class="toc-section-number">2.9</span> Plotting conditional occupancy</a></li>
+</ul></li>
+<li><a href="#multispecies-model-with-covariates"><span class="toc-section-number">3</span> Multispecies model with covariates</a>
+<ul>
+<li><a href="#add-housing-density-as-a-covariate"><span class="toc-section-number">3.1</span> Add housing density as a covariate</a></li>
+<li><a href="#plotting-covariate-effects"><span class="toc-section-number">3.2</span> Plotting covariate effects</a></li>
+</ul></li>
+<li><a href="#model-selection"><span class="toc-section-number">4</span> Model selection</a></li>
+<li><a href="#model-fitting-challenges"><span class="toc-section-number">5</span> Model fitting challenges</a></li>
+<li><a href="#penalized-likelihood"><span class="toc-section-number">6</span> Penalized likelihood</a>
+<ul>
+<li><a href="#penalized-likelihood-with-occumulti"><span class="toc-section-number">6.1</span> Penalized likelihood with occuMulti</a></li>
+</ul></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level1" number="1">
+<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>The <span class="citation">Rota et al. (2016)</span> occupancy model is designed for presence/absence datasets with two or more (potentially) interacting species. The model allows for estimation of occupancy probabilities and the strength of interactions between species, as well as covariate effects on these parameters. The model generalizes the standard single-species occupancy model from <span class="citation">MacKenzie et al. (2002)</span>.</p>
+<p>The model assumes the latent occupancy state at site <span class="math inline">\(i\)</span> for a set of <span class="math inline">\(s\)</span> potentially interacting species is a vector <span class="math inline">\(Z_i\)</span> of length <span class="math inline">\(s\)</span> containing a sequence of the values 0 or 1. For example, when <span class="math inline">\(s = 2\)</span>, the possible states are [11], [10], [01], or [00], corresponding to both species present, only species 1 or species 2 present, or both species absent, respectively. The latent state modeled as a multivariate Bernoulli random variable: <span class="math display">\[
+  Z_i \sim \mathrm{MVB}(\psi_i)
+\]</span> where <span class="math inline">\(\psi_i\)</span> is a vector of length <span class="math inline">\(2^s\)</span> containing the probability of each possible combination of 0s and 1s, such that <span class="math inline">\(\sum \psi_i = 1\)</span>.</p>
+<p>For <span class="math inline">\(s = 2\)</span>, the corresponding natural parameters, <span class="math inline">\(f\)</span>, are</p>
+<p><span class="math display">\[
+\begin{split}
+  f_1 &amp;= \mathrm{log}(\psi_{10}/\psi_{00}) \\                      
+  f_2 &amp;= \mathrm{log}(\psi_{01}/\psi_{00}) \\                      
+  f_{12} &amp;= \mathrm{log}((\psi_{11} * \psi_{00})/(\psi_{10} * \psi_{01}))
+\end{split}
+\]</span></p>
+<p>The natural parameters can then be modeled as linear functions of covariates.</p>
+<p>The observation process is similar to the standard single-species occupancy model, except that the observations <span class="math inline">\(y_{ij}\)</span> at site <span class="math inline">\(i\)</span> on occasion <span class="math inline">\(j\)</span> are vectors of length <span class="math inline">\(s\)</span> and there are independent values of detection probability <span class="math inline">\(p\)</span> for each species <span class="math inline">\(s\)</span>: <span class="math display">\[
+  y_{ij} | Z_i \sim \mathrm{Bernoulli}(Z_i * p_{sij})
+\]</span> See <span class="citation">Rota et al. (2016)</span> for more details on model structure. In <code>unmarked</code>, the model can be fit with the <code>occuMulti</code> function.</p>
+</div>
+<div id="simple-multispecies-analysis" class="section level1" number="2">
+<h1 number="2"><span class="header-section-number">2</span> Simple multispecies analysis</h1>
+<p>We will start with a simple analysis using presence/absence data from camera traps for three species: coyote, red fox, and bobcat. The data are a simplified version of the data used in <span class="citation">Rota et al. (2016)</span>, with the data collapsed three into three-week long time periods.</p>
+<div id="formatting-the-data" class="section level2" number="2.1">
+<h2 number="2.1"><span class="header-section-number">2.1</span> Formatting the data</h2>
+<p>The dataset is included with <code>unmarked</code> and is called <code>MesoCarnivores</code>. First, we need to load in the dataset, which is a list with several components.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(unmarked)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">data</span>(MesoCarnivores)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">names</span>(MesoCarnivores)</span></code></pre></div>
+<pre><code>## [1] &quot;bobcat&quot;   &quot;coyote&quot;   &quot;redfox&quot;   &quot;sitecovs&quot;</code></pre>
+<p>Presence/absence matrices for the three species are in list elements <code>bobcat</code>, <code>coyote</code>, and <code>redfox</code>, and <code>sitecovs</code> contains the site-level covariate data.</p>
+<p>Using this information, we will create an <code>unmarkedFrameOccuMulti</code> object. You can get more information by looking at the help file for <code>unmarkedFrameOccuMulti</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>?unmarkedFrameOccuMulti</span></code></pre></div>
+<p>First we combine the detection data for the 3 species into one named list. These names will be used throughout the multispecies analysis, so pick useful ones.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>ylist &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">bobcat=</span>MesoCarnivores<span class="op">$</span>bobcat, <span class="dt">coyote=</span>MesoCarnivores<span class="op">$</span>coyote, </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>              <span class="dt">redfox=</span>MesoCarnivores<span class="op">$</span>redfox)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">lapply</span>(ylist, head)</span></code></pre></div>
+<pre><code>## $bobcat
+##      X1 X2 X3
+## [1,]  0  0  0
+## [2,]  0  0  0
+## [3,]  0  0  0
+## [4,]  0  0  0
+## [5,]  0  0  0
+## [6,]  0  0  0
+## 
+## $coyote
+##      X1 X2 X3
+## [1,]  0  0  0
+## [2,]  0  0  0
+## [3,]  0  0  0
+## [4,]  0  0  0
+## [5,]  0  0  0
+## [6,]  0  0  0
+## 
+## $redfox
+##      X1 X2 X3
+## [1,]  0  0  0
+## [2,]  0  0  0
+## [3,]  0  0  1
+## [4,]  0  0  0
+## [5,]  0  0  0
+## [6,]  1  1  1</code></pre>
+<p>The site covariates are contained in a data frame:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">head</span>(MesoCarnivores<span class="op">$</span>sitecovs)</span></code></pre></div>
+<pre><code>##   Dist_5km HDens_5km  Latitude  Longitude People_site Trail
+## 1     0.04  9.345258 0.3899441 -0.7723958       0.857     1
+## 2     0.03  9.499197 0.3899250 -0.7723920       0.002     0
+## 3     0.03  9.647173 0.3899111 -0.7723954       0.387     1
+## 4     0.03  9.598066 0.3899166 -0.7723972       0.003     0
+## 5     0.03  9.607825 0.3899179 -0.7724004       0.000     0
+## 6     0.03  9.748791 0.3899058 -0.7724046       0.443     1</code></pre>
+<p>The site covariates include a metric of disturbance in a 5 km radius (<code>Dist_5km</code>), housing density in a 5 km radius (<code>HDens_5km</code>), latitude, longitude, a metric of how many people use the site (<code>People_site</code>) and whether the camera site is on (or off) a trail. Using our <code>ylist</code>, site covariates, and observation covariates, we can construct an <code>unmarkedFrameOccuMulti</code> object.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>umf &lt;-<span class="st"> </span><span class="kw">unmarkedFrameOccuMulti</span>(<span class="dt">y=</span>ylist, <span class="dt">siteCovs=</span>MesoCarnivores<span class="op">$</span>sitecovs)</span></code></pre></div>
+</div>
+<div id="occupancy-formulas" class="section level2" number="2.2">
+<h2 number="2.2"><span class="header-section-number">2.2</span> Occupancy formulas</h2>
+<p>While most <code>unmarked</code> models have only one or two formulas (and a single formula for occupancy or abundance), <code>occuMulti</code> requires one formula per natural parameter <span class="math inline">\(f\)</span>. Thus, there will be multiple formulas associated with occupancy. These formulas are organized into an ordered character vector. It can be hard to keep track of how many natural parameters there are and what each one represents. It can be helpful to look at the <span class="math inline">\(f\)</span>-design matrix, which is generated by <code>unmarkedFrameOccuMulti</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>umf<span class="op">@</span>fDesign</span></code></pre></div>
+<pre><code>##          f1[bobcat] f2[coyote] f3[redfox] f4[bobcat:coyote] f5[bobcat:redfox]
+## psi[111]          1          1          1                 1                 1
+## psi[110]          1          1          0                 1                 0
+## psi[101]          1          0          1                 0                 1
+## psi[100]          1          0          0                 0                 0
+## psi[011]          0          1          1                 0                 0
+## psi[010]          0          1          0                 0                 0
+## psi[001]          0          0          1                 0                 0
+## psi[000]          0          0          0                 0                 0
+##          f6[coyote:redfox] f7[bobcat:coyote:redfox]
+## psi[111]                 1                        1
+## psi[110]                 0                        0
+## psi[101]                 0                        0
+## psi[100]                 0                        0
+## psi[011]                 1                        0
+## psi[010]                 0                        0
+## psi[001]                 0                        0
+## psi[000]                 0                        0</code></pre>
+<p>The number and order of the formulas in the vector should match the column names of this matrix. There are 7 columns in the matrix: thus, we’ll need 7 formulas total, and they should be provided in the following order:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="kw">colnames</span>(umf<span class="op">@</span>fDesign)</span></code></pre></div>
+<pre><code>## [1] &quot;f1[bobcat]&quot;               &quot;f2[coyote]&quot;              
+## [3] &quot;f3[redfox]&quot;               &quot;f4[bobcat:coyote]&quot;       
+## [5] &quot;f5[bobcat:redfox]&quot;        &quot;f6[coyote:redfox]&quot;       
+## [7] &quot;f7[bobcat:coyote:redfox]&quot;</code></pre>
+<p>For this model we’ll set the 1st and 2nd-order <span class="math inline">\(f\)</span> parameters to be intercept-only, and fix the 3rd order parameter at 0. We will combine our formulas into a vector called <code>stateformulas</code>, like this:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>stateformulas &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;0&quot;</span>)</span></code></pre></div>
+<p>Notice that the formulas are character strings (each wrapped in <code>&quot;&quot;</code>). This is required.</p>
+</div>
+<div id="detection-formulas" class="section level2" number="2.3">
+<h2 number="2.3"><span class="header-section-number">2.3</span> Detection formulas</h2>
+<p>Each species has its own detection probability formula. Thus, there should be 3 total formulas combined in a <code>detformulas</code> vector. The order of the formulas should match the order of species in <code>ylist</code>. For this model, all three species will have intercept-only detection formulas.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a>detformulas &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>)</span></code></pre></div>
+</div>
+<div id="fit-the-model" class="section level2" number="2.4">
+<h2 number="2.4"><span class="header-section-number">2.4</span> Fit the model</h2>
+<p>First, look at the help file for <code>occuMulti</code> to check what the required arguments are:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a>?occuMulti</span></code></pre></div>
+<p>We now have all the pieces we need (<code>unmarkedFrameOccuMulti</code>, <code>stateformulas</code>, <code>detformulas</code>) needed to run a basic model which we will call <code>mod_null</code>.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>mod_null &lt;-<span class="st"> </span><span class="kw">occuMulti</span>(<span class="dt">detformulas=</span>detformulas, <span class="dt">stateformulas=</span>stateformulas, <span class="dt">data=</span>umf)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a><span class="kw">summary</span>(mod_null)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## occuMulti(detformulas = detformulas, stateformulas = stateformulas, 
+##     data = umf, maxOrder = 3L)
+## 
+## Occupancy (logit-scale):
+##                             Estimate    SE      z  P(&gt;|z|)
+## [bobcat] (Intercept)           -1.76 0.179  -9.81 1.03e-22
+## [coyote] (Intercept)           -1.30 0.137  -9.54 1.37e-21
+## [redfox] (Intercept)           -2.20 0.152 -14.44 2.81e-47
+## [bobcat:coyote] (Intercept)     1.72 0.262   6.56 5.48e-11
+## [bobcat:redfox] (Intercept)    -1.38 0.377  -3.66 2.57e-04
+## [coyote:redfox] (Intercept)     1.41 0.248   5.69 1.31e-08
+## 
+## Detection (logit-scale):
+##                      Estimate     SE     z  P(&gt;|z|)
+## [bobcat] (Intercept)   -1.106 0.1398 -7.91 2.59e-15
+## [coyote] (Intercept)   -0.331 0.0761 -4.35 1.38e-05
+## [redfox] (Intercept)   -0.253 0.1183 -2.13 3.28e-02
+## 
+## AIC: 6626.111 
+## Number of sites: 1437
+## optim convergence code: 0
+## optim iterations: 48 
+## Bootstrap iterations: 0</code></pre>
+<p>The regression parameters associated with each <span class="math inline">\(f\)</span> are identified by the species name (or combination of species names) in brackets.</p>
+<p>A few things to notice:</p>
+<ul>
+<li>Coyote occupancy is the highest of the three species.</li>
+<li>Negative relationship between bobcat and red fox</li>
+<li>Positive relationships between coyote and the other two species</li>
+<li>There is no three-species interaction term in the summary, because we fixed it at 0.</li>
+</ul>
+</div>
+<div id="occupancy-probabilities" class="section level2" number="2.5">
+<h2 number="2.5"><span class="header-section-number">2.5</span> Occupancy probabilities</h2>
+<p>To get the expected probability for each occupancy state ([11], [10] and so on) at each site, use the <code>predict</code> function. This gives you the probabilities along with standard errors and a 95% CI.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a>occ_prob &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a><span class="kw">head</span>(occ_prob<span class="op">$</span>Predicted)</span></code></pre></div>
+<pre><code>##        psi[111]  psi[110]    psi[101]   psi[100]   psi[011] psi[010]   psi[001]
+## [1,] 0.01515889 0.1320403 0.002441193 0.08730259 0.06259129 0.137555 0.05616217
+## [2,] 0.01515889 0.1320403 0.002441193 0.08730259 0.06259129 0.137555 0.05616217
+## [3,] 0.01515889 0.1320403 0.002441193 0.08730259 0.06259129 0.137555 0.05616217
+## [4,] 0.01515889 0.1320403 0.002441193 0.08730259 0.06259129 0.137555 0.05616217
+## [5,] 0.01515889 0.1320403 0.002441193 0.08730259 0.06259129 0.137555 0.05616217
+## [6,] 0.01515889 0.1320403 0.002441193 0.08730259 0.06259129 0.137555 0.05616217
+##       psi[000]
+## [1,] 0.5067485
+## [2,] 0.5067485
+## [3,] 0.5067485
+## [4,] 0.5067485
+## [5,] 0.5067485
+## [6,] 0.5067485</code></pre>
+<p>The rows of this matrix should sum to 1. All rows are the same because estimated occupancies at all sites are the same - we didn’t include any covariates.</p>
+</div>
+<div id="marginal-occupancy" class="section level2" number="2.6">
+<h2 number="2.6"><span class="header-section-number">2.6</span> Marginal occupancy</h2>
+<p>It’s often more interesting to look at occupancy for species individually. For example, you might want to know the marginal occupancy of one species at each site (across all possible occupancy states).</p>
+<p>You can do this by specifying the <code>species</code> argument in <code>predict</code>, which will automatically sum up the appropriate occupancy states.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a>redfox_marginal &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;redfox&quot;</span>)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true"></a><span class="kw">head</span>(redfox_marginal)</span></code></pre></div>
+<pre><code>##   Predicted         SE     lower     upper
+## 1 0.1363536 0.01065201 0.1156499 0.1558962
+## 2 0.1363536 0.01065201 0.1156499 0.1558962
+## 3 0.1363536 0.01065201 0.1156499 0.1558962
+## 4 0.1363536 0.01065201 0.1156499 0.1558962
+## 5 0.1363536 0.01065201 0.1156499 0.1558962
+## 6 0.1363536 0.01065201 0.1156499 0.1558962</code></pre>
+</div>
+<div id="plotting-marginal-occupancy" class="section level2" number="2.7">
+<h2 number="2.7"><span class="header-section-number">2.7</span> Plotting marginal occupancy</h2>
+<p>Outputs from <code>predict</code> can be used to compare marginal occupancy across species with a plot. First, we’ll need to get marginal occupancy for the other two species, and combine the three estimates into a single data frame.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a>coy_marginal &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;coyote&quot;</span>)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true"></a>bob_marginal &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;bobcat&quot;</span>)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true"></a>all_marginal &lt;-<span class="st"> </span><span class="kw">rbind</span>(redfox_marginal[<span class="dv">1</span>,], coy_marginal[<span class="dv">1</span>,], bob_marginal[<span class="dv">1</span>,])</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true"></a>all_marginal<span class="op">$</span>Species &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Red fox&quot;</span>, <span class="st">&quot;Coyote&quot;</span>, <span class="st">&quot;Bobcat&quot;</span>)</span></code></pre></div>
+<p>Now we can plot the estimated marginal occupancy for each species, along with 95% CIs.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true"></a><span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, all_marginal<span class="op">$</span>Predicted, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="fl">0.1</span>,<span class="fl">0.4</span>), </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true"></a>     <span class="dt">xlim=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">3.5</span>), <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">cex=</span><span class="fl">1.5</span>, <span class="dt">xaxt=</span><span class="st">&#39;n&#39;</span>, </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true"></a>     <span class="dt">xlab=</span><span class="st">&quot;&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Marginal occupancy and 95% CI&quot;</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true"></a><span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dt">labels=</span>all_marginal<span class="op">$</span>Species)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true"></a><span class="co"># CIs</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true"></a>top &lt;-<span class="st"> </span><span class="fl">0.1</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>){</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true"></a>  <span class="kw">segments</span>(i, all_marginal<span class="op">$</span>lower[i], i, all_marginal<span class="op">$</span>upper[i])</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true"></a>  <span class="kw">segments</span>(i<span class="op">-</span>top, all_marginal<span class="op">$</span>lower[i], i<span class="op">+</span>top)</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true"></a>  <span class="kw">segments</span>(i<span class="op">-</span>top, all_marginal<span class="op">$</span>upper[i], i<span class="op">+</span>top)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true"></a>}</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="conditional-occupancy" class="section level2" number="2.8">
+<h2 number="2.8"><span class="header-section-number">2.8</span> Conditional occupancy</h2>
+<p>Alternatively, you might want to know the probability of occupancy of one species, conditional on the presence of another. Use the <code>species</code> and <code>cond</code> arguments together for this. For example, the probability of red fox occupancy, conditional on coyote presence:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true"></a>redfox_coy &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;redfox&quot;</span>, <span class="dt">cond=</span><span class="st">&quot;coyote&quot;</span>)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true"></a><span class="kw">head</span>(redfox_coy)</span></code></pre></div>
+<pre><code>##   Predicted        SE     lower     upper
+## 1  0.223841 0.0236711 0.1808874 0.2688681
+## 2  0.223841 0.0236711 0.1808874 0.2688681
+## 3  0.223841 0.0236711 0.1808874 0.2688681
+## 4  0.223841 0.0236711 0.1808874 0.2688681
+## 5  0.223841 0.0236711 0.1808874 0.2688681
+## 6  0.223841 0.0236711 0.1808874 0.2688681</code></pre>
+<p>What about conditional on coyote <em>absence</em>? Simply add a <code>&quot;-&quot;</code> before the species name.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true"></a>redfox_nocoy &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_null, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;redfox&quot;</span>, <span class="dt">cond=</span><span class="st">&quot;-coyote&quot;</span>)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true"></a><span class="kw">head</span>(redfox_nocoy)</span></code></pre></div>
+<pre><code>##    Predicted        SE      lower     upper
+## 1 0.08979233 0.0125289 0.06747891 0.1150491
+## 2 0.08979233 0.0125289 0.06747891 0.1150491
+## 3 0.08979233 0.0125289 0.06747891 0.1150491
+## 4 0.08979233 0.0125289 0.06747891 0.1150491
+## 5 0.08979233 0.0125289 0.06747891 0.1150491
+## 6 0.08979233 0.0125289 0.06747891 0.1150491</code></pre>
+</div>
+<div id="plotting-conditional-occupancy" class="section level2" number="2.9">
+<h2 number="2.9"><span class="header-section-number">2.9</span> Plotting conditional occupancy</h2>
+<p>You can use this output from <code>predict</code> to generate comparison plots.</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true"></a>cond_data &lt;-<span class="st"> </span><span class="kw">rbind</span>(redfox_coy[<span class="dv">1</span>,], redfox_nocoy[<span class="dv">1</span>,])</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true"></a>cond_data<span class="op">$</span>Coyote_status &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Present&quot;</span>,<span class="st">&quot;Absent&quot;</span>)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true"></a><span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, cond_data<span class="op">$</span>Predicted, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="fl">0.3</span>), </span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true"></a>     <span class="dt">xlim=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">2.5</span>), <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">cex=</span><span class="fl">1.5</span>, <span class="dt">xaxt=</span><span class="st">&#39;n&#39;</span>, </span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true"></a>     <span class="dt">xlab=</span><span class="st">&quot;Coyote status&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Red fox occupancy and 95% CI&quot;</span>)</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true"></a><span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at=</span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="dt">labels=</span>cond_data<span class="op">$</span>Coyote_status)</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true"></a></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true"></a><span class="co"># CIs</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true"></a>top &lt;-<span class="st"> </span><span class="fl">0.1</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>){</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true"></a>  <span class="kw">segments</span>(i, cond_data<span class="op">$</span>lower[i], i, cond_data<span class="op">$</span>upper[i])</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true"></a>  <span class="kw">segments</span>(i<span class="op">-</span>top, cond_data<span class="op">$</span>lower[i], i<span class="op">+</span>top)</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true"></a>  <span class="kw">segments</span>(i<span class="op">-</span>top, cond_data<span class="op">$</span>upper[i], i<span class="op">+</span>top)</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true"></a>}</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Note that red fox occupancy is higher at sites where coyotes were present, which corresponds with the positive interaction term between the two species we saw in the model output summary.</p>
+</div>
+</div>
+<div id="multispecies-model-with-covariates" class="section level1" number="3">
+<h1 number="3"><span class="header-section-number">3</span> Multispecies model with covariates</h1>
+<p>Now we’ll fit a model with covariates on some natural parameters. It might be helpful to look at the order for our <span class="math inline">\(f\)</span> parameters again:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true"></a><span class="kw">colnames</span>(umf<span class="op">@</span>fDesign)</span></code></pre></div>
+<pre><code>## [1] &quot;f1[bobcat]&quot;               &quot;f2[coyote]&quot;              
+## [3] &quot;f3[redfox]&quot;               &quot;f4[bobcat:coyote]&quot;       
+## [5] &quot;f5[bobcat:redfox]&quot;        &quot;f6[coyote:redfox]&quot;       
+## [7] &quot;f7[bobcat:coyote:redfox]&quot;</code></pre>
+<p>And our available site covariates:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true"></a><span class="kw">head</span>(<span class="kw">siteCovs</span>(umf))</span></code></pre></div>
+<pre><code>##   Dist_5km HDens_5km  Latitude  Longitude People_site Trail
+## 1     0.04  9.345258 0.3899441 -0.7723958       0.857     1
+## 2     0.03  9.499197 0.3899250 -0.7723920       0.002     0
+## 3     0.03  9.647173 0.3899111 -0.7723954       0.387     1
+## 4     0.03  9.598066 0.3899166 -0.7723972       0.003     0
+## 5     0.03  9.607825 0.3899179 -0.7724004       0.000     0
+## 6     0.03  9.748791 0.3899058 -0.7724046       0.443     1</code></pre>
+<div id="add-housing-density-as-a-covariate" class="section level2" number="3.1">
+<h2 number="3.1"><span class="header-section-number">3.1</span> Add housing density as a covariate</h2>
+<p>We’ll fit a model with an effect of housing density (<code>HDens_5km</code>) on the first-order parameters for all three species. The two-way interactions will remain intercept-only, and the three-way interaction will remain fixed at 0. Here’s the vector of <span class="math inline">\(f\)</span> formulas:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true"></a>sf &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;~HDens_5km&quot;</span>,<span class="st">&quot;~HDens_5km&quot;</span>,<span class="st">&quot;~HDens_5km&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;0&quot;</span>)</span></code></pre></div>
+<p>Inside your formula, you can wrap the variable name in  to standardize it, which we should do, because the housing density variable is not scaled.</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true"></a>sf &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;~scale(HDens_5km)&quot;</span>,<span class="st">&quot;~scale(HDens_5km)&quot;</span>,<span class="st">&quot;~scale(HDens_5km)&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;~1&quot;</span>,<span class="st">&quot;0&quot;</span>)</span></code></pre></div>
+<p>Detection formulas will remain the same, so we’re now ready to fit a new model, <code>mod_hdens</code>.</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true"></a>mod_hdens &lt;-<span class="st"> </span><span class="kw">occuMulti</span>(<span class="dt">stateformulas=</span>sf, <span class="dt">detformulas=</span>detformulas, umf)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true"></a><span class="kw">summary</span>(mod_hdens)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## occuMulti(detformulas = detformulas, stateformulas = sf, data = umf, 
+##     maxOrder = 3L)
+## 
+## Occupancy (logit-scale):
+##                             Estimate     SE      z  P(&gt;|z|)
+## [bobcat] (Intercept)         -2.5364 0.2842  -8.92 4.53e-19
+## [bobcat] scale(HDens_5km)    -3.6008 0.9191  -3.92 8.94e-05
+## [coyote] (Intercept)         -1.3439 0.1470  -9.14 6.04e-20
+## [coyote] scale(HDens_5km)     0.0884 0.0742   1.19 2.34e-01
+## [redfox] (Intercept)         -2.2555 0.1566 -14.41 4.65e-47
+## [redfox] scale(HDens_5km)     0.4392 0.0831   5.29 1.24e-07
+## [bobcat:coyote] (Intercept)   1.8173 0.2714   6.70 2.16e-11
+## [bobcat:redfox] (Intercept)  -1.3385 0.3869  -3.46 5.42e-04
+## [coyote:redfox] (Intercept)   1.3740 0.2597   5.29 1.22e-07
+## 
+## Detection (logit-scale):
+##                      Estimate     SE     z  P(&gt;|z|)
+## [bobcat] (Intercept)   -1.139 0.1421 -8.02 1.07e-15
+## [coyote] (Intercept)   -0.328 0.0759 -4.32 1.53e-05
+## [redfox] (Intercept)   -0.252 0.1179 -2.14 3.26e-02
+## 
+## AIC: 6530.476 
+## Number of sites: 1437
+## optim convergence code: 0
+## optim iterations: 80 
+## Bootstrap iterations: 0</code></pre>
+<p>A few things to note from the results:</p>
+<ul>
+<li>Housing density has a significant negative effect on occupancy of bobcat</li>
+<li>Housing density has a significant positive effect on red fox</li>
+<li>No effect of housing density on coyote.</li>
+</ul>
+</div>
+<div id="plotting-covariate-effects" class="section level2" number="3.2">
+<h2 number="3.2"><span class="header-section-number">3.2</span> Plotting covariate effects</h2>
+<p>To plot the effect of housing density on marginal occupancy, we again use <code>predict</code>. First, we need to generate sequence of possible <code>Hdens_5km</code> values for the X-axis of our plot. We’ll generate a sequence of 100 values, starting at the minimum observed housing density and ending at the maximum observed value.</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true"></a>hdens_range &lt;-<span class="st"> </span><span class="kw">range</span>(<span class="kw">siteCovs</span>(umf)<span class="op">$</span>HDens_5km)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true"></a>hdens_seq &lt;-<span class="st"> </span><span class="kw">seq</span>(hdens_range[<span class="dv">1</span>], hdens_range[<span class="dv">2</span>], <span class="dt">length.out=</span><span class="dv">100</span>)</span></code></pre></div>
+<p>Next, we’ll <code>predict</code> marginal coyote occupancy at each value of <code>Hdens_5km</code> along our sequence. Our custom housing density values should be in a data frame and provided to the <code>newdata</code> argument. Because we used <code>scale()</code> in our formulas above, there is no need to manually scale these new housing density values - <code>unmarked</code> will do it for us.</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true"></a>nd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">HDens_5km =</span> hdens_seq)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true"></a>occ_hdens_coy &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_hdens, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;coyote&quot;</span>, <span class="dt">newdata=</span>nd)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true"></a>occ_hdens_coy<span class="op">$</span>Species &lt;-<span class="st"> &quot;Coyote&quot;</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true"></a>occ_hdens_coy<span class="op">$</span>Hdens &lt;-<span class="st"> </span>hdens_seq</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true"></a><span class="kw">head</span>(occ_hdens_coy)</span></code></pre></div>
+<pre><code>##   Predicted         SE     lower     upper Species    Hdens
+## 1 0.3580999 0.01872751 0.3260886 0.3959476  Coyote 0.000000
+## 2 0.3416445 0.01672042 0.3092705 0.3701662  Coyote 1.885550
+## 3 0.3272412 0.01683226 0.2950916 0.3531444  Coyote 3.771100
+## 4 0.3149654 0.01806465 0.2794589 0.3425370  Coyote 5.656650
+## 5 0.3047727 0.01953629 0.2649170 0.3320552  Coyote 7.542199
+## 6 0.2965317 0.02082771 0.2530355 0.3267480  Coyote 9.427749</code></pre>
+<p>We’ll do the same thing for the other two species.</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true"></a>occ_hdens_bob &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_hdens, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;bobcat&quot;</span>, <span class="dt">newdata=</span>nd)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true"></a>occ_hdens_fox &lt;-<span class="st"> </span><span class="kw">predict</span>(mod_hdens, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">species=</span><span class="st">&quot;redfox&quot;</span>, <span class="dt">newdata=</span>nd)</span></code></pre></div>
+<pre><code>## Bootstrapping confidence intervals with 100 samples</code></pre>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true"></a>occ_hdens_bob<span class="op">$</span>Species &lt;-<span class="st"> &quot;Bobcat&quot;</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true"></a>occ_hdens_fox<span class="op">$</span>Species &lt;-<span class="st"> &quot;Red fox&quot;</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true"></a>occ_hdens_bob<span class="op">$</span>Hdens &lt;-<span class="st"> </span>hdens_seq</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true"></a>occ_hdens_fox<span class="op">$</span>Hdens &lt;-<span class="st"> </span>hdens_seq</span></code></pre></div>
+<p>Finally, we’ll build our plot. Housing density will be on the x-axis, marginal occupancy on the y-axis, and species will be identified by colors.</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true"></a><span class="kw">plot</span>(occ_hdens_coy<span class="op">$</span>Hdens, occ_hdens_coy<span class="op">$</span>Predicted, <span class="dt">type=</span><span class="st">&#39;l&#39;</span>, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="fl">0.6</span>),</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true"></a>     <span class="dt">col=</span><span class="st">&#39;red&#39;</span>, <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">xlab=</span><span class="st">&quot;Housing density&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Marginal occupancy&quot;</span>)</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true"></a><span class="kw">lines</span>(occ_hdens_bob<span class="op">$</span>Hdens, occ_hdens_bob<span class="op">$</span>Predicted, <span class="dt">col=</span><span class="st">&#39;blue&#39;</span>, <span class="dt">lwd=</span><span class="dv">2</span>)</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true"></a><span class="kw">lines</span>(occ_hdens_fox<span class="op">$</span>Hdens, occ_hdens_fox<span class="op">$</span>Predicted, <span class="dt">col=</span><span class="st">&#39;green&#39;</span>, <span class="dt">lwd=</span><span class="dv">2</span>)</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true"></a><span class="kw">legend</span>(<span class="st">&#39;topleft&#39;</span>, <span class="dt">col=</span><span class="kw">c</span>(<span class="st">&#39;red&#39;</span>, <span class="st">&#39;blue&#39;</span>, <span class="st">&#39;green&#39;</span>), <span class="dt">lty=</span><span class="dv">1</span>,</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true"></a>       <span class="dt">legend=</span><span class="kw">c</span>(<span class="st">&quot;Coyote&quot;</span>, <span class="st">&quot;Bobcat&quot;</span>, <span class="st">&quot;Red fox&quot;</span>))</span></code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeAAAAHgCAIAAADytinCAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAgAElEQVR4nOzdeUBN6f8H8PdtTwu3pKiQKBSyL5OlqUapSPatsRaNIfueImEoxlpj30b2dO1ZxxhZKyZL2hQtIlna657fH9evb4Ob1L33nLqf11+ce+85b2a8Hc99zvPwGIYBIYQQ7lFgOwAhhJCvo4ImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOooImhBCOUmI7gOx06tTp8ePHbKeozRQVFc3MzNhOQaSi0KiwsFEhgDpxdZRy5Kg3AKirqx89elRfX1/2l+bub3ROTk5WVpapqamCgmRu858+fbp58+Y2bdpI5GzkS926ddu8ebOSEnf/pyJV80jj0S8tfvmg+OGntz8tT1quyCiynUimRowYkZmZyUpBg+GGffv2de/e/cGDBwzDZGRkODs7i+JpaWmtX79eIpfQ1NS8efOmRE5FvkpZWbmoqIjtFETC7jJ36zH1wGAoM7SYKWY7Dgvatm0bExPDyqU5MQa9YcOGMWPGKCkpNWjQAIC7u3tUVNTWrVvPnj07efLk2bNn79u3j+2MhMijKET9hJ9ykDMYgw/ggBKH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oUNVKtX06dPXrFnj5ua2bds27UG3vb39/Pnz33rrrTt37vj5+aWlpX3wwQebNm1qeb2tjG1qavrrr79evHjR19fX2NgYQEhIyLZt2ywtLbUD4mQgWNAkss2bNzs5Oe3YsSMnJ+f5559PTk7W1tDOnTvnzJkzZ86cysrKgQMHRkREaAZ/e/XqlZiYuHLlyqlTp1pYWAwaNOjEiRNP9Lv/hx9+2KVLl8jISIVCsWzZst27dzccktZKTk5+55133n///dra2nHjxs2dOzcsLEwza/369fb29rt27Vq3bl337t23bt365ptvtrzSVsaeOXPm6dOnVSrV7du3ra2tAQwfPtzKymrixIldunRp/XukTkAmCILYGYhaIghCQUHBI0el26asrGzv3r1jxozRfOgnCIKHh8fs2bOjoqLaaxXtKzs728PD49ixY6NHjxY7C+kVC5oMjiAI3bt379evX0xMjFKp/Oijj9asWZOdnd21a1exozVWV1dXWVm5cOHClJQUzTnjYiciveLfNxkcmUyWlJQ0a9asnj17ymSyXr16JScnS7CdAWRnZ/fs2dPIyGjnzp1sZwPEI2gyXPfu3TMyMnrk6LNE1NbWfv/9956enk5OTmJnIRGwoImIJIrnQRMRSRQLmohIoljQREQSxYImIpIoFjQRkUSxoImIJIoFTUQkUSxoIiKJYkETEUkUC5qISKJY0EREEsWCJiKSKBY0EZFEsaCJiCSKBU1EJFEsaCIiiWJBExFJFAuaiEiiWNBERBLFgiYikqj/A5xyPaJveftxAAAAAElFTkSuQmCC" /><!-- --></p>
+</div>
+</div>
+<div id="model-selection" class="section level1" number="4">
+<h1 number="4"><span class="header-section-number">4</span> Model selection</h1>
+<p><code>unmarked</code> can calculate AIC, <span class="math inline">\(\Delta\)</span>AIC, and weights for a list of models automatically. Start by creating a <code>fitList</code> object containing our two models:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true"></a>mods &lt;-<span class="st"> </span><span class="kw">fitList</span>(mod_null, mod_hdens)</span></code></pre></div>
+<pre><code>## Your list was unnamed, so model names were added automatically</code></pre>
+<p>Then call the function <code>modSel</code> on our list of models to generate a model selection table:</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true"></a><span class="kw">modSel</span>(mods)</span></code></pre></div>
+<pre><code>##           nPars     AIC delta   AICwt cumltvWt
+## mod_hdens    12 6530.48  0.00 1.0e+00     1.00
+## mod_null      9 6626.11 95.64 1.7e-21     1.00</code></pre>
+<p>Looks like the model with housing density is better.</p>
+</div>
+<div id="model-fitting-challenges" class="section level1" number="5">
+<h1 number="5"><span class="header-section-number">5</span> Model fitting challenges</h1>
+<p>Multispecies occupancy models often have many parameters, and can be difficult to fit in some situations. You might get poor estimates (i.e., very large absolute values and/or large SEs) under certain conditions:</p>
+<ul>
+<li>Sparse data (many 0s)</li>
+<li>Boundary estimates (occupancy close to 0 or 1)</li>
+<li>Few observations where multiple species are detected</li>
+<li>Separation (perfect correlation with covariate)</li>
+</ul>
+<p>Here’s an example of a complex model with many covariates that results in poor estimates.</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true"></a>state_complex &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;~scale(Dist_5km)+scale(HDens_5km)&quot;</span>, <span class="dv">6</span>), <span class="dv">0</span>)</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true"></a>det_complex &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="st">&quot;~Trail&quot;</span>,<span class="dv">3</span>)</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true"></a></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true"></a>mod_complex &lt;-<span class="st"> </span><span class="kw">occuMulti</span>(<span class="dt">stateformulas=</span>state_complex, <span class="dt">detformulas=</span>det_complex, umf)</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true"></a><span class="kw">summary</span>(mod_complex)</span></code></pre></div>
+<pre><code>##
+## Call:
+## occuMulti(detformulas = det_complex, stateformulas = state_complex,
+##     data = umf, maxOrder = 3L)
+##
+## Occupancy (logit-scale):
+##                                  Estimate     SE      z  P(&gt;|z|)
+## [bobcat] (Intercept)             -23.0171  5.784 -3.980 6.90e-05
+## [bobcat] scale(Dist_5km)          -2.4249  0.689 -3.519 4.34e-04
+## [bobcat] scale(HDens_5km)        -82.3836 19.788 -4.163 3.14e-05
+## [coyote] (Intercept)              -0.6789  0.225 -3.017 2.55e-03
+## [coyote] scale(Dist_5km)          -0.0176  0.139 -0.127 8.99e-01
+## [coyote] scale(HDens_5km)         -0.5534  0.748 -0.740 4.59e-01
+## [redfox] (Intercept)              -1.3946  0.257 -5.425 5.78e-08
+## [redfox] scale(Dist_5km)          -0.5293  0.250 -2.115 3.45e-02
+## [redfox] scale(HDens_5km)          0.2108  0.261  0.808 4.19e-01
+## [bobcat:coyote] (Intercept)        6.7598  6.384  1.059 2.90e-01
+## [bobcat:coyote] scale(Dist_5km)    1.6979  0.695  2.445 1.45e-02
+## [bobcat:coyote] scale(HDens_5km)  17.9202 21.442  0.836 4.03e-01
+## [bobcat:redfox] (Intercept)       15.3983  3.462  4.448 8.67e-06
+## [bobcat:redfox] scale(Dist_5km)    0.8836  0.439  2.014 4.40e-02
+## [bobcat:redfox] scale(HDens_5km)  64.1330 12.377  5.182 2.20e-07
+## [coyote:redfox] (Intercept)        1.1084  0.363  3.050 2.29e-03
+## [coyote:redfox] scale(Dist_5km)    0.1149  0.340  0.338 7.35e-01
+## [coyote:redfox] scale(HDens_5km)   0.9046  0.781  1.159 2.47e-01
+## 
+## Detection (logit-scale):
+##                      Estimate     SE      z  P(&gt;|z|)
+## [bobcat] (Intercept)    -2.83 0.1419 -19.91 3.10e-88
+## [bobcat] Trail           1.74 0.1542  11.26 2.10e-29
+## [coyote] (Intercept)    -1.96 0.0984 -19.88 5.89e-88
+## [coyote] Trail           2.17 0.1220  17.75 1.63e-70
+## [redfox] (Intercept)    -1.59 0.1601  -9.93 2.97e-23
+## [redfox] Trail           1.78 0.1997   8.93 4.12e-19
+## 
+## AIC: 5958.196
+## Number of sites: 1437
+## optim convergence code: 0
+## optim iterations: 196
+## Bootstrap iterations: 0</code></pre>
+<p>Note that several estimates are very large (&gt;10) and also have large SEs. You should be very skeptical about using a model with poor estimates, like this one, for inference. Potential solutions when you get poor estimates include:</p>
+<ul>
+<li>Fit simpler models with fewer covariates</li>
+<li>If possible, fit the model with fewer species</li>
+<li>Adjust observation period length if possible (e.g. collapse from one-week periods to three-week periods)</li>
+<li>Use penalized likelihood to fit the model</li>
+</ul>
+</div>
+<div id="penalized-likelihood" class="section level1" number="6">
+<h1 number="6"><span class="header-section-number">6</span> Penalized likelihood</h1>
+<p><code>occuMulti</code> uses maximum likelihood to estimate parameters. We can add a “penalty” to the calculated likelihood to keep parameter estimates from getting stuck at huge values Use of penalized likelihood has been shown to help with separation/boundary issues, eliminate unreasonably large estimates, and reduce error, However, note that the penalty term introduces a small amount of bias in the parameter estimates: thus, we are making a tradeoff between bias and variance With huge SEs as with the previous model, this may be a good tradeoff to make.</p>
+<p>One type of penalty is the “Bayes” penalty: <span class="math display">\[
+-\lambda\frac{1}{2}\sum_i{}\theta_i^2
+\]</span> In the formula above, <span class="math inline">\(\lambda\)</span> is the penalty value, and <span class="math inline">\(\theta\)</span> is the vector of estimated parameters. As the parameter values get bigger, the total penalty increases.</p>
+<div id="penalized-likelihood-with-occumulti" class="section level2" number="6.1">
+<h2 number="6.1"><span class="header-section-number">6.1</span> Penalized likelihood with occuMulti</h2>
+<p><code>occuMulti</code> can use penalized likelihood to fit models. You can provide a value to the <code>penalty</code> argument directly, or use the <code>optimizePenalty</code> function on a fitted model to choose the best value of <span class="math inline">\(\lambda\)</span> using K-fold cross-validation, and re-fit the model using the optimal penalty term value.</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true"></a>mod_penalty &lt;-<span class="st"> </span><span class="kw">optimizePenalty</span>(mod_complex, <span class="dt">penalties=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="dv">1</span>))</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true"></a><span class="kw">summary</span>(mod_penalty)</span></code></pre></div>
+<pre><code>## Optimal penalty is 1
+## Bootstraping covariance matrix
+
+## Call:
+## occuMulti(detformulas = c(&quot;~Trail&quot;, &quot;~Trail&quot;, &quot;~Trail&quot;), stateformulas = c(&quot;~scale(Dist_5km)+scale(HDens_5km)&quot;,
+## &quot;~scale(Dist_5km)+scale(HDens_5km)&quot;, &quot;~scale(Dist_5km)+scale(HDens_5km)&quot;,
+## &quot;~scale(Dist_5km)+scale(HDens_5km)&quot;, &quot;~scale(Dist_5km)+scale(HDens_5km)&quot;,
+## &quot;~scale(Dist_5km)+scale(HDens_5km)&quot;, &quot;0&quot;), data = object@data,
+##     maxOrder = 3L, penalty = 1, boot = boot)
+
+## Occupancy (logit-scale):
+##                                  Estimate    SE      z  P(&gt;|z|)
+## [bobcat] (Intercept)              -1.7810 0.221 -8.054 8.00e-16
+## [bobcat] scale(Dist_5km)          -1.3143 0.337 -3.903 9.48e-05
+## [bobcat] scale(HDens_5km)         -2.8200 0.529 -5.334 9.61e-08
+## [coyote] (Intercept)              -0.6049 0.178 -3.407 6.56e-04
+## [coyote] scale(Dist_5km)           0.0285 0.150  0.190 8.49e-01
+## [coyote] scale(HDens_5km)         -1.0908 0.397 -2.748 5.99e-03
+## [redfox] (Intercept)              -1.5659 0.310 -5.059 4.22e-07
+## [redfox] scale(Dist_5km)          -0.3068 0.138 -2.226 2.60e-02
+## [redfox] scale(HDens_5km)          0.4730 0.797  0.593 5.53e-01
+## [bobcat:coyote] (Intercept)        1.1871 0.372  3.195 1.40e-03
+## [bobcat:coyote] scale(Dist_5km)    0.9347 0.368  2.537 1.12e-02
+## [bobcat:coyote] scale(HDens_5km)  -0.3218 1.043 -0.309 7.58e-01
+## [bobcat:redfox] (Intercept)       -0.8831 0.346 -2.553 1.07e-02
+## [bobcat:redfox] scale(Dist_5km)    0.0364 0.233  0.156 8.76e-01
+## [bobcat:redfox] scale(HDens_5km)   2.5609 1.074  2.384 1.71e-02
+## [coyote:redfox] (Intercept)        1.0001 0.249  4.009 6.09e-05
+## [coyote:redfox] scale(Dist_5km)    0.0236 0.229  0.103 9.18e-01
+## [coyote:redfox] scale(HDens_5km)   1.3920 0.424  3.281 1.03e-03
+
+## Detection (logit-scale):
+##                      Estimate    SE      z  P(&gt;|z|)
+## [bobcat] (Intercept)    -2.44 0.150 -16.22 3.72e-59
+## [bobcat] Trail           1.74 0.164  10.61 2.59e-26
+## [coyote] (Intercept)    -1.89 0.117 -16.24 2.72e-59
+## [coyote] Trail           2.10 0.150  14.00 1.52e-44
+## [redfox] (Intercept)    -1.49 0.206  -7.21 5.66e-13
+## [redfox] Trail           1.72 0.254   6.79 1.14e-11
+
+## AIC: 6135.555
+## Number of sites: 1437
+## optim convergence code: 0
+## optim iterations: 100
+## Bootstrap iterations: 30</code></pre>
+<p>Notice that parameter estimates and SEs for the model using penalized likelihood are no longer gigantic. For more info on the use of penalized likelihood with multispecies occupancy models, see <span class="citation">Clipp et al. (2021)</span>.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered" number>
+<h1 class="unnumbered" number>References</h1>
+<div id="refs" class="references hanging-indent">
+<div id="ref-Clipp_2021">
+<p>Clipp, H. L., A. L. Evans, B. E. Kessinger, K. Kellner, and C. T. Rota. 2021. A penalized likelihood for multispecies occupancy models improves predictions of species interactions. Ecology:e03520.</p>
+</div>
+<div id="ref-mackenzie_estimating_2002">
+<p>MacKenzie, D. I., J. D. Nichols, G. B. Lachman, S. Droege, J. A. Royle, and C. A. Langtimm. 2002. Estimating site occupancy rates when detection probabilities are less than one. Ecology 83:2248–2255.</p>
+</div>
+<div id="ref-Rota2016">
+<p>Rota, C. T., M. A. R. Ferreira, R. Kays, T. D. Forrester, E. L. Kalies, W. J. McShea, A. W. Parsons, and J. J. Millspaugh. 2016. A multi-species occupancy model for two or more interacting species. Methods in Ecology and Evolution 7:1164–1173.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

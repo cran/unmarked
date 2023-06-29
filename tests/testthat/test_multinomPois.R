@@ -101,9 +101,14 @@ test_that("multinomPois can fit a removal model",{
     res <- residuals(m2_C)
     expect_equal(dim(res), dim(umf1@y))
 
-    expect_warning(r <- ranef(m2_C))
-    expect_equal(dim(r@post), c(3,56,1))
-    expect_equal(bup(r), c(10.794,0.000,2.655), tol=1e-4)
+    expect_warning(r <- ranef(m2_C, K=50))
+    expect_equal(dim(r@post), c(3,51,1))
+    expect_equal(bup(r), c(10.794,6.9317,2.655), tol=1e-4)
+
+    umf2 <- unmarkedFrameMPois(y=y, siteCovs=data.frame(x1=rnorm(5)), type="removal")
+    m4 <- multinomPois(~1~x1, umf2)
+    r <- ranef(m4, K=30)
+    expect_equal(dim(r@post), c(5,31,1))
 
     expect_warning(s <- simulate(m2_C, 2, na.rm=FALSE))
     expect_equal(length(s), 2)
@@ -236,6 +241,12 @@ test_that("multinomPois can fit models with random effects",{
   pr2 <- predict(fm, "state", newdata=umf2@siteCovs[1:5,])
   expect_equivalent(dim(pr), c(100, 4))
   expect_equivalent(dim(pr2), c(5,4))
+
+  # Make sure simulate accounts for random effects
+  s <- simulate(fm, nsim=30)
+  avg <- apply(sapply(s, function(x) x[,1]),1, mean)
+  # average first count and predicted abundance should be highly correlated
+  expect_true(cor(avg, pr$Predicted) > 0.7)
 
   umf2@y[1,1] <- NA
   umf2@y[2,] <- NA
