@@ -6,7 +6,7 @@ library(unmarked)
 data(MesoCarnivores)
 names(MesoCarnivores)
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  ?unmarkedFrameOccuMulti
 
 ## -----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ stateformulas <- c("~1","~1","~1","~1","~1","~1","0")
 ## -----------------------------------------------------------------------------
 detformulas <- c("~1","~1","~1")
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  ?occuMulti
 
 ## -----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ bob_marginal <- predict(mod_null, type="state", species="bobcat")
 all_marginal <- rbind(redfox_marginal[1,], coy_marginal[1,], bob_marginal[1,])
 all_marginal$Species <- c("Red fox", "Coyote", "Bobcat")
 
-## ---- fig.height=5------------------------------------------------------------
+## ----fig.height=5-------------------------------------------------------------
 plot(1:3, all_marginal$Predicted, ylim=c(0.1,0.4), 
      xlim=c(0.5,3.5), pch=19, cex=1.5, xaxt='n', 
      xlab="", ylab="Marginal occupancy and 95% CI")
@@ -75,7 +75,7 @@ head(redfox_coy)
 redfox_nocoy <- predict(mod_null, type="state", species="redfox", cond="-coyote")
 head(redfox_nocoy)
 
-## ---- fig.height=5------------------------------------------------------------
+## ----fig.height=5-------------------------------------------------------------
 cond_data <- rbind(redfox_coy[1,], redfox_nocoy[1,])
 cond_data$Coyote_status <- c("Present","Absent")
 
@@ -127,7 +127,7 @@ occ_hdens_fox$Species <- "Red fox"
 occ_hdens_bob$Hdens <- hdens_seq
 occ_hdens_fox$Hdens <- hdens_seq
 
-## ---- fig.height=5------------------------------------------------------------
+## ----fig.height=5-------------------------------------------------------------
 plot(occ_hdens_coy$Hdens, occ_hdens_coy$Predicted, type='l', ylim=c(0,0.6),
      col='red', lwd=2, xlab="Housing density", ylab="Marginal occupancy")
 lines(occ_hdens_bob$Hdens, occ_hdens_bob$Predicted, col='blue', lwd=2)
@@ -141,7 +141,7 @@ mods <- fitList(mod_null, mod_hdens)
 ## -----------------------------------------------------------------------------
 modSel(mods)
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  state_complex <- c(rep("~scale(Dist_5km)+scale(HDens_5km)", 6), 0)
 #  det_complex <- rep("~Trail",3)
 #  

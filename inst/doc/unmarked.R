@@ -1,7 +1,7 @@
 ## ----echo=FALSE---------------------------------------------------------------
 options(rmarkdown.html_vignette.check_title = FALSE)
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 tab1 <- data.frame(
   Model=c("Occupancy", "Royle-Nichols", "Point Count", "Distance-sampling",
           "Generalized distance-sampling", "Arbitrary multinomial-Poisson",
@@ -56,11 +56,11 @@ backTransform(linearComb(fm2, coefficients = c(1,0,0), type = 'det'))
 newData <- data.frame(MinAfterSunset = 0, Temperature = -2:2)
 round(predict(fm2, type = 'det', newdata = newData, appendData=TRUE), 2)
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  confint(fm2, type='det')
 #  confint(fm2, type='det', method = "profile")
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 confint(fm2, type='det')
 nul <- capture.output(ci <- confint(fm2, type='det', method = "profile"))
 ci
@@ -70,7 +70,7 @@ fms <- fitList('psi(.)p(.)' = fm1, 'psi(.)p(Time+Temp)' = fm2)
 modSel(fms)
 predict(fms, type='det', newdata = newData)
 
-## ---- warning=FALSE-----------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 chisq <- function(fm) {
     umf <- fm@data
     y <- umf@y

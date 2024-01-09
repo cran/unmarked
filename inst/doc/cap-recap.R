@@ -1,7 +1,7 @@
 ## ----echo=FALSE---------------------------------------------------------------
 options(rmarkdown.html_vignette.check_title = FALSE)
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 tab <- data.frame(
   id = c("GB","YR","RO","PP","GY","PR"),
   site = c(rep("A",4), "B", "B"),
@@ -13,7 +13,7 @@ knitr::kable(tab, align="lcc",
   caption="Table 1. Capture-recapture data for 6 individuals sampled on 3 occasions"
 )
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 tab2 <- data.frame(
   Site=c("A","B","C","D"),
   eh100=c(1,1,0,0), eh010=c(0,1,0,0), eh001=c(0,0,0,0),
@@ -86,7 +86,7 @@ Mx <- multinomPois(~time.1 ~1, umf.cr1, engine="R")
 ## -----------------------------------------------------------------------------
 (M0.woody <- multinomPois(~1 ~woody, umf.cr1, engine="R"))
 
-## ---- fig.width=5, fig.height=5-----------------------------------------------
+## ----fig.width=5, fig.height=5------------------------------------------------
 nd <- data.frame(woody=seq(0, 0.8, length=50))
 E.abundance <- predict(M0.woody, type="state", newdata=nd, appendData=TRUE)
 plot(Predicted ~ woody, E.abundance, type="l", ylim=c(0, 6),
@@ -161,7 +161,7 @@ for(i in 1:M) {
 return(il)
 }
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  parID <- matrix(c('p','sig','sig'), 50, 3, byrow=TRUE)
 #  umf.cr2 <- unmarkedFrameMPois(y=alfl.H1,
 #    siteCovs=alfl.covs[,c("woody", "struct", "time.1")],

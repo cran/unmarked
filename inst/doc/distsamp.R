@@ -21,7 +21,7 @@ umf <- unmarkedFrameDS(y=as.matrix(yDat), siteCovs=covs, survey="line",
 	dist.breaks=c(0, 5, 10, 15, 20), tlength=rep(100, 7),
 	unitsIn="m")
 
-## ---- fig.height=4, fig.width=4, fig.cap="Figure 1. Histogram of detection distances"----
+## ----fig.height=4, fig.width=4, fig.cap="Figure 1. Histogram of detection distances"----
 summary(umf)
 hist(umf, xlab="distance (m)", main="", cex.lab=0.8, cex.axis=0.8)
 
@@ -70,7 +70,7 @@ head(habConstant <- data.frame(canopyHt = seq(2, 8, length=20),
 head(Esigma <- predict(hn_Hab.Ht, type="det", newdata=habConstant,
 	appendData=TRUE))
 
-## ---- fig.height=3, fig.width=6, fig.cap="Figure 2. Predicted covariate relationships"----
+## ----fig.height=3, fig.width=6, fig.cap="Figure 2. Predicted covariate relationships"----
 par(mfrow=c(1, 2))
 with(Elambda, {
 	x <- barplot(Predicted, names=habitat, xlab="Habitat",
@@ -88,7 +88,7 @@ with(Esigma, {
 	lines(canopyHt, Predicted-SE, lty=2)
 	})
 
-## ---- fig.width=6, fig.height=3, fig.cap="Figure 3. Detection and probability density functions"----
+## ----fig.width=6, fig.height=3, fig.cap="Figure 3. Detection and probability density functions"----
 par(mfrow=c(1, 2))
 plot(function(x) gxhn(x, sigma=10.8), 0, 20, xlab="Distance (m)",
 	ylab="Detection prob. at 2m canopy ht.", cex.lab=0.7,
