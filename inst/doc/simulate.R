@@ -1,78 +1,85 @@
 ## -----------------------------------------------------------------------------
-set.seed(123)
 library(unmarked)
-umf <- unmarkedFrameOccu(y=matrix(c(0,1,0,1,1,0,0,0,1), nrow=3))
-mod <- occu(~1~1, umf)
-names(mod)
+set.seed(123)
+M <- 300
+J <- 8
+y <- matrix(NA, M, J)
 
 ## -----------------------------------------------------------------------------
-forms <- list(state=~elev, det=~1)
+site_covs <- data.frame(elev = rnorm(M))
 
 ## -----------------------------------------------------------------------------
-coefs <- list(state=c(intercept=0, elev=-0.4), det=c(intercept=0))
-
-## -----------------------------------------------------------------------------
-design <- list(M=300, J=8) # 300 sites, 8 occasions per site
-
-## ----eval=FALSE---------------------------------------------------------------
-#  simulate("occu", formulas=forms, design=design)
-
-## ----echo=FALSE---------------------------------------------------------------
-try(simulate("occu", formulas=forms, design=design))
-
-## -----------------------------------------------------------------------------
-occu_umf <- simulate("occu", formulas=forms, coefs=coefs, design=design)
-head(occu_umf)
-
-## -----------------------------------------------------------------------------
-(occu(~1 ~elev, occu_umf))
-
-## -----------------------------------------------------------------------------
-guide <- list(elev=list(dist=rnorm, mean=2, sd=0.5))
-
-## -----------------------------------------------------------------------------
-occu_umf <- simulate("occu", formulas=forms, coefs=coefs, design=design, guide=guide)
-head(occu_umf)
-
-## -----------------------------------------------------------------------------
-guide <- list(elev=list(dist=runif, min=0, max=1)) 
-occu_umf <- simulate("occu", formulas=forms, coefs=coefs, design=design, guide=guide)
-head(occu_umf)
-
-## -----------------------------------------------------------------------------
-forms2 <- list(state=~elev+landcover, det=~1)
-
-## -----------------------------------------------------------------------------
-guide <- list(landcover=factor(levels=c("forest","grass","urban")))
-
-## -----------------------------------------------------------------------------
-# forest is the reference level for landcover since it was listed first
-coefs2 <- list(state=c(intercept=0, elev=-0.4, landcovergrass=0.2, 
-                       landcoverurban=-0.7), det=c(intercept=0))
-
-## -----------------------------------------------------------------------------
-head(simulate("occu", formulas=forms2, coefs=coefs2, design=design, guide=guide))
-
-## -----------------------------------------------------------------------------
-coefs$alpha <- c(alpha=0.5)
-head(simulate("pcount", formulas=forms, coefs=coefs, design=design, mixture="NB"))
-
-## -----------------------------------------------------------------------------
-forms <- list(lambda=~elev, dist=~1, rem=~wind)
-
-## -----------------------------------------------------------------------------
-coefs <- list(lambda=c(intercept=log(5), elev=0.7), 
-              dist=c(intercept=log(50)), rem=c(intercept=-1, wind=-0.3))
-
-## -----------------------------------------------------------------------------
-design <- list(M = 300, Jdist=4, Jrem=5)
-
-## -----------------------------------------------------------------------------
-umf <- simulate("gdistremoval", formulas=forms, coefs=coefs, design=design,
-                dist.breaks=c(0,25,50,75,100), keyfun="halfnorm", unitsIn="m")
+umf <- unmarkedFrameOccu(y = y, siteCovs = site_covs)
 head(umf)
 
 ## -----------------------------------------------------------------------------
-(fit <- gdistremoval(lambdaformula=~elev, removalformula=~wind, 
-                    distanceformula=~1, data=umf))
+model <- occu
+
+## -----------------------------------------------------------------------------
+form <- ~1~elev
+
+## ----error = TRUE-------------------------------------------------------------
+simulate(umf, model = model, formula = form)
+
+## -----------------------------------------------------------------------------
+plogis(0)
+
+## -----------------------------------------------------------------------------
+cf <- list(state = c(0, -0.4), det = 0)
+
+## -----------------------------------------------------------------------------
+out <- simulate(umf, model = occu, formula = ~1~elev, coefs = cf)
+
+## -----------------------------------------------------------------------------
+head(out[[1]])
+
+## -----------------------------------------------------------------------------
+occu(~1~elev, data = out[[1]])
+
+## -----------------------------------------------------------------------------
+set.seed(123)
+M <- 100
+Jdist <- 4
+Jrem <- 5
+
+y_dist <- matrix(NA, M, Jdist)
+y_rem <- matrix(NA, M, Jrem)
+
+## -----------------------------------------------------------------------------
+site_covs <- data.frame(elev = rnorm(M))
+obs_covs <- data.frame(wind = rnorm(M * Jrem))
+
+## -----------------------------------------------------------------------------
+umf <- unmarkedFrameGDR(yRem = y_rem, yDist = y_dist, siteCovs = site_covs, obsCovs = obs_covs,
+                        dist.breaks = c(0,25,50,75,100), unitsIn = 'm')
+
+## -----------------------------------------------------------------------------
+head(umf)
+
+## -----------------------------------------------------------------------------
+lambdaformula <- ~elev # elevation effect on abundance
+removalformula <- ~wind # wind effect on removal p
+distanceformula <- ~1
+mixture <- "NB"
+
+## ----error=TRUE---------------------------------------------------------------
+simulate(umf, lambdaformula=~elev, removalformula=~wind, distanceformula=~1,
+         mixture="NB")
+
+## -----------------------------------------------------------------------------
+cf <- list(lambda = c(log(5), 0.7),
+           dist = log(50),
+           alpha = 0.1,
+           rem = c(-1, -0.3))
+
+## -----------------------------------------------------------------------------
+out <- simulate(umf, lambdaformula=~elev, removalformula=~wind, distanceformula=~1,
+                coefs=cf, mixture="NB", nsim=2)
+
+## -----------------------------------------------------------------------------
+lapply(out, head)
+
+## -----------------------------------------------------------------------------
+gdistremoval(lambdaformula=~elev, removalformula=~wind, distanceformula=~1, data=out[[1]],
+             mixture="NB")
 
