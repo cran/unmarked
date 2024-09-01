@@ -18,9 +18,6 @@ model <- occu
 ## -----------------------------------------------------------------------------
 form <- ~1~elev
 
-## ----error = TRUE-------------------------------------------------------------
-simulate(umf, model = model, formula = form)
-
 ## -----------------------------------------------------------------------------
 plogis(0)
 
@@ -61,10 +58,6 @@ lambdaformula <- ~elev # elevation effect on abundance
 removalformula <- ~wind # wind effect on removal p
 distanceformula <- ~1
 mixture <- "NB"
-
-## ----error=TRUE---------------------------------------------------------------
-simulate(umf, lambdaformula=~elev, removalformula=~wind, distanceformula=~1,
-         mixture="NB")
 
 ## -----------------------------------------------------------------------------
 cf <- list(lambda = c(log(5), 0.7),

@@ -1,4 +1,4 @@
-# unmarked 1.4.2
+# unmarked 1.4.3
 
 * Add integrated distance sampling model function (IDS)
 * Improved simulation and power analysis tools based on unmarkedFrame input

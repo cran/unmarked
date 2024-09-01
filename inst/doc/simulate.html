@@ -452,14 +452,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>The model structure, as defined by the formula above, implies a certain set of parameter/coefficient values (intercepts, slopes) we need to supply to <code>simulate</code>. These need to be supplied as a named list, where each list element corresponds to one submodel (such as <code>state</code> for occupancy and <code>det</code> for detection). Each list element is a numeric vector of the required parameter values. It can be tricky to figure out the structure of this list, so <code>simulate</code> allows you to not include it at first, in which case the function will return a template for you to fill in.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">simulate</span>(umf, <span class="dt">model =</span> model, <span class="dt">formula =</span> form)</span></code></pre></div>
 <pre><code>## coefs should be a named list of vectors, with the following structure
-##         (replace 0s with your values):
-## 
+## (replace 0s with your values):
+##
 ## $state
-## (Intercept)        elev 
-##           0           0 
-## 
+## (Intercept)        elev
+##           0           0
+##
 ## $det
-## (Intercept) 
+## (Intercept)
 ##           0</code></pre>
 <pre><code>## Error: Specify coefs argument as shown above</code></pre>
 <p>We need to supply a list with two elements <code>state</code> and <code>det</code>. The <code>state</code> element contains two values, the intercept and the slope corresponding to elevation. The <code>det</code> element contains only the intercept since we have no covariates on detection. Note that all values supplied in this list <em>must</em> be on the inverse link scale, which will depend on the specific submodel used. So for example, a value of 0 for <code>det</code> implies a detection probability of 0.5, because we’re using the logit link function.</p>
@@ -572,22 +572,22 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a><span class="kw">simulate</span>(umf, <span class="dt">lambdaformula=</span><span class="op">~</span>elev, <span class="dt">removalformula=</span><span class="op">~</span>wind, <span class="dt">distanceformula=</span><span class="op">~</span><span class="dv">1</span>,</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true"></a>         <span class="dt">mixture=</span><span class="st">&quot;NB&quot;</span>)</span></code></pre></div>
 <pre><code>## coefs should be a named list of vectors, with the following structure
-##         (replace 0s with your values):
-## 
+## (replace 0s with your values):
+##
 ## $lambda
-## (Intercept)        elev 
-##           0           0 
-## 
+## (Intercept)        elev
+##           0           0
+##
 ## $alpha
-## alpha 
-##     0 
-## 
+## alpha
+##     0
+##
 ## $dist
-## (Intercept) 
-##           0 
-## 
+## (Intercept)
+##           0
+##
 ## $rem
-## (Intercept)        wind 
+## (Intercept)        wind
 ##           0           0</code></pre>
 <pre><code>## Error: Specify coefs argument as shown above</code></pre>
 <p>We need to set two values for the abundance (<code>lambda</code>) model on the log scale, one for <code>dist</code> which represents the distance function sigma parameter (log scale), one for the negative binomial dispersion parameter <code>alpha</code> (log scale), and two for the removal detection probability model (logit scale).</p>
