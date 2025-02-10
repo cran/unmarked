@@ -50,6 +50,14 @@ test_that("unmarkedFrameGDS subset works",{
     expect_equal(umf2.site1@survey, "line")
 
     umf2.sites1and3 <- umf2[c(1,3),]
+    expect_equal(numSites(umf2.sites1and3), 2)
+    expect_equivalent(umf2[1,], umf2.sites1and3[1,])
+    expect_equivalent(umf2[3,], umf2.sites1and3[2,])
+
+    umf3 <- umf2[c(2,2,3),]
+    expect_equivalent(umf3[1,], umf2[2,])
+    expect_equivalent(umf3[2,], umf2[2,])
+    expect_equivalent(umf3[3,], umf2[3,])
 })
 
 test_that("gdistsamp with halfnorm keyfunction works",{
@@ -135,6 +143,10 @@ test_that("gdistsamp with halfnorm keyfunction works",{
     #expect_equivalent(coef(fm_R),coef(fm_C),tol=1e-4)
 
     # methods
+    ft <- fitted(fm_C)
+    expect_equal(dim(ft), c(30,15))
+    expect_equal(round(ft,4)[1:2,1:2],
+      structure(c(0.0713, 0.1863, 0.0648, 0.167), dim = c(2L, 2L)))
     res <- residuals(fm_C)
     expect_equal(dim(res), c(30,15))
     expect_equal(res[1,1], -0.07133, tol=1e-4)
@@ -145,7 +157,14 @@ test_that("gdistsamp with halfnorm keyfunction works",{
     expect_is(s, "list")
     expect_equal(length(s), 2)
     pb <- parboot(fm_C, nsim=1)
-    expect_is(pb, "parboot")
+    expect_equal(pb@t.star[1,1], 105.6289, tol=1e-4)
+    npb <- nonparboot(fm_C, B=2)
+    expect_equal(length(npb@bootstrapSamples), 2)
+    v <- vcov(npb, method='nonparboot')
+    expect_equal(nrow(v), length(coef(npb)))
+    gp <- getP(fm_C)
+    expect_equal(dim(gp), dim(fm_C@data@y))
+    expect_equal(as.vector(gp[1:2,1:2]), c(0.1968,0.1964,0.1787,0.1761), tol=1e-4)
 
     #Negative binomial
     #fm_R <- gdistsamp(~par1, ~par2, ~par3, umf, output="density", se=FALSE,
@@ -190,6 +209,31 @@ test_that("gdistsamp with halfnorm keyfunction works",{
     expect_equivalent(coef(fm_C),c(1.30815,0.53527,-1.35387,-0.11038,
                                     3.46293,-0.13458),tol=1e-4)
     #expect_equivalent(coef(fm_R),coef(fm_C),tol=1e-4)
+
+    # With missing covariate values
+    covs_na <- covs
+    covs_na$par1[1] <- NA
+    ysc_na <- ysc
+    ysc_na$par2[4] <- NA
+    umf <- unmarkedFrameGDS(y = y, siteCovs=covs_na, yearlySiteCovs=ysc_na,
+                            survey="line", unitsIn="m",
+                            dist.breaks=breaks,
+                            tlength=rep(transect.length, R), numPrimary=T)
+
+    #fm_R <- gdistsamp(~par1, ~par2, ~par3, umf, output="density",
+    #                  se=FALSE, engine="R")
+    fm_C <- suppressWarnings(gdistsamp(~par1, ~par2, ~par3, umf, output="density",
+                      se=FALSE, engine="C"))
+
+    ft <- fitted(fm_C)
+    expect_equal(dim(ft), c(30,15))
+    expect_true(all(is.na(ft[1,])))
+    expect_true(all(is.na(ft[2,1:5])))
+    expect_false(is.na(ft[2,6]))
+
+    r <- ranef(fm_C)
+    expect_equal(nrow(r@post), numSites(fm_C@data))
+    expect_true(all(is.na(r@post[1,,1])))
 
     #Point
     set.seed(123)
@@ -601,8 +645,9 @@ test_that("gdistsamp handles NAs",{
   expect_warning(fm1 <- gdistsamp(~1, ~1, ~cov1, umf, keyfun="exp", output="density", se=FALSE))
 
   # Check that getP works
-  expect_warning(gp <- getP(fm1))
+  gp <- getP(fm1)
   expect_equivalent(dim(gp), c(R, T*J))
+  expect_true(all(is.na(gp[1,11:15])))
 })
 
 test_that("gdistsamp simulate method works",{

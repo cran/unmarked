@@ -109,7 +109,7 @@ setMethod("simulate", "character",
 #replace_sigma <- function(coefs, fit){
 #  required_subs <- names(fit@estimates@estimates)
 #  formulas <- sapply(names(fit), function(x) get_formula(fit, x))
-#  rand <- lapply(formulas, lme4::findbars)
+#  rand <- lapply(formulas, reformulas::findbars)
 #  if(!all(sapply(rand, is.null))){
 #    rvar <- lapply(rand, function(x) unlist(lapply(x, all.vars)))
 #    for (i in required_subs){
@@ -640,6 +640,34 @@ setMethod("simulate_fit", "unmarkedFitIDS",
       keyfun=keyfun, unitsOut=unitsOut, K=K ,control=list(maxit=1))
 })
 
+## get_umf_components ----
+setMethod("get_umf_components", "unmarkedFitOccuCOP",
+  function(object, formulas, guide, design, ...){
+    sc <- generate_data(formulas$psi, guide, design$M)
+    oc <- generate_data(formulas$lambda, guide, design$J*design$M)
+    yblank <- matrix(0, design$M, design$J)
+    list(y=yblank, siteCovs=sc, obsCovs=oc)
+})
+
+
+## simulate_fit ----
+setMethod("simulate_fit", "unmarkedFitOccuCOP",
+  function(object, formulas, guide, design, ...){
+    # Generate covariates and create a y matrix of zeros
+    parts <- get_umf_components(object, formulas, guide, design, ...)
+    umf <- unmarkedFrameOccuCOP(y = parts$y, siteCovs = parts$siteCovs, obsCovs=parts$obsCovs)
+    fit <- suppressMessages(
+      occuCOP(
+        data = umf,
+        psiformula = formula(formulas$psi),
+        lambdaformula = formula(formulas$lambda),
+        se = FALSE,
+        control = list(maxit = 1)
+      )
+    )
+    return(fit)
+})
+
 
 # power -----------------------------------------------------------------------
 
@@ -812,7 +840,7 @@ check_coefs_old <- function(coefs, fit, template=FALSE){
 
   # If there are random effects, adjust the expected coefficient names
   # to remove the b vector and add the grouping covariate name
-  rand <- lapply(formulas, lme4::findbars)
+  rand <- lapply(formulas, reformulas::findbars)
   if(!all(sapply(rand, is.null))){
     stopifnot(all(required_subs %in% names(formulas)))
     rvar <- lapply(rand, function(x) unlist(lapply(x, all.vars)))

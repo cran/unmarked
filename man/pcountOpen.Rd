@@ -1,6 +1,6 @@
 \name{pcountOpen}
 \alias{pcountOpen}
-\title{Fit the open N-mixture models of Dail and Madsen and extensions}
+\title{Fit the open N-mixture models of Dail and Madsen (2011) and Hostetler and Chandler (2015)}
 \description{Fit the models of Dail and Madsen (2011) and Hostetler and
 Chandler (in press), which are
 generalized forms of the Royle (2004) N-mixture model for open
@@ -213,7 +213,7 @@ summary(umf)
 # Fit model and backtransform
 (m1 <- pcountOpen(~1, ~1, ~1, ~1, umf, K=20)) # Typically, K should be higher
 
-(lam <- coef(backTransform(m1, "lambda"))) # or
+(lam <- predict(m1, "lambda")$Predicted[1]) # or
 lam <- exp(coef(m1, type="lambda"))
 gam <- exp(coef(m1, type="gamma"))
 om <- plogis(coef(m1, type="omega"))

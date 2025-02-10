@@ -20,6 +20,19 @@ test_that("unmarkedFrameOccuMulti construction and methods work",{
   dev.off()
 
   # check subset
+  umf_sub <- umf[2:3,]
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[3,])
+
+  umf_sub <- umf[c(2,2,4),]
+  expect_equal(numSites(umf_sub), 3)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[4,])
+
+  keep <- c(FALSE, FALSE, TRUE, FALSE, TRUE)
+  expect_error(umf_sub <- umf[keep,]) # this should work
+
   umf_sub <- umf[,1:2]
   expect_equal(umf_sub@ylist[[1]], umf@ylist[[1]][,1:2])
 })
@@ -106,11 +119,29 @@ test_that("occuMulti can fit models with covariates",{
   gp <- getP(fm)
   expect_equivalent(length(gp), 2)
   expect_equivalent(dim(gp[[1]]), c(N,J))
+  expect_equal(as.vector(gp[[1]][1:2,1:2]), c(0.1495,0.7914,0.3355,0.2995), tol=1e-4)
+  expect_equal(as.vector(gp[[2]][1:2,1:2]), c(0.3080,0.4923,0.5645,0.3596), tol=1e-4)
 
   # ranef
-  expect_error(ran <- ranef(fm))
-  ran <- ranef(fm, species=1)
-  expect_equal(bup(ran), rep(1,5))
+  ran <- ranef(fm)
+  expect_equal(names(ran), names(fm@data@ylist))
+  expect_true(all(sapply(ran, function(x) inherits(x, "unmarkedRanef"))))
+  expect_equal(bup(ran$sp1), rep(1,5))
+  ran2 <- ranef(fm, species=1)
+  expect_is(ran2, "unmarkedRanef")
+  expect_equal(ran$sp1, ran2)
+
+  # parboot
+  pb <- parboot(fm, nsim=2)
+  expect_equal(pb@t.star[1,1], 3.1111, tol=1e-4)
+
+  # nonparboot
+  npb <- nonparboot(fm, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 44.5793, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   #Check site cov can be used in detection formula
   detformulas <- c('~occ_cov1','~det_cov2')
@@ -143,6 +174,10 @@ test_that("occuMulti can handle NAs",{
 
   yna <- y
   yna[[1]][1,1] <- NA
+  det_covs_na <- det_covs
+  det_covs_na$det_cov1[1] <- NA
+  det_covs_na$det_cov2[8] <- NA
+
   expect_warning(umf <- unmarkedFrameOccuMulti(y = yna, siteCovs = occ_covs, obsCovs = det_covs))
 
   #Check correct answer given when missing detection
@@ -150,13 +185,29 @@ test_that("occuMulti can handle NAs",{
   expect_equivalent(coef(fm)[c(1,7)], c(6.63207,0.35323), tol= 1e-4)
 
   fit <- fitted(fm)
-  expect_true(is.na(fit[[1]][1,1]))
+  expect_true(!is.na(fit[[1]][1,1]))
 
   res <- residuals(fm)
   expect_true(is.na(res[[1]][1,1]))
 
   gp <- getP(fm)
+  expect_equal(dim(gp[[1]]), dim(fm@data@ylist[[1]]))
+  expect_true(!is.na(gp[[1]][1,1]))
+
+  r <- ranef(fm)
+
+  # When a detection cov is also missing
+  expect_warning(umf <- unmarkedFrameOccuMulti(y = yna, siteCovs = occ_covs, obsCovs = det_covs_na))
+  expect_warning(fm <- occuMulti(detformulas, stateformulas, data = umf, se=FALSE))
+  fit <- fitted(fm)
+  expect_true(is.na(fit[[1]][1,1]))
+  expect_true(is.na(fit[[2]][4,2]))
+  expect_equal(sum(!is.na(fit[[1]])), 9)
+
+  gp <- getP(fm)
+  expect_equal(dim(gp[[1]]), dim(fm@data@ylist[[1]]))
   expect_true(is.na(gp[[1]][1,1]))
+  expect_true(is.na(gp[[2]][4,2]))
 
   #Check error thrown when all detections are missing
   yna[[1]][1,] <- NA
@@ -267,7 +318,7 @@ test_that("occuMulti predict method works",{
   nul <- capture_output({
 
   nd <- siteCovs(umf)[1:2,]
-  pr_all <- predict(fm, type='state', se=F)$Predicted[1:2,1]
+  pr_all <- predict(fm, type='state', level=NULL)$Predicted[1:2,1]
   pr_nd <- predict(fm, type='state', newdata=nd, species=c(1,2))$Predicted
   expect_equivalent(pr_nd,pr_all, tol=1e-4)
 
@@ -430,11 +481,11 @@ test_that("occuMulti can handle complex formulas",{
   #effect resulting predictions (scale should be based on
   #original data)
   nd <- siteCovs(umf)[1:5,]
-  pr_nd <- predict(fm, type='state', newdata=nd, se=F)$Predicted
+  pr_nd <- predict(fm, type='state', newdata=nd, level=NULL)$Predicted
   nd <- siteCovs(umf)[1:2,]
-  pr_nd2 <- predict(fm, type='state', newdata=nd, se=F)$Predicted
+  pr_nd2 <- predict(fm, type='state', newdata=nd, level=NULL)$Predicted
   nd <- siteCovs(umf)[c(1,1),]
-  pr_nd3 <- predict(fm, type='state', newdata=nd, se=F)$Predicted
+  pr_nd3 <- predict(fm, type='state', newdata=nd, level=NULL)$Predicted
 
   expect_equivalent(pr_nd[1:2,], pr_nd2)
   expect_equivalent(pr_nd[c(1,1),], pr_nd3)
@@ -447,20 +498,20 @@ test_that("occuMulti can handle complex formulas",{
   fm <- occuMulti(detformulas, stateformulas, data = umf)
 
   nd <- siteCovs(umf)[1:2,]
-  pr_nd <- predict(fm, type='state', newdata=nd, se=F)$Predicted
+  pr_nd <- predict(fm, type='state', newdata=nd, level=NULL)$Predicted
 
   nd2 <- data.frame(occ_fac=factor(c('a','b'),levels=c('a','b','c')))
-  pr_nd2 <- predict(fm, type='state', newdata=nd2, se=F)$Predicted
+  pr_nd2 <- predict(fm, type='state', newdata=nd2, level=NULL)$Predicted
 
   expect_equivalent(pr_nd, pr_nd2[c(2,1),])
 
   nd3 <- data.frame(occ_fac=c('a','b'))
-  pr_nd3 <- predict(fm, type='state', newdata=nd3, se=F)$Predicted
+  pr_nd3 <- predict(fm, type='state', newdata=nd3, level=NULL)$Predicted
 
   expect_equivalent(pr_nd, pr_nd3[c(2,1),])
 
   nd4 <- data.frame(occ_fac=factor(c('a','d'),levels=c('a','d')))
-  expect_error(predict(fm, type='state', newdata=nd4, se=F))
+  expect_error(predict(fm, type='state', newdata=nd4, level=NULL))
 
   #Check that predicting detection also works
   nd5 <- data.frame(det_cov1 = rnorm(5))

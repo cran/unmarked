@@ -28,46 +28,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -79,55 +64,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -160,6 +144,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
 
 <style type="text/css">body {
 background-color: #fff;
@@ -353,58 +359,128 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Modeling variation in abundance using capture-recapture data</h1>
+<h1 class="title toc-ignore">Modeling variation in abundance using
+capture-recapture data</h1>
 <h4 class="author">Richard Chandler</h4>
 <h4 class="date">Feb 24, 2019</h4>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#abstract"><span class="toc-section-number">1</span> Abstract</a></li>
-<li><a href="#introduction"><span class="toc-section-number">2</span> Introduction</a></li>
-<li><a href="#data"><span class="toc-section-number">3</span> Data</a></li>
-<li><a href="#closed-population-models"><span class="toc-section-number">4</span> Closed Population Models</a>
+<li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">2</span> Introduction</a></li>
+<li><a href="#data" id="toc-data"><span class="toc-section-number">3</span> Data</a></li>
+<li><a href="#closed-population-models" id="toc-closed-population-models"><span class="toc-section-number">4</span> Closed Population Models</a>
 <ul>
-<li><a href="#models-m_0-m_t-and-models-with-covariates-of-p."><span class="toc-section-number">4.1</span> Models <span class="math inline">\(M_0\)</span>, <span class="math inline">\(M_t\)</span>, and models with covariates of <span class="math inline">\(p\)</span>.</a></li>
-<li><a href="#modeling-behavioral-responses-model-m_b"><span class="toc-section-number">4.2</span> Modeling behavioral responses, Model <span class="math inline">\(M_b\)</span></a></li>
-<li><a href="#caution-warning-danger"><span class="toc-section-number">4.3</span> Caution, Warning, Danger</a></li>
-<li><a href="#individual-heterogeneity-in-capture-probability-model-m_h"><span class="toc-section-number">4.4</span> Individual Heterogeneity in Capture Probability, Model <span class="math inline">\(M_h\)</span></a></li>
-<li><a href="#distance-related-heterogeneity"><span class="toc-section-number">4.5</span> Distance-related heterogeneity</a></li>
+<li><a href="#models-m_0-m_t-and-models-with-covariates-of-p." id="toc-models-m_0-m_t-and-models-with-covariates-of-p."><span class="toc-section-number">4.1</span> Models <span class="math inline">\(M_0\)</span>, <span class="math inline">\(M_t\)</span>, and models with covariates of <span class="math inline">\(p\)</span>.</a></li>
+<li><a href="#modeling-behavioral-responses-model-m_b" id="toc-modeling-behavioral-responses-model-m_b"><span class="toc-section-number">4.2</span> Modeling behavioral responses,
+Model <span class="math inline">\(M_b\)</span></a></li>
+<li><a href="#caution-warning-danger" id="toc-caution-warning-danger"><span class="toc-section-number">4.3</span> Caution, Warning, Danger</a></li>
+<li><a href="#individual-heterogeneity-in-capture-probability-model-m_h" id="toc-individual-heterogeneity-in-capture-probability-model-m_h"><span class="toc-section-number">4.4</span> Individual Heterogeneity in
+Capture Probability, Model <span class="math inline">\(M_h\)</span></a></li>
+<li><a href="#distance-related-heterogeneity" id="toc-distance-related-heterogeneity"><span class="toc-section-number">4.5</span> Distance-related
+heterogeneity</a></li>
 </ul></li>
-<li><a href="#modeling-temporary-emigration"><span class="toc-section-number">5</span> Modeling Temporary Emigration</a></li>
-<li><a href="#references">References</a></li>
+<li><a href="#modeling-temporary-emigration" id="toc-modeling-temporary-emigration"><span class="toc-section-number">5</span> Modeling Temporary
+Emigration</a></li>
+<li><a href="#references" id="toc-references">References</a></li>
 </ul>
 </div>
 
 <div id="abstract" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Abstract</h1>
-<p>The “un” in <code>unmarked</code> is somewhat misleading because the package can be used to analyze data from marked animals. The three most common sampling methods that produce suitable data are removal sampling, double observer sampling, and capture-recapture methods. This document focuses on the analysis of capture-recapture data using a class of models known as multinomial <span class="math inline">\(N\)</span>-mixture models <span class="citation">(Royle 2004, Dorazio et al. 2005)</span>, which assume that capture-recapture data have been collected at a collection of sample locations (“sites”). Capture-recapture models can be fitted with constant parameters (<span class="math inline">\(M_0\)</span>), time-specific parameters (<span class="math inline">\(M_t\)</span>), and behavioral responses (<span class="math inline">\(M_b\)</span>). In addition, spatial variation in abundance and capture probability can also be modeled using covariates. <code>unmarked</code> has two functions for fitting capture-recapture models: <code>multinomPois</code> and <code>gmultmix</code>. Both allow for user-defined functions to describe the capture process, and the latter allows for modeling of temporary emigration when data have been collected using the so-called robust design <span class="citation">(Kendall et al. 1997, Chandler et al. 2011)</span>.</p>
+<h1><span class="header-section-number">1</span> Abstract</h1>
+<p>The “un” in <code>unmarked</code> is somewhat misleading because the
+package can be used to analyze data from marked animals. The three most
+common sampling methods that produce suitable data are removal sampling,
+double observer sampling, and capture-recapture methods. This document
+focuses on the analysis of capture-recapture data using a class of
+models known as multinomial <span class="math inline">\(N\)</span>-mixture models <span class="citation">(Royle 2004, Dorazio et al. 2005)</span>, which assume
+that capture-recapture data have been collected at a collection of
+sample locations (“sites”). Capture-recapture models can be fitted with
+constant parameters (<span class="math inline">\(M_0\)</span>),
+time-specific parameters (<span class="math inline">\(M_t\)</span>), and
+behavioral responses (<span class="math inline">\(M_b\)</span>). In
+addition, spatial variation in abundance and capture probability can
+also be modeled using covariates. <code>unmarked</code> has two
+functions for fitting capture-recapture models:
+<code>multinomPois</code> and <code>gmultmix</code>. Both allow for
+user-defined functions to describe the capture process, and the latter
+allows for modeling of temporary emigration when data have been
+collected using the so-called robust design <span class="citation">(Kendall et al. 1997, Chandler et al. 2011)</span>.</p>
 </div>
 <div id="introduction" class="section level1" number="2">
-<h1 number="2"><span class="header-section-number">2</span> Introduction</h1>
-<p>In traditional capture-recapture models, <span class="math inline">\(n\)</span> individuals are captured at a site during the course of <span class="math inline">\(J\)</span> sampling occasions. The encounter history for each individual is used as information about capture probability <span class="math inline">\(p\)</span> such that the total population size <span class="math inline">\(N\)</span> can be regarded as the size parameter of a binomial distribution, <span class="math inline">\(n \sim \mbox{Binomial}(N, p)\)</span>.</p>
-<p>Although traditional capture-recapture models are useful for estimating population size when <span class="math inline">\(p&lt;1\)</span>, they do not allow one to model variation in abundance, which is a central focus of much ecological research. <span class="citation">Royle (2004)</span> and <span class="citation">Dorazio et al. (2005)</span> developed a framework for modeling variation in both abundance and capture probability when capture-recapture data are collected at a set of <span class="math inline">\(R\)</span> sites. Site-specific abundance (<span class="math inline">\(N_i; i=1,2,...,R\)</span>) is regarded as latent variable following a discrete distribution such as the Poisson or negative binomial. The encounter histories are then tabulated at each site so that they can be regarded as an outcome of a multinomial distribution with cell probabilities <span class="math inline">\(\bf \pi\)</span> determined by a protocol-specific function of capture probability. Assuming a Poisson distribution, the model can be written as <span class="math display">\[
+<h1><span class="header-section-number">2</span> Introduction</h1>
+<p>In traditional capture-recapture models, <span class="math inline">\(n\)</span> individuals are captured at a site
+during the course of <span class="math inline">\(J\)</span> sampling
+occasions. The encounter history for each individual is used as
+information about capture probability <span class="math inline">\(p\)</span> such that the total population size
+<span class="math inline">\(N\)</span> can be regarded as the size
+parameter of a binomial distribution, <span class="math inline">\(n \sim
+\mbox{Binomial}(N, p)\)</span>.</p>
+<p>Although traditional capture-recapture models are useful for
+estimating population size when <span class="math inline">\(p&lt;1\)</span>, they do not allow one to model
+variation in abundance, which is a central focus of much ecological
+research. <span class="citation">Royle (2004)</span> and <span class="citation">Dorazio et al. (2005)</span> developed a framework for
+modeling variation in both abundance and capture probability when
+capture-recapture data are collected at a set of <span class="math inline">\(R\)</span> sites. Site-specific abundance (<span class="math inline">\(N_i; i=1,2,...,R\)</span>) is regarded as latent
+variable following a discrete distribution such as the Poisson or
+negative binomial. The encounter histories are then tabulated at each
+site so that they can be regarded as an outcome of a multinomial
+distribution with cell probabilities <span class="math inline">\(\bf
+\pi\)</span> determined by a protocol-specific function of capture
+probability. Assuming a Poisson distribution, the model can be written
+as <span class="math display">\[
 \begin{gather}
   N_i \sim \mbox{Poisson}(\lambda) \nonumber \\
   {\bf y_i}|N_i \sim \mbox{Multinomial}(N_i, \pi(p))
   \label{mod}
 \end{gather}
-\]</span> In the above, <span class="math inline">\(\lambda\)</span> is the expected number of individuals at each site. <span class="math inline">\({\bf y_i}\)</span> is a vector containing the number of individuals with encounter history <span class="math inline">\(k; k=1,2,...K\)</span> at site <span class="math inline">\(i\)</span>. The number of observable encounter histories <span class="math inline">\(K\)</span> depends on the sampling protocol. For a capture-recapture study with 2 occasions, there are 3 possible encounter histories <span class="math inline">\(H \in (11, 10, 01)\)</span>. In Equation 1, <span class="math inline">\(\pi(p)\)</span> is a function that that converts capture probability <span class="math inline">\(p\)</span> to multinomial cell probabilities, , the proportion of individuals expected to have capture history <span class="math inline">\(k\)</span>. For example, the cell probabilities corresponding to the capture histories listed above are</p>
+\]</span> In the above, <span class="math inline">\(\lambda\)</span> is
+the expected number of individuals at each site. <span class="math inline">\({\bf y_i}\)</span> is a vector containing the
+number of individuals with encounter history <span class="math inline">\(k; k=1,2,...K\)</span> at site <span class="math inline">\(i\)</span>. The number of observable encounter
+histories <span class="math inline">\(K\)</span> depends on the sampling
+protocol. For a capture-recapture study with 2 occasions, there are 3
+possible encounter histories <span class="math inline">\(H \in (11, 10,
+01)\)</span>. In Equation 1, <span class="math inline">\(\pi(p)\)</span>
+is a function that that converts capture probability <span class="math inline">\(p\)</span> to multinomial cell probabilities, ,
+the proportion of individuals expected to have capture history <span class="math inline">\(k\)</span>. For example, the cell probabilities
+corresponding to the capture histories listed above are</p>
 <p><span class="math display">\[
 {\bf \pi}(p) = \{ p^2, p(1-p), (1-p)p \}.
 \]</span></p>
 <p>The probability of not capturing an individual in this case (<span class="math inline">\(H=00\)</span>) is <span class="math inline">\((1-p)^2\)</span>.</p>
-<p>Spatial variation in abundance can be modeled using covariates with a log-link function <span class="math display">\[
+<p>Spatial variation in abundance can be modeled using covariates with a
+log-link function <span class="math display">\[
 \log(\lambda_i) = \beta_0 + \beta_1 x_i
-\]</span> where <span class="math inline">\(x_i\)</span> is some site-specific covariate such as habitat type or elevation. Multiple covariates can be considered and a more general form of the above can be written as <span class="math inline">\(\log(\lambda_i) = {\bf X}_i&#39; \bf \beta\)</span> where <span class="math inline">\({\bf X}\)</span> is a design matrix and <span class="math inline">\({\bf \beta}\)</span> is a vector of coefficients, possibly including an intercept. Capture probability can be modeled using the logit-link in much the same way <span class="math display">\[
+\]</span> where <span class="math inline">\(x_i\)</span> is some
+site-specific covariate such as habitat type or elevation. Multiple
+covariates can be considered and a more general form of the above can be
+written as <span class="math inline">\(\log(\lambda_i) = {\bf X}_i&#39;
+\bf \beta\)</span> where <span class="math inline">\({\bf X}\)</span> is
+a design matrix and <span class="math inline">\({\bf \beta}\)</span> is
+a vector of coefficients, possibly including an intercept. Capture
+probability can be modeled using the logit-link in much the same way
+<span class="math display">\[
 \text{logit}(p_{ij}) = \alpha_0 + \alpha_1 v_{ij}
-\]</span> where <span class="math inline">\(v_{ij}\)</span> is some covariate specific to the site and capture occasion. When <span class="math inline">\(p\)</span> is assumed to be constant, the model is often referred to as model <span class="math inline">\(M_0\)</span>. Alternatively, <span class="math inline">\(p\)</span> may be occasion-specific (model <span class="math inline">\(M_t\)</span>) or may be influenced by animal behavior (model <span class="math inline">\(M_b\)</span>). <span class="citation">Otis et al. (1978)</span> and <span class="citation">Williams et al. (2002)</span> are comprehensive references.</p>
+\]</span> where <span class="math inline">\(v_{ij}\)</span> is some
+covariate specific to the site and capture occasion. When <span class="math inline">\(p\)</span> is assumed to be constant, the model is
+often referred to as model <span class="math inline">\(M_0\)</span>.
+Alternatively, <span class="math inline">\(p\)</span> may be
+occasion-specific (model <span class="math inline">\(M_t\)</span>) or
+may be influenced by animal behavior (model <span class="math inline">\(M_b\)</span>). <span class="citation">Otis et al.
+(1978)</span> and <span class="citation">Williams et al. (2002)</span>
+are comprehensive references.</p>
 </div>
 <div id="data" class="section level1" number="3">
-<h1 number="3"><span class="header-section-number">3</span> Data</h1>
-<p>As previously mentioned, the data required by <code>unmarked</code> are an <span class="math inline">\(R \times K\)</span> matrix in which each row is the vector of tabulated encounter histories for animals captured at some site. Capture-recapture data, however, is typically recorded in the format shown in Table 1.</p>
+<h1><span class="header-section-number">3</span> Data</h1>
+<p>As previously mentioned, the data required by <code>unmarked</code>
+are an <span class="math inline">\(R \times K\)</span> matrix in which
+each row is the vector of tabulated encounter histories for animals
+captured at some site. Capture-recapture data, however, is typically
+recorded in the format shown in Table 1.</p>
 <table>
-<caption>Table 1. Capture-recapture data for 6 individuals sampled on 3 occasions</caption>
+<caption>Table 1. Capture-recapture data for 6 individuals sampled on 3
+occasions</caption>
 <thead>
 <tr class="header">
 <th align="left">Animal ID</th>
@@ -445,9 +521,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 </tbody>
 </table>
-<p>In the absence of individual covariates, the data in Table 1 can be converted to the requisite format as shown in Table 2. Notice that no captures were made in sites C and D. It is important that such sites are retained in the analysis in order to make inference about spatial variation in abundance.</p>
+<p>In the absence of individual covariates, the data in Table 1 can be
+converted to the requisite format as shown in Table 2. Notice that no
+captures were made in sites C and D. It is important that such sites are
+retained in the analysis in order to make inference about spatial
+variation in abundance.</p>
 <table>
-<caption>Table 2. Capture-recapture data from Table 1 in the format required by unmarked</caption>
+<caption>Table 2. Capture-recapture data from Table 1 in the format
+required by unmarked</caption>
 <thead>
 <tr class="header">
 <th align="left">Site</th>
@@ -505,23 +586,39 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </table>
 </div>
 <div id="closed-population-models" class="section level1" number="4">
-<h1 number="4"><span class="header-section-number">4</span> Closed Population Models</h1>
+<h1><span class="header-section-number">4</span> Closed Population
+Models</h1>
 <div id="models-m_0-m_t-and-models-with-covariates-of-p." class="section level2" number="4.1">
-<h2 number="4.1"><span class="header-section-number">4.1</span> Models <span class="math inline">\(M_0\)</span>, <span class="math inline">\(M_t\)</span>, and models with covariates of <span class="math inline">\(p\)</span>.</h2>
-<p>In this example we will analyze point count data collected on alder flycatchers (<em>Empidonax alnorum</em>) by <span class="citation">Chandler et al. (2009)</span>. Point count data such as these are collected on unmarked animals, but one can apply capture-recapture models because it is possible to keep track of individual birds during a short period of time <span class="citation">(Alldredge et al. 2007)</span>. That is, we can pretend like birds are marked by noting which time intervals they are detected in during a short survey. The alder flycatcher data were collected using fixed-area 15-minute point counts, which were divided into 3 5-minute intervals. Each point was surveyed 3 times during 2005. The following command imports the capture histories for 50 individuals detected in 2005 at 49 point count locations.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>alfl &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>, <span class="st">&quot;alfl.csv&quot;</span>, <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>))</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">head</span>(alfl, <span class="dv">5</span>)</span></code></pre></div>
+<h2><span class="header-section-number">4.1</span> Models <span class="math inline">\(M_0\)</span>, <span class="math inline">\(M_t\)</span>, and models with covariates of <span class="math inline">\(p\)</span>.</h2>
+<p>In this example we will analyze point count data collected on alder
+flycatchers (<em>Empidonax alnorum</em>) by <span class="citation">Chandler et al. (2009)</span>. Point count data such as
+these are collected on unmarked animals, but one can apply
+capture-recapture models because it is possible to keep track of
+individual birds during a short period of time <span class="citation">(Alldredge et al. 2007)</span>. That is, we can pretend
+like birds are marked by noting which time intervals they are detected
+in during a short survey. The alder flycatcher data were collected using
+fixed-area 15-minute point counts, which were divided into 3 5-minute
+intervals. Each point was surveyed 3 times during 2005. The following
+command imports the capture histories for 50 individuals detected in
+2005 at 49 point count locations.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>alfl <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">system.file</span>(<span class="st">&quot;csv&quot;</span>, <span class="st">&quot;alfl.csv&quot;</span>, <span class="at">package=</span><span class="st">&quot;unmarked&quot;</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">head</span>(alfl, <span class="dv">5</span>)</span></code></pre></div>
 <pre><code>##          id survey interval1 interval2 interval3
 ## 1 crick1_05      1         1         1         1
 ## 2 crick1_05      3         1         0         1
 ## 3   his1_05      1         0         1         1
 ## 4   his1_05      1         1         1         1
 ## 5   his1_05      2         0         1         1</code></pre>
-<p>We see 5 rows of data representing the encounter histories for 5 birds detected at 2 points during 3 survey occasions. From these 5 birds, it appears as though detection probability is high since each bird was detected during at least 2 of the three time intervals.</p>
-<p>Associated with the bird data are site- and visit-specific covariates for each of the 49 sites. We can import these data using the following command:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>alfl.covs &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">system.file</span>(<span class="st">&quot;csv&quot;</span>, <span class="st">&quot;alflCovs.csv&quot;</span>,</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>    <span class="dt">package=</span><span class="st">&quot;unmarked&quot;</span>), <span class="dt">row.names=</span><span class="dv">1</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="kw">head</span>(alfl.covs)</span></code></pre></div>
+<p>We see 5 rows of data representing the encounter histories for 5
+birds detected at 2 points during 3 survey occasions. From these 5
+birds, it appears as though detection probability is high since each
+bird was detected during at least 2 of the three time intervals.</p>
+<p>Associated with the bird data are site- and visit-specific covariates
+for each of the 49 sites. We can import these data using the following
+command:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>alfl.covs <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">system.file</span>(<span class="st">&quot;csv&quot;</span>, <span class="st">&quot;alflCovs.csv&quot;</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>    <span class="at">package=</span><span class="st">&quot;unmarked&quot;</span>), <span class="at">row.names=</span><span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">head</span>(alfl.covs)</span></code></pre></div>
 <pre><code>##           struct woody time.1 time.2 time.3 date.1 date.2 date.3
 ## crick1_05   5.45  0.30   8.68   8.73   5.72      6     25     34
 ## his1_05     4.75  0.05   9.43   7.40   7.58     20     32     54
@@ -529,18 +626,33 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## hisw2_05    5.05  0.30   7.77   6.23   7.17     20     32     47
 ## kenc1_05    4.15  0.10   9.57   9.55   5.73      8     27     36
 ## kenc2_05    9.75  0.40   9.10   9.12   9.12      8     27     36</code></pre>
-<p>Each row of this <code>data.frame</code> corresponds to a point count location. The variable <code>struct</code> is a measure of vegetation structure, and <code>woody</code> is the percent cover of woody vegetation at each of the 50-m radius plots. Time of day and date were measured for each of the three visits.</p>
-<p>To format the data for <code>unmarked</code>, we need to tabulate the encounter histories for each site. Before doing so, let’s first put our capture histories in a single column. Let’s also be explicit about the levels of our factors for both the newly created <code>captureHistory</code> column and the point id column.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>alfl<span class="op">$</span>captureHistory &lt;-<span class="st"> </span><span class="kw">paste</span>(alfl<span class="op">$</span>interval1, alfl<span class="op">$</span>interval2, alfl<span class="op">$</span>interval3, <span class="dt">sep=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>alfl<span class="op">$</span>captureHistory &lt;-<span class="st"> </span><span class="kw">factor</span>(alfl<span class="op">$</span>captureHistory,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>    <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&quot;001&quot;</span>, <span class="st">&quot;010&quot;</span>, <span class="st">&quot;011&quot;</span>, <span class="st">&quot;100&quot;</span>, <span class="st">&quot;101&quot;</span>, <span class="st">&quot;110&quot;</span>, <span class="st">&quot;111&quot;</span>))</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="co">## Don&#39;t do this:</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="co">#levels(alfl$id) &lt;- rownames(alfl.covs)</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>alfl<span class="op">$</span>id &lt;-<span class="st"> </span><span class="kw">factor</span>(alfl<span class="op">$</span>id, <span class="dt">levels=</span><span class="kw">rownames</span>(alfl.covs))</span></code></pre></div>
-<p>Specifying the levels of <code>captureHistory</code> ensures that when we tabulate the encounter histories, we will include zeros for histories that were not observed. Similarly, setting the levels of <code>alfl$id</code> tells <code>R</code> that there were some sites where no ALFL were detected. This way, when we tabulate the data, we get a frequency for each site, not just the ones with &gt;1 detection. Here are the commands to extract data from the first primary period and to tabulate the encounter histories.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>alfl.v1 &lt;-<span class="st"> </span>alfl[alfl<span class="op">$</span>survey<span class="op">==</span><span class="dv">1</span>,]</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>alfl.H1 &lt;-<span class="st"> </span><span class="kw">table</span>(alfl.v1<span class="op">$</span>id, alfl.v1<span class="op">$</span>captureHistory)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a><span class="kw">head</span>(alfl.H1, <span class="dv">5</span>)</span></code></pre></div>
+<p>Each row of this <code>data.frame</code> corresponds to a point count
+location. The variable <code>struct</code> is a measure of vegetation
+structure, and <code>woody</code> is the percent cover of woody
+vegetation at each of the 50-m radius plots. Time of day and date were
+measured for each of the three visits.</p>
+<p>To format the data for <code>unmarked</code>, we need to tabulate the
+encounter histories for each site. Before doing so, let’s first put our
+capture histories in a single column. Let’s also be explicit about the
+levels of our factors for both the newly created
+<code>captureHistory</code> column and the point id column.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>alfl<span class="sc">$</span>captureHistory <span class="ot">&lt;-</span> <span class="fu">paste</span>(alfl<span class="sc">$</span>interval1, alfl<span class="sc">$</span>interval2, alfl<span class="sc">$</span>interval3, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>alfl<span class="sc">$</span>captureHistory <span class="ot">&lt;-</span> <span class="fu">factor</span>(alfl<span class="sc">$</span>captureHistory,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="at">levels=</span><span class="fu">c</span>(<span class="st">&quot;001&quot;</span>, <span class="st">&quot;010&quot;</span>, <span class="st">&quot;011&quot;</span>, <span class="st">&quot;100&quot;</span>, <span class="st">&quot;101&quot;</span>, <span class="st">&quot;110&quot;</span>, <span class="st">&quot;111&quot;</span>))</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## Don&#39;t do this:</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#levels(alfl$id) &lt;- rownames(alfl.covs)</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>alfl<span class="sc">$</span>id <span class="ot">&lt;-</span> <span class="fu">factor</span>(alfl<span class="sc">$</span>id, <span class="at">levels=</span><span class="fu">rownames</span>(alfl.covs))</span></code></pre></div>
+<p>Specifying the levels of <code>captureHistory</code> ensures that
+when we tabulate the encounter histories, we will include zeros for
+histories that were not observed. Similarly, setting the levels of
+<code>alfl$id</code> tells <code>R</code> that there were some sites
+where no ALFL were detected. This way, when we tabulate the data, we get
+a frequency for each site, not just the ones with &gt;1 detection. Here
+are the commands to extract data from the first primary period and to
+tabulate the encounter histories.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>alfl.v1 <span class="ot">&lt;-</span> alfl[alfl<span class="sc">$</span>survey<span class="sc">==</span><span class="dv">1</span>,]</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>alfl.H1 <span class="ot">&lt;-</span> <span class="fu">table</span>(alfl.v1<span class="sc">$</span>id, alfl.v1<span class="sc">$</span>captureHistory)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">head</span>(alfl.H1, <span class="dv">5</span>)</span></code></pre></div>
 <pre><code>##            
 ##             001 010 011 100 101 110 111
 ##   crick1_05   0   0   0   0   0   0   1
@@ -548,123 +660,207 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##   hisw1_05    0   0   0   0   0   0   0
 ##   hisw2_05    0   0   0   0   0   0   1
 ##   kenc1_05    0   0   0   0   0   0   0</code></pre>
-<p>The object <code>alfl.H1</code> contains the tabulated capture histories for each site. This is the format required by <code>unmarked</code>. The data from the first 5 sites suggest that detection probability was high since the most common encounter history was <code>111</code>.</p>
-<p>Now we are almost ready to create our <code>unmarkedFrame</code> and begin fitting models. We will fit our first series of models using the <code>multinomPois</code> function, which requires data formated using the <code>unmarkedFrameMPois</code> function. This constructor function has an argument , which currently can be set to <code>&quot;removal&quot;</code> or <code>&quot;double&quot;</code>, corresponding to removal sampling data and double observer sampling respectively. In doing so, the function automatically creates the function to convert <span class="math inline">\(p\)</span> to <span class="math inline">\({\bf \pi}\)</span>. If <code>type</code> is missing, however, the user needs to specify a function to convert detection probability to multinomial cell probabilities. In the future, we may add an  option to automatically handle standard capture-recapture data too, but here we show how to supply it using a user-defined <code>piFun</code>, which allows flexibility in converting detection probability to multinomial cell probabilities <span class="math inline">\(\bf \pi\)</span>. The <code>piFun</code> must take a matrix of detection probabilities with <span class="math inline">\(J\)</span> columns (3 in this case), and convert them to a matrix of multinomial cell probabilities with <span class="math inline">\(K\)</span> columns. Each column corresponds to the probability of observing the encounter history <span class="math inline">\(k\)</span>. Here is a <code>piFun</code> to compute the multinomial cell probabilities when there were 3 sampling occasions. This function allows us to fit models <span class="math inline">\(M_0\)</span>, <span class="math inline">\(M_t\)</span>, or models with covariates of <span class="math inline">\(p\)</span>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>crPiFun &lt;-<span class="st"> </span><span class="cf">function</span>(p) {</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>    p1 &lt;-<span class="st"> </span>p[,<span class="dv">1</span>]</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>    p2 &lt;-<span class="st"> </span>p[,<span class="dv">2</span>]</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>    p3 &lt;-<span class="st"> </span>p[,<span class="dv">3</span>]</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>    <span class="kw">cbind</span>(<span class="st">&quot;001&quot;</span> =<span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p1) <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p2) <span class="op">*</span><span class="st"> </span>p3,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>          <span class="st">&quot;010&quot;</span> =<span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p1) <span class="op">*</span><span class="st"> </span>p2     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p3),</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>          <span class="st">&quot;011&quot;</span> =<span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p1) <span class="op">*</span><span class="st"> </span>p2     <span class="op">*</span><span class="st"> </span>p3,</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>          <span class="st">&quot;100&quot;</span> =<span class="st"> </span>p1     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p2) <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p3),</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a>          <span class="st">&quot;101&quot;</span> =<span class="st"> </span>p1     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p2) <span class="op">*</span><span class="st"> </span>p3,</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>          <span class="st">&quot;110&quot;</span> =<span class="st"> </span>p1     <span class="op">*</span><span class="st"> </span>p2     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>p3),</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a>          <span class="st">&quot;111&quot;</span> =<span class="st"> </span>p1     <span class="op">*</span><span class="st"> </span>p2     <span class="op">*</span><span class="st"> </span>p3)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a>}</span></code></pre></div>
-<p>To demonstrate how this works, imagine that we surveyed 2 sites and detection probability was constant (<span class="math inline">\(p=0.2\)</span>) among sites and survey occasions. The function converts these capture probabilities to multinomial cell probabilities. Note that these cell probabilities will sum to &lt;1 if capture probability is less than 1 over the 3 occasions.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>p &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="fl">0.4</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="kw">crPiFun</span>(p)</span></code></pre></div>
+<p>The object <code>alfl.H1</code> contains the tabulated capture
+histories for each site. This is the format required by
+<code>unmarked</code>. The data from the first 5 sites suggest that
+detection probability was high since the most common encounter history
+was <code>111</code>.</p>
+<p>Now we are almost ready to create our <code>unmarkedFrame</code> and
+begin fitting models. We will fit our first series of models using the
+<code>multinomPois</code> function, which requires data formated using
+the <code>unmarkedFrameMPois</code> function. This constructor function
+has an argument , which currently can be set to <code>&quot;removal&quot;</code>
+or <code>&quot;double&quot;</code>, corresponding to removal sampling data and
+double observer sampling respectively. In doing so, the function
+automatically creates the function to convert <span class="math inline">\(p\)</span> to <span class="math inline">\({\bf
+\pi}\)</span>. If <code>type</code> is missing, however, the user needs
+to specify a function to convert detection probability to multinomial
+cell probabilities. In the future, we may add an option to automatically
+handle standard capture-recapture data too, but here we show how to
+supply it using a user-defined <code>piFun</code>, which allows
+flexibility in converting detection probability to multinomial cell
+probabilities <span class="math inline">\(\bf \pi\)</span>. The
+<code>piFun</code> must take a matrix of detection probabilities with
+<span class="math inline">\(J\)</span> columns (3 in this case), and
+convert them to a matrix of multinomial cell probabilities with <span class="math inline">\(K\)</span> columns. Each column corresponds to the
+probability of observing the encounter history <span class="math inline">\(k\)</span>. Here is a <code>piFun</code> to
+compute the multinomial cell probabilities when there were 3 sampling
+occasions. This function allows us to fit models <span class="math inline">\(M_0\)</span>, <span class="math inline">\(M_t\)</span>, or models with covariates of <span class="math inline">\(p\)</span>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>crPiFun <span class="ot">&lt;-</span> <span class="cf">function</span>(p) {</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    p1 <span class="ot">&lt;-</span> p[,<span class="dv">1</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    p2 <span class="ot">&lt;-</span> p[,<span class="dv">2</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    p3 <span class="ot">&lt;-</span> p[,<span class="dv">3</span>]</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="fu">cbind</span>(<span class="st">&quot;001&quot;</span> <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>p1) <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>p2) <span class="sc">*</span> p3,</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>          <span class="st">&quot;010&quot;</span> <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>p1) <span class="sc">*</span> p2     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>p3),</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>          <span class="st">&quot;011&quot;</span> <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>p1) <span class="sc">*</span> p2     <span class="sc">*</span> p3,</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>          <span class="st">&quot;100&quot;</span> <span class="ot">=</span> p1     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>p2) <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>p3),</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>          <span class="st">&quot;101&quot;</span> <span class="ot">=</span> p1     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>p2) <span class="sc">*</span> p3,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>          <span class="st">&quot;110&quot;</span> <span class="ot">=</span> p1     <span class="sc">*</span> p2     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>p3),</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>          <span class="st">&quot;111&quot;</span> <span class="ot">=</span> p1     <span class="sc">*</span> p2     <span class="sc">*</span> p3)</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>}</span></code></pre></div>
+<p>To demonstrate how this works, imagine that we surveyed 2 sites and
+detection probability was constant (<span class="math inline">\(p=0.2\)</span>) among sites and survey occasions.
+The function converts these capture probabilities to multinomial cell
+probabilities. Note that these cell probabilities will sum to &lt;1 if
+capture probability is less than 1 over the 3 occasions.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fl">0.4</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">crPiFun</span>(p)</span></code></pre></div>
 <pre><code>##        001   010   011   100   101   110   111
 ## [1,] 0.144 0.144 0.096 0.144 0.096 0.096 0.064
 ## [2,] 0.144 0.144 0.096 0.144 0.096 0.096 0.064</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="kw">rowSums</span>(<span class="kw">crPiFun</span>(p))</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">rowSums</span>(<span class="fu">crPiFun</span>(p))</span></code></pre></div>
 <pre><code>## [1] 0.784 0.784</code></pre>
-<p>When providing a user-defined , we also need to provide information about how to handle missing values. That is, if we have a missing value in a covariate, we need to know which values of <span class="math inline">\({\bf y}\)</span> are affected. In <code>unmarked</code>, this can be done by supplying a mapping-matrix to the <code>obsToY</code> argument in the <code>unmarkedFrameMPois</code> function. <code>obsToY</code> needs to be a matrix of zeros and ones with the number of rows equal to the number of columns for some obsCov, and the number columns equal to the number of columns in <span class="math inline">\({\bf y}\)</span>. If <code>obsToY[j,k]</code>=1, then a missing value in <code>obsCov[i,j]</code> translates to a missing value in <code>y[i,k]</code>. For the capture-recapture data considered here, we can set all elements of <code>obsToY</code> to 1.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>o2y &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">7</span>)</span></code></pre></div>
-<p>We are now ready to create the <code>unmarkedFrame</code>. In order to fit model <span class="math inline">\(M_t\)</span>, we need a covariate that references the time interval , which we call <code>intervalMat</code> below. We also provide a couple of site-specific covariates: the percent cover of woody vegetation and vegetation structure.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="kw">library</span>(unmarked)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>intervalMat &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="st">&#39;1&#39;</span>,<span class="st">&#39;2&#39;</span>,<span class="st">&#39;3&#39;</span>), <span class="dv">50</span>, <span class="dv">3</span>, <span class="dt">byrow=</span><span class="ot">TRUE</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a><span class="kw">class</span>(alfl.H1) &lt;-<span class="st"> &quot;matrix&quot;</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a>umf.cr1 &lt;-<span class="st"> </span><span class="kw">unmarkedFrameMPois</span>(<span class="dt">y=</span>alfl.H1,</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a>    <span class="dt">siteCovs=</span>alfl.covs[,<span class="kw">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>, <span class="st">&quot;time.1&quot;</span>, <span class="st">&quot;date.1&quot;</span>)],</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>    <span class="dt">obsCovs=</span><span class="kw">list</span>(<span class="dt">interval=</span>intervalMat),</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a>    <span class="dt">obsToY=</span>o2y, <span class="dt">piFun=</span><span class="st">&quot;crPiFun&quot;</span>)</span></code></pre></div>
+<p>When providing a user-defined , we also need to provide information
+about how to handle missing values. That is, if we have a missing value
+in a covariate, we need to know which values of <span class="math inline">\({\bf y}\)</span> are affected. In
+<code>unmarked</code>, this can be done by supplying a mapping-matrix to
+the <code>obsToY</code> argument in the <code>unmarkedFrameMPois</code>
+function. <code>obsToY</code> needs to be a matrix of zeros and ones
+with the number of rows equal to the number of columns for some obsCov,
+and the number columns equal to the number of columns in <span class="math inline">\({\bf y}\)</span>. If <code>obsToY[j,k]</code>=1,
+then a missing value in <code>obsCov[i,j]</code> translates to a missing
+value in <code>y[i,k]</code>. For the capture-recapture data considered
+here, we can set all elements of <code>obsToY</code> to 1.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>o2y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">7</span>)</span></code></pre></div>
+<p>We are now ready to create the <code>unmarkedFrame</code>. In order
+to fit model <span class="math inline">\(M_t\)</span>, we need a
+covariate that references the time interval , which we call
+<code>intervalMat</code> below. We also provide a couple of
+site-specific covariates: the percent cover of woody vegetation and
+vegetation structure.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">library</span>(unmarked)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>intervalMat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">&#39;1&#39;</span>,<span class="st">&#39;2&#39;</span>,<span class="st">&#39;3&#39;</span>), <span class="dv">50</span>, <span class="dv">3</span>, <span class="at">byrow=</span><span class="cn">TRUE</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">class</span>(alfl.H1) <span class="ot">&lt;-</span> <span class="st">&quot;matrix&quot;</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>umf.cr1 <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameMPois</span>(<span class="at">y=</span>alfl.H1,</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>    <span class="at">siteCovs=</span>alfl.covs[,<span class="fu">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>, <span class="st">&quot;time.1&quot;</span>, <span class="st">&quot;date.1&quot;</span>)],</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>    <span class="at">obsCovs=</span><span class="fu">list</span>(<span class="at">interval=</span>intervalMat),</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>    <span class="at">obsToY=</span>o2y, <span class="at">piFun=</span><span class="st">&quot;crPiFun&quot;</span>)</span></code></pre></div>
 <pre><code>## Warning: obsCovs contains characters. Converting them to factors.</code></pre>
-<p>Writing a <code>piFun</code> and creating the <code>obsToY</code> object are the hardest parts of a capture-recapture analysis in <code>unmarked</code>. Again, this is done automatically for removal models and double observer models, and we may add an option to do this automatically for capture-recapture data too, but hopefully the flexibility allowed by specifying user-defined functions is evident.</p>
-<p>Now that we have our data formatted we can fit some models. The following correspond to model <span class="math inline">\(M_0\)</span>, model <span class="math inline">\(M_t\)</span>, and a model with a continuous covariate effect on <span class="math inline">\(p\)</span>.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>M0 &lt;-<span class="st"> </span><span class="kw">multinomPois</span>(<span class="op">~</span><span class="dv">1</span> <span class="op">~</span><span class="dv">1</span>, umf.cr1, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a>Mt &lt;-<span class="st"> </span><span class="kw">multinomPois</span>(<span class="op">~</span>interval<span class="dv">-1</span> <span class="op">~</span><span class="dv">1</span>, umf.cr1, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true"></a>Mx &lt;-<span class="st"> </span><span class="kw">multinomPois</span>(<span class="op">~</span>time<span class="fl">.1</span> <span class="op">~</span><span class="dv">1</span>, umf.cr1, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>)</span></code></pre></div>
-<p>The first two models can be fit in other software programs. What is unique about <code>unmarked</code> is that we can also model variation in abundance and detection probability among sites. The following model treats abundance as a function of the percent cover of woody vegetation.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a>(M0.woody &lt;-<span class="st"> </span><span class="kw">multinomPois</span>(<span class="op">~</span><span class="dv">1</span> <span class="op">~</span>woody, umf.cr1, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>))</span></code></pre></div>
+<p>Writing a <code>piFun</code> and creating the <code>obsToY</code>
+object are the hardest parts of a capture-recapture analysis in
+<code>unmarked</code>. Again, this is done automatically for removal
+models and double observer models, and we may add an option to do this
+automatically for capture-recapture data too, but hopefully the
+flexibility allowed by specifying user-defined functions is evident.</p>
+<p>Now that we have our data formatted we can fit some models. The
+following correspond to model <span class="math inline">\(M_0\)</span>,
+model <span class="math inline">\(M_t\)</span>, and a model with a
+continuous covariate effect on <span class="math inline">\(p\)</span>.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>M0 <span class="ot">&lt;-</span> <span class="fu">multinomPois</span>(<span class="sc">~</span><span class="dv">1</span> <span class="sc">~</span><span class="dv">1</span>, umf.cr1, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>Mt <span class="ot">&lt;-</span> <span class="fu">multinomPois</span>(<span class="sc">~</span>interval<span class="dv">-1</span> <span class="sc">~</span><span class="dv">1</span>, umf.cr1, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>Mx <span class="ot">&lt;-</span> <span class="fu">multinomPois</span>(<span class="sc">~</span>time<span class="fl">.1</span> <span class="sc">~</span><span class="dv">1</span>, umf.cr1, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>)</span></code></pre></div>
+<p>The first two models can be fit in other software programs. What is
+unique about <code>unmarked</code> is that we can also model variation
+in abundance and detection probability among sites. The following model
+treats abundance as a function of the percent cover of woody
+vegetation.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>(M0.woody <span class="ot">&lt;-</span> <span class="fu">multinomPois</span>(<span class="sc">~</span><span class="dv">1</span> <span class="sc">~</span>woody, umf.cr1, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>))</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## multinomPois(formula = ~1 ~ woody, data = umf.cr1, engine = &quot;R&quot;)
 ## 
-## Abundance:
+## Abundance (log-scale):
 ##             Estimate    SE     z  P(&gt;|z|)
 ## (Intercept)   -0.962 0.325 -2.96 0.003059
 ## woody          2.587 0.680  3.80 0.000143
 ## 
-## Detection:
+## Detection (logit-scale):
 ##  Estimate    SE    z  P(&gt;|z|)
 ##      1.43 0.216 6.63 3.42e-11
 ## 
-## AIC: 245.9301</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a>nd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">woody=</span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.8</span>, <span class="dt">length=</span><span class="dv">50</span>))</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a>E.abundance &lt;-<span class="st"> </span><span class="kw">predict</span>(M0.woody, <span class="dt">type=</span><span class="st">&quot;state&quot;</span>, <span class="dt">newdata=</span>nd, <span class="dt">appendData=</span><span class="ot">TRUE</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true"></a><span class="kw">plot</span>(Predicted <span class="op">~</span><span class="st"> </span>woody, E.abundance, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true"></a>     <span class="dt">ylab=</span><span class="st">&quot;Alder flycatchers / plot&quot;</span>, <span class="dt">xlab=</span><span class="st">&quot;Woody vegetation cover&quot;</span>)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true"></a><span class="kw">lines</span>(lower <span class="op">~</span><span class="st"> </span>woody, E.abundance, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.7</span>))</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true"></a><span class="kw">lines</span>(upper <span class="op">~</span><span class="st"> </span>woody, E.abundance, <span class="dt">col=</span><span class="kw">gray</span>(<span class="fl">0.7</span>))</span></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
-<p>What about detection probability? Since there was no evidence of variation in <span class="math inline">\(p\)</span>, we can simply back-transform the logit-scale estimate to obtain <span class="math inline">\(\hat{p}\)</span>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a><span class="kw">backTransform</span>(M0.woody, <span class="dt">type=</span><span class="st">&quot;det&quot;</span>)</span></code></pre></div>
-<pre><code>## Backtransformed linear combination(s) of Detection estimate(s)
-## 
-##  Estimate     SE LinComb (Intercept)
-##     0.808 0.0336    1.43           1
-## 
-## Transformation: logistic</code></pre>
-<p>As suggested by the raw data, detection probability was very high. The corresponding multinomial cell probabilities can be computed by plugging this estimate of detection probability into our <code>piFun</code>. This <code>getP</code> function makes this easy.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a><span class="kw">round</span>(<span class="kw">getP</span>(M0.woody), <span class="dv">2</span>)[<span class="dv">1</span>,]</span></code></pre></div>
+## AIC: 245.9301 
+## Number of sites: 50</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>nd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">woody=</span><span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.8</span>, <span class="at">length=</span><span class="dv">50</span>))</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>E.abundance <span class="ot">&lt;-</span> <span class="fu">predict</span>(M0.woody, <span class="at">type=</span><span class="st">&quot;state&quot;</span>, <span class="at">newdata=</span>nd, <span class="at">appendData=</span><span class="cn">TRUE</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="fu">plot</span>(Predicted <span class="sc">~</span> woody, E.abundance, <span class="at">type=</span><span class="st">&quot;l&quot;</span>, <span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>),</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>     <span class="at">ylab=</span><span class="st">&quot;Alder flycatchers / plot&quot;</span>, <span class="at">xlab=</span><span class="st">&quot;Woody vegetation cover&quot;</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="fu">lines</span>(lower <span class="sc">~</span> woody, E.abundance, <span class="at">col=</span><span class="fu">gray</span>(<span class="fl">0.7</span>))</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a><span class="fu">lines</span>(upper <span class="sc">~</span> woody, E.abundance, <span class="at">col=</span><span class="fu">gray</span>(<span class="fl">0.7</span>))</span></code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeAAAAHgCAIAAADytinCAAAACXBIWXMAAA7DAAAOwwHHb6hkAABJz0lEQVR42u3ddVxV9x/Hcal7KUFaMDDA7kCcjU6diNMp5uyJs5g6FWuzpsPpprOxu+bUnzHhwqW7R0p39yVv+vviVYwNhgrcc+59P//Ywylx83U/93tPtHoBAACU1Ao3AQAAAg0AAAg0AAACDQAACDQAAAINAAAINAAAINAAAAg0AAAg0AAACDQAACDQAACAQAMAINAAAIBAAwAg0AAAgEADACDQAACAQAMAAAINAIBAAwAAAg0AgEADAAACDQAACDQAAAINAAAINAAAAg0AAAg0AAACDQAACDQAACDQAAAINAAAINAAAAg0AAAg0AAAgEADACDQAACAQAMAINAAAIBAAwAg0AAAgEADAAACDQCAQAMAAAINAIBAAwAAAg0AAAg0AAACDQAACDQAAAINAAAINAAAINAAAAg0AAAg0AAACDQAACDQAAAINAAAINAAAIBAAwAg0AAAgEADACDQAACAQAMAAAINAIBAAwAAAg0AgEADAAACDQCAQAMAAAINAAAINAAAAg0AAAg0AAACDQAACDQAAMhwoDdu3DgYAOADjRw5Mjc3F4FuXubm5pcuXQoGAPgQpqamf//9NwLd7IH28/PDmyYA+CD9+vVDoBFoAECgEWgAAAQagQYABBqBRqABAIFGoAEAgZapQPMKI53ueaYJX/6PID/oxsHNNgsWrNh04JJnZg0CDQAItGQIMh6sHqApL992JYv74oUw/db8Tgx5FYOeQ80HdmqjpKBncSi0EoEGAAS6xYmK783TY3S2PumbUzsq17itNWZ0Xng7pUb8jwH7x2mpjfk9SYhAAwAC3cJ4Phu7qEw4nS16+X/CxMPDVfvv/ltQ9+9cz+86qX15rbQRPyohIcGuflpaWvfv38ejDQAQ6MYSxB4Yojp4f4w4yaK885NbD9gb+V6gpzUq0BkZGfb1YzKZJ06cwKMNABDoxhc6/vexGpqDV10NLeSTQmfftDbsOPd6sniJozTY3kJLbfTRxE9f4lBXVz937hwebQCAQH9IotMfbRiupyjH0O46dPy0WVaD9RXk1TsMHD12mKkOg2k8/XRkdRP8FgQaABDojyIqT3S99suWFXOnWowwHzp48FDz0ZNnfbPtxNPnHFHT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" /><!-- --></p>
+<p>What about detection probability? Since there was no evidence of
+variation in <span class="math inline">\(p\)</span>, we can run
+<code>predict</code> on the model with <code>type = &#39;det&#39;</code> in
+order to back-transform the logit-scale estimate and obtain <span class="math inline">\(\hat{p}\)</span>. We show just the first row of
+the output since all sites/occasions have identical .</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">predict</span>(M0.woody, <span class="at">type=</span><span class="st">&#39;det&#39;</span>)[<span class="dv">1</span>,]</span></code></pre></div>
+<pre><code>##   Predicted         SE     lower     upper
+## 1  0.807521 0.03363115 0.7330001 0.8650715</code></pre>
+<p>As suggested by the raw data, detection probability was very high.
+The corresponding multinomial cell probabilities can be computed by
+plugging this estimate of detection probability into our
+<code>piFun</code>. This <code>getP</code> function makes this easy.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">getP</span>(M0.woody), <span class="dv">2</span>)[<span class="dv">1</span>,]</span></code></pre></div>
 <pre><code>##  001  010  011  100  101  110  111 
 ## 0.03 0.03 0.13 0.03 0.13 0.13 0.53</code></pre>
-<p>Note that the encounter probability most likely to be observed was 111. In fact <span class="math inline">\(p\)</span> was so high that the probability of not detecting an alder flycatcher was essentially zero, <span class="math inline">\((1-0.81)^3 = 0.007\)</span>.</p>
+<p>Note that the encounter probability most likely to be observed was
+111. In fact <span class="math inline">\(p\)</span> was so high that the
+probability of not detecting an alder flycatcher was essentially zero,
+<span class="math inline">\((1-0.81)^3 = 0.007\)</span>.</p>
 </div>
 <div id="modeling-behavioral-responses-model-m_b" class="section level2" number="4.2">
-<h2 number="4.2"><span class="header-section-number">4.2</span> Modeling behavioral responses, Model <span class="math inline">\(M_b\)</span></h2>
-<p>An animal’s behavior might change after being captured. Both trap avoidance and trap attraction are frequently observed in a variety of taxa. A simple model of these two behaviors is known as model <span class="math inline">\(M_b\)</span> <span class="citation">(Otis et al. 1978)</span>. The model assumes that newly-captured individuals are captured with probability <span class="math inline">\(p_{naive}\)</span> and then are subsequently recaptured with probability <span class="math inline">\(p_{wise}\)</span>. If <span class="math inline">\(p_{wise} &lt; p_{naive}\)</span>, then animals exhibit trap avoidance. In some cases, such as when traps are baited, we might observed <span class="math inline">\(p_{wise} &gt; p_{naive}\)</span> in which case the animals are said to be “trap-happy”.</p>
-<p>To fit model <span class="math inline">\(M_b\)</span> in <code>unmarked</code>, we need to create a new <code>piFun</code> and we need to provide an occasion-specific covariate (<code>obsCov</code>) that distinguishes the two capture probabilities, <span class="math inline">\(p_{naive}\)</span> and <span class="math inline">\(p_{wise}\)</span>. The simplest possible approach is the following</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true"></a>crPiFun.Mb &lt;-<span class="st"> </span><span class="cf">function</span>(p) { <span class="co"># p should have 3 columns</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true"></a>    pNaive &lt;-<span class="st"> </span>p[,<span class="dv">1</span>]</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true"></a>    pWise &lt;-<span class="st"> </span>p[,<span class="dv">3</span>]</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true"></a>    <span class="kw">cbind</span>(<span class="st">&quot;001&quot;</span> =<span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pNaive) <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pNaive) <span class="op">*</span><span class="st"> </span>pNaive,</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true"></a>          <span class="st">&quot;010&quot;</span> =<span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pNaive) <span class="op">*</span><span class="st"> </span>pNaive     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pWise),</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true"></a>          <span class="st">&quot;011&quot;</span> =<span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pNaive) <span class="op">*</span><span class="st"> </span>pNaive     <span class="op">*</span><span class="st"> </span>pWise,</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true"></a>          <span class="st">&quot;100&quot;</span> =<span class="st"> </span>pNaive     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pWise)  <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pWise),</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true"></a>          <span class="st">&quot;101&quot;</span> =<span class="st"> </span>pNaive     <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pWise)  <span class="op">*</span><span class="st"> </span>pWise,</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true"></a>          <span class="st">&quot;110&quot;</span> =<span class="st"> </span>pNaive     <span class="op">*</span><span class="st"> </span>pWise      <span class="op">*</span><span class="st"> </span>(<span class="dv">1</span><span class="op">-</span>pWise),</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true"></a>          <span class="st">&quot;111&quot;</span> =<span class="st"> </span>pNaive     <span class="op">*</span><span class="st"> </span>pWise      <span class="op">*</span><span class="st"> </span>pWise)</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true"></a>}</span></code></pre></div>
-<p>This function <code>crPiFun.Mb</code> allows capture probability to be modeled as <span class="math display">\[
-\text{logit}(p_{ij}) = \alpha_{naive} + \alpha_{wise} behavior_j + \alpha_1 x_i
-\]</span> where <span class="math inline">\(behavior_j\)</span> is simply a dummy variable. Thus, when no site-specific covariates (<span class="math inline">\(x_i\)</span>) are included, <span class="math inline">\(p_{ij}\)</span> is either <span class="math inline">\(p_{naive}\)</span> or <span class="math inline">\(p_{wise}\)</span>. The following code constructs a new <code>unmarkedFrame</code> and fits model <span class="math inline">\(M_b\)</span> to the alder flycatcher data.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>behavior &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="st">&#39;Naive&#39;</span>,<span class="st">&#39;Naive&#39;</span>,<span class="st">&#39;Wise&#39;</span>), <span class="dv">50</span>, <span class="dv">3</span>, <span class="dt">byrow=</span><span class="ot">TRUE</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a>umf.cr1Mb &lt;-<span class="st"> </span><span class="kw">unmarkedFrameMPois</span>(<span class="dt">y=</span>alfl.H1,</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true"></a>    <span class="dt">siteCovs=</span>alfl.covs[,<span class="kw">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>, <span class="st">&quot;time.1&quot;</span>)],</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true"></a>    <span class="dt">obsCovs=</span><span class="kw">list</span>(<span class="dt">behavior=</span>behavior),</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true"></a>    <span class="dt">obsToY=</span>o2y, <span class="dt">piFun=</span><span class="st">&quot;crPiFun.Mb&quot;</span>)</span></code></pre></div>
+<h2><span class="header-section-number">4.2</span> Modeling behavioral
+responses, Model <span class="math inline">\(M_b\)</span></h2>
+<p>An animal’s behavior might change after being captured. Both trap
+avoidance and trap attraction are frequently observed in a variety of
+taxa. A simple model of these two behaviors is known as model <span class="math inline">\(M_b\)</span> <span class="citation">(Otis et al.
+1978)</span>. The model assumes that newly-captured individuals are
+captured with probability <span class="math inline">\(p_{naive}\)</span>
+and then are subsequently recaptured with probability <span class="math inline">\(p_{wise}\)</span>. If <span class="math inline">\(p_{wise} &lt; p_{naive}\)</span>, then animals
+exhibit trap avoidance. In some cases, such as when traps are baited, we
+might observed <span class="math inline">\(p_{wise} &gt;
+p_{naive}\)</span> in which case the animals are said to be
+“trap-happy”.</p>
+<p>To fit model <span class="math inline">\(M_b\)</span> in
+<code>unmarked</code>, we need to create a new <code>piFun</code> and we
+need to provide an occasion-specific covariate (<code>obsCov</code>)
+that distinguishes the two capture probabilities, <span class="math inline">\(p_{naive}\)</span> and <span class="math inline">\(p_{wise}\)</span>. The simplest possible approach
+is the following</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>crPiFun.Mb <span class="ot">&lt;-</span> <span class="cf">function</span>(p) { <span class="co"># p should have 3 columns</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>    pNaive <span class="ot">&lt;-</span> p[,<span class="dv">1</span>]</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>    pWise <span class="ot">&lt;-</span> p[,<span class="dv">3</span>]</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>    <span class="fu">cbind</span>(<span class="st">&quot;001&quot;</span> <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>pNaive) <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>pNaive) <span class="sc">*</span> pNaive,</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>          <span class="st">&quot;010&quot;</span> <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>pNaive) <span class="sc">*</span> pNaive     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>pWise),</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>          <span class="st">&quot;011&quot;</span> <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>pNaive) <span class="sc">*</span> pNaive     <span class="sc">*</span> pWise,</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>          <span class="st">&quot;100&quot;</span> <span class="ot">=</span> pNaive     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>pWise)  <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>pWise),</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>          <span class="st">&quot;101&quot;</span> <span class="ot">=</span> pNaive     <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>pWise)  <span class="sc">*</span> pWise,</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>          <span class="st">&quot;110&quot;</span> <span class="ot">=</span> pNaive     <span class="sc">*</span> pWise      <span class="sc">*</span> (<span class="dv">1</span><span class="sc">-</span>pWise),</span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a>          <span class="st">&quot;111&quot;</span> <span class="ot">=</span> pNaive     <span class="sc">*</span> pWise      <span class="sc">*</span> pWise)</span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>}</span></code></pre></div>
+<p>This function <code>crPiFun.Mb</code> allows capture probability to
+be modeled as <span class="math display">\[
+\text{logit}(p_{ij}) = \alpha_{naive} + \alpha_{wise} behavior_j +
+\alpha_1 x_i
+\]</span> where <span class="math inline">\(behavior_j\)</span> is
+simply a dummy variable. Thus, when no site-specific covariates (<span class="math inline">\(x_i\)</span>) are included, <span class="math inline">\(p_{ij}\)</span> is either <span class="math inline">\(p_{naive}\)</span> or <span class="math inline">\(p_{wise}\)</span>. The following code constructs a
+new <code>unmarkedFrame</code> and fits model <span class="math inline">\(M_b\)</span> to the alder flycatcher data.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>behavior <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">&#39;Naive&#39;</span>,<span class="st">&#39;Naive&#39;</span>,<span class="st">&#39;Wise&#39;</span>), <span class="dv">50</span>, <span class="dv">3</span>, <span class="at">byrow=</span><span class="cn">TRUE</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>umf.cr1Mb <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameMPois</span>(<span class="at">y=</span>alfl.H1,</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>    <span class="at">siteCovs=</span>alfl.covs[,<span class="fu">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>, <span class="st">&quot;time.1&quot;</span>)],</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>    <span class="at">obsCovs=</span><span class="fu">list</span>(<span class="at">behavior=</span>behavior),</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>    <span class="at">obsToY=</span>o2y, <span class="at">piFun=</span><span class="st">&quot;crPiFun.Mb&quot;</span>)</span></code></pre></div>
 <pre><code>## Warning: obsCovs contains characters. Converting them to factors.</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a>M0 &lt;-<span class="st"> </span><span class="kw">multinomPois</span>(<span class="op">~</span><span class="dv">1</span> <span class="op">~</span><span class="dv">1</span>, umf.cr1Mb, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true"></a>(Mb &lt;-<span class="st"> </span><span class="kw">multinomPois</span>(<span class="op">~</span>behavior<span class="dv">-1</span> <span class="op">~</span><span class="dv">1</span>, umf.cr1Mb, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>M0 <span class="ot">&lt;-</span> <span class="fu">multinomPois</span>(<span class="sc">~</span><span class="dv">1</span> <span class="sc">~</span><span class="dv">1</span>, umf.cr1Mb, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>(Mb <span class="ot">&lt;-</span> <span class="fu">multinomPois</span>(<span class="sc">~</span>behavior<span class="dv">-1</span> <span class="sc">~</span><span class="dv">1</span>, umf.cr1Mb, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>))</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## multinomPois(formula = ~behavior - 1 ~ 1, data = umf.cr1Mb, engine = &quot;R&quot;)
 ## 
-## Abundance:
+## Abundance (log-scale):
 ##  Estimate    SE      z P(&gt;|z|)
 ##   0.00955 0.142 0.0674   0.946
 ## 
-## Detection:
+## Detection (logit-scale):
 ##               Estimate    SE    z  P(&gt;|z|)
 ## behaviorNaive     1.31 0.356 3.69 2.25e-04
 ## behaviorWise      1.50 0.276 5.44 5.27e-08
 ## 
-## AIC: 260.0599</code></pre>
-<p>AIC gives us no reason to favor model <span class="math inline">\(M_b\)</span> over model <span class="math inline">\(M_0\)</span>. This is perhaps not too surprising given that the alder flycatchers were not actually captured. Here is a command to compute 95% confidence intervals for the two detection probabilities.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true"></a><span class="kw">plogis</span>(<span class="kw">confint</span>(Mb, <span class="dt">type=</span><span class="st">&quot;det&quot;</span>, <span class="dt">method=</span><span class="st">&quot;profile&quot;</span>))</span></code></pre></div>
+## AIC: 260.0599 
+## Number of sites: 50</code></pre>
+<p>AIC gives us no reason to favor model <span class="math inline">\(M_b\)</span> over model <span class="math inline">\(M_0\)</span>. This is perhaps not too surprising
+given that the alder flycatchers were not actually captured. Here is a
+command to compute 95% confidence intervals for the two detection
+probabilities.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">plogis</span>(<span class="fu">confint</span>(Mb, <span class="at">type=</span><span class="st">&quot;det&quot;</span>, <span class="at">method=</span><span class="st">&quot;profile&quot;</span>))</span></code></pre></div>
 <pre><code>## Profiling parameter 1 of 2 ... done.
 ## Profiling parameter 2 of 2 ... done.</code></pre>
 <pre><code>##                      0.025     0.975
@@ -672,56 +868,92 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## p(behaviorWise)  0.7290778 0.8890318</code></pre>
 </div>
 <div id="caution-warning-danger" class="section level2" number="4.3">
-<h2 number="4.3"><span class="header-section-number">4.3</span> Caution, Warning, Danger</h2>
-<p>The function <code>crPiFun.Mb</code> is not generic and could easily be abused. For example, you would get bogus results if you tried to use this function to fit model <span class="math inline">\(M_{bt}\)</span>, or if you incorrectly formatted the <code>behavior</code> covariate. Thus, extreme caution is advised when writing user-defined <code>piFun</code>s.</p>
-<p>There are also a few limitations regarding user-defined <code>piFun</code>s. First, they can only take a single argument <code>p</code>, which must be the <span class="math inline">\(R \times J\)</span> matrix of detection probabilities. This makes it cumbersome to fit models such as model <span class="math inline">\(M_h\)</span> as described below. It also makes it impossible to fit models such as model <span class="math inline">\(M_{bt}\)</span>. It would be better if <code>piFun</code>s could accept multiple arguments, but this would require some modifications to <code>multinomPois</code> and <code>gmultmix</code>, which we may do in the future.</p>
+<h2><span class="header-section-number">4.3</span> Caution, Warning,
+Danger</h2>
+<p>The function <code>crPiFun.Mb</code> is not generic and could easily
+be abused. For example, you would get bogus results if you tried to use
+this function to fit model <span class="math inline">\(M_{bt}\)</span>,
+or if you incorrectly formatted the <code>behavior</code> covariate.
+Thus, extreme caution is advised when writing user-defined
+<code>piFun</code>s.</p>
+<p>There are also a few limitations regarding user-defined
+<code>piFun</code>s. First, they can only take a single argument
+<code>p</code>, which must be the <span class="math inline">\(R \times
+J\)</span> matrix of detection probabilities. This makes it cumbersome
+to fit models such as model <span class="math inline">\(M_h\)</span> as
+described below. It also makes it impossible to fit models such as model
+<span class="math inline">\(M_{bt}\)</span>. It would be better if
+<code>piFun</code>s could accept multiple arguments, but this would
+require some modifications to <code>multinomPois</code> and
+<code>gmultmix</code>, which we may do in the future.</p>
 </div>
 <div id="individual-heterogeneity-in-capture-probability-model-m_h" class="section level2" number="4.4">
-<h2 number="4.4"><span class="header-section-number">4.4</span> Individual Heterogeneity in Capture Probability, Model <span class="math inline">\(M_h\)</span></h2>
-<p>The capture-recapture models covered thus far assume that variation in capture probability can be explained by site-specific covariates, time, or behavior. Currently, <code>unmarked</code> can not fit so-called individual covariate models, in which heterogeneity in <span class="math inline">\(p\)</span> is attributable to animal-specific covariates. However, one could partition the data into strata and analyze the strata separately. For example, sex-specific differences could be studied by dividing the data on males and females into 2 subsets.</p>
-<p>Although individual covariate models cannot be considered, it is possible to fit model <span class="math inline">\(M_h\)</span>, which assumes random variation in capture probability among individuals. Here is a <code>piFun</code>, based on code by Andy Royle. It assumes a logit-normal distribution for the random effects <span class="math display">\[
+<h2><span class="header-section-number">4.4</span> Individual
+Heterogeneity in Capture Probability, Model <span class="math inline">\(M_h\)</span></h2>
+<p>The capture-recapture models covered thus far assume that variation
+in capture probability can be explained by site-specific covariates,
+time, or behavior. Currently, <code>unmarked</code> can not fit
+so-called individual covariate models, in which heterogeneity in <span class="math inline">\(p\)</span> is attributable to animal-specific
+covariates. However, one could partition the data into strata and
+analyze the strata separately. For example, sex-specific differences
+could be studied by dividing the data on males and females into 2
+subsets.</p>
+<p>Although individual covariate models cannot be considered, it is
+possible to fit model <span class="math inline">\(M_h\)</span>, which
+assumes random variation in capture probability among individuals. Here
+is a <code>piFun</code>, based on code by Andy Royle. It assumes a
+logit-normal distribution for the random effects <span class="math display">\[
 \mbox{logit}(p_i) \sim Normal(\mu, \sigma^2).
-\]</span> These random effects are integrated out of the likelihood to obtain the marginal probability of capture.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true"></a>MhPiFun &lt;-<span class="st"> </span><span class="cf">function</span>(p) {</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true"></a>mu &lt;-<span class="st"> </span><span class="kw">qlogis</span>(p[,<span class="dv">1</span>]) <span class="co"># logit(p)</span></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true"></a>sig &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">qlogis</span>(p[<span class="dv">1</span>,<span class="dv">2</span>]))</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true"></a>J &lt;-<span class="st"> </span><span class="kw">ncol</span>(p)</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true"></a>M &lt;-<span class="st"> </span><span class="kw">nrow</span>(p)</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true"></a>il &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, <span class="dt">nrow=</span>M, <span class="dt">ncol=</span><span class="dv">7</span>)</span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true"></a><span class="kw">dimnames</span>(il) &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="ot">NULL</span>, <span class="kw">c</span>(<span class="st">&quot;001&quot;</span>,<span class="st">&quot;010&quot;</span>,<span class="st">&quot;011&quot;</span>,<span class="st">&quot;100&quot;</span>,<span class="st">&quot;101&quot;</span>,<span class="st">&quot;110&quot;</span>,<span class="st">&quot;111&quot;</span>))</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>M) {</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true"></a>  il[i,<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true"></a>    (<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true"></a>  il[i,<span class="dv">2</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-13"><a href="#cb33-13" aria-hidden="true"></a>    (<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-14"><a href="#cb33-14" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-15"><a href="#cb33-15" aria-hidden="true"></a>  il[i,<span class="dv">3</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-16"><a href="#cb33-16" aria-hidden="true"></a>    (<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-17"><a href="#cb33-17" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-18"><a href="#cb33-18" aria-hidden="true"></a>  il[i,<span class="dv">4</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-19"><a href="#cb33-19" aria-hidden="true"></a>    <span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-20"><a href="#cb33-20" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-21"><a href="#cb33-21" aria-hidden="true"></a>  il[i,<span class="dv">5</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-22"><a href="#cb33-22" aria-hidden="true"></a>    <span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-23"><a href="#cb33-23" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-24"><a href="#cb33-24" aria-hidden="true"></a>  il[i,<span class="dv">6</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-25"><a href="#cb33-25" aria-hidden="true"></a>    <span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x))<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-26"><a href="#cb33-26" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-27"><a href="#cb33-27" aria-hidden="true"></a>  il[i,<span class="dv">7</span>] &lt;-<span class="st"> </span><span class="kw">integrate</span>( <span class="cf">function</span>(x) {</span>
-<span id="cb33-28"><a href="#cb33-28" aria-hidden="true"></a>    <span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">plogis</span>(mu[i]<span class="op">+</span>x)<span class="op">*</span><span class="kw">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
-<span id="cb33-29"><a href="#cb33-29" aria-hidden="true"></a>  }, <span class="dt">lower=</span><span class="op">-</span><span class="ot">Inf</span>, <span class="dt">upper=</span><span class="ot">Inf</span>, <span class="dt">stop.on.error=</span><span class="ot">FALSE</span>)<span class="op">$</span>value</span>
-<span id="cb33-30"><a href="#cb33-30" aria-hidden="true"></a>}</span>
-<span id="cb33-31"><a href="#cb33-31" aria-hidden="true"></a><span class="kw">return</span>(il)</span>
-<span id="cb33-32"><a href="#cb33-32" aria-hidden="true"></a>}</span></code></pre></div>
-<p>This function does not allow for temporal variation in capture probability because we are using the second column of <code>p</code> as <span class="math inline">\(\sigma\)</span>, the parameter governing the variance of the random effects. Once again, this is somewhat clumsy and it would be better to allow <code>piFun</code> to accept additional arguments, which could be controlled from <code>multinomPois</code> using an additional <code>formula</code>. Such features may be added eventually.</p>
-<p>Having defined our new <code>piFun</code>, we can fit the model as follows</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true"></a>parID &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="st">&#39;p&#39;</span>,<span class="st">&#39;sig&#39;</span>,<span class="st">&#39;sig&#39;</span>), <span class="dv">50</span>, <span class="dv">3</span>, <span class="dt">byrow=</span><span class="ot">TRUE</span>)</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true"></a>umf.cr2 &lt;-<span class="st"> </span><span class="kw">unmarkedFrameMPois</span>(<span class="dt">y=</span>alfl.H1,</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true"></a>  <span class="dt">siteCovs=</span>alfl.covs[,<span class="kw">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>, <span class="st">&quot;time.1&quot;</span>)],</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true"></a>  <span class="dt">obsCovs=</span><span class="kw">list</span>(<span class="dt">parID=</span>parID),</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true"></a>  <span class="dt">obsToY=</span>o2y, <span class="dt">piFun=</span><span class="st">&quot;MhPiFun&quot;</span>)</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true"></a><span class="kw">multinomPois</span>(<span class="op">~</span>parID<span class="dv">-1</span> <span class="op">~</span>woody, umf.cr2)</span></code></pre></div>
+\]</span> These random effects are integrated out of the likelihood to
+obtain the marginal probability of capture.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a>MhPiFun <span class="ot">&lt;-</span> <span class="cf">function</span>(p) {</span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>mu <span class="ot">&lt;-</span> <span class="fu">qlogis</span>(p[,<span class="dv">1</span>]) <span class="co"># logit(p)</span></span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>sig <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">qlogis</span>(p[<span class="dv">1</span>,<span class="dv">2</span>]))</span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>J <span class="ot">&lt;-</span> <span class="fu">ncol</span>(p)</span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">nrow</span>(p)</span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>il <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="at">nrow=</span>M, <span class="at">ncol=</span><span class="dv">7</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a><span class="fu">dimnames</span>(il) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">c</span>(<span class="st">&quot;001&quot;</span>,<span class="st">&quot;010&quot;</span>,<span class="st">&quot;011&quot;</span>,<span class="st">&quot;100&quot;</span>,<span class="st">&quot;101&quot;</span>,<span class="st">&quot;110&quot;</span>,<span class="st">&quot;111&quot;</span>))</span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>M) {</span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a>  il[i,<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>    (<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-12"><a href="#cb33-12" tabindex="-1"></a>  il[i,<span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-13"><a href="#cb33-13" tabindex="-1"></a>    (<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-14"><a href="#cb33-14" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-15"><a href="#cb33-15" tabindex="-1"></a>  il[i,<span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-16"><a href="#cb33-16" tabindex="-1"></a>    (<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-17"><a href="#cb33-17" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-18"><a href="#cb33-18" tabindex="-1"></a>  il[i,<span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-19"><a href="#cb33-19" tabindex="-1"></a>    <span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-20"><a href="#cb33-20" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-21"><a href="#cb33-21" tabindex="-1"></a>  il[i,<span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-22"><a href="#cb33-22" tabindex="-1"></a>    <span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-23"><a href="#cb33-23" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-24"><a href="#cb33-24" tabindex="-1"></a>  il[i,<span class="dv">6</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-25"><a href="#cb33-25" tabindex="-1"></a>    <span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x))<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-26"><a href="#cb33-26" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-27"><a href="#cb33-27" tabindex="-1"></a>  il[i,<span class="dv">7</span>] <span class="ot">&lt;-</span> <span class="fu">integrate</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb33-28"><a href="#cb33-28" tabindex="-1"></a>    <span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">plogis</span>(mu[i]<span class="sc">+</span>x)<span class="sc">*</span><span class="fu">dnorm</span>(x,<span class="dv">0</span>,sig)</span>
+<span id="cb33-29"><a href="#cb33-29" tabindex="-1"></a>  }, <span class="at">lower=</span><span class="sc">-</span><span class="cn">Inf</span>, <span class="at">upper=</span><span class="cn">Inf</span>, <span class="at">stop.on.error=</span><span class="cn">FALSE</span>)<span class="sc">$</span>value</span>
+<span id="cb33-30"><a href="#cb33-30" tabindex="-1"></a>}</span>
+<span id="cb33-31"><a href="#cb33-31" tabindex="-1"></a><span class="fu">return</span>(il)</span>
+<span id="cb33-32"><a href="#cb33-32" tabindex="-1"></a>}</span></code></pre></div>
+<p>This function does not allow for temporal variation in capture
+probability because we are using the second column of <code>p</code> as
+<span class="math inline">\(\sigma\)</span>, the parameter governing the
+variance of the random effects. Once again, this is somewhat clumsy and
+it would be better to allow <code>piFun</code> to accept additional
+arguments, which could be controlled from <code>multinomPois</code>
+using an additional <code>formula</code>. Such features may be added
+eventually.</p>
+<p>Having defined our new <code>piFun</code>, we can fit the model as
+follows</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a>parID <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">&#39;p&#39;</span>,<span class="st">&#39;sig&#39;</span>,<span class="st">&#39;sig&#39;</span>), <span class="dv">50</span>, <span class="dv">3</span>, <span class="at">byrow=</span><span class="cn">TRUE</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a>umf.cr2 <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameMPois</span>(<span class="at">y=</span>alfl.H1,</span>
+<span id="cb34-3"><a href="#cb34-3" tabindex="-1"></a>  <span class="at">siteCovs=</span>alfl.covs[,<span class="fu">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>, <span class="st">&quot;time.1&quot;</span>)],</span>
+<span id="cb34-4"><a href="#cb34-4" tabindex="-1"></a>  <span class="at">obsCovs=</span><span class="fu">list</span>(<span class="at">parID=</span>parID),</span>
+<span id="cb34-5"><a href="#cb34-5" tabindex="-1"></a>  <span class="at">obsToY=</span>o2y, <span class="at">piFun=</span><span class="st">&quot;MhPiFun&quot;</span>)</span>
+<span id="cb34-6"><a href="#cb34-6" tabindex="-1"></a><span class="fu">multinomPois</span>(<span class="sc">~</span>parID<span class="dv">-1</span> <span class="sc">~</span>woody, umf.cr2)</span></code></pre></div>
 <pre><code>## Call:
 ## multinomPois(formula = ~parID - 1 ~ woody, data = umf.cr2)
 ##
@@ -736,101 +968,185 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## parIDsig    0.841 0.622 1.35  0.1762
 ## 
 ## AIC: 242.3731</code></pre>
-<p>The estimate of <span class="math inline">\(\sigma\)</span> is high, indicating the existence of substantial heterogeneity in detection probability. However, one should be aware of the concerns about <span class="math inline">\(M_h\)</span> raised by <span class="citation">Link (2003)</span> who demonstrated that population size <span class="math inline">\(N\)</span> is not an identifiable parameter among various classes of models assumed for the random effects. For example, we might use a beta distribution rather than a logit-normal distribution, and obtain very different estimates of abundance. <span class="citation">Link (2003)</span> demonstrated that conventional methods such as AIC cannot be used to discriminate among these models.</p>
+<p>The estimate of <span class="math inline">\(\sigma\)</span> is high,
+indicating the existence of substantial heterogeneity in detection
+probability. However, one should be aware of the concerns about <span class="math inline">\(M_h\)</span> raised by <span class="citation">Link
+(2003)</span> who demonstrated that population size <span class="math inline">\(N\)</span> is not an identifiable parameter among
+various classes of models assumed for the random effects. For example,
+we might use a beta distribution rather than a logit-normal
+distribution, and obtain very different estimates of abundance. <span class="citation">Link (2003)</span> demonstrated that conventional
+methods such as AIC cannot be used to discriminate among these
+models.</p>
 </div>
 <div id="distance-related-heterogeneity" class="section level2" number="4.5">
-<h2 number="4.5"><span class="header-section-number">4.5</span> Distance-related heterogeneity</h2>
-<p>Another source of individual heterogeneity in capture probability arises from the distance between animal activity centers and sample locations. Traditional capture-recapture models ignore this important source of variation in capture probability, but recently developed spatial capture-recapture (SCR) models overcome this limitation <span class="citation">(Efford 2004, Royle and Dorazio 2008, Royle and Young 2008)</span>. Distance-related heterogeneity in detection probability was probably not an important concern in the alder flycatcher dataset because the plots were very small (0.785 ha) and only singing birds were included in the analysis. If it were a concern, we could of course collect distance data and use the <code>gdistsamp</code> function to fit a distance sampling model. In other contexts, such as when using arrays of live traps, distance sampling is not an option and SCR models offer numerous advantages over traditional capture-recapture models.</p>
+<h2><span class="header-section-number">4.5</span> Distance-related
+heterogeneity</h2>
+<p>Another source of individual heterogeneity in capture probability
+arises from the distance between animal activity centers and sample
+locations. Traditional capture-recapture models ignore this important
+source of variation in capture probability, but recently developed
+spatial capture-recapture (SCR) models overcome this limitation <span class="citation">(Efford 2004, Royle and Dorazio 2008, Royle and Young
+2008)</span>. Distance-related heterogeneity in detection probability
+was probably not an important concern in the alder flycatcher dataset
+because the plots were very small (0.785 ha) and only singing birds were
+included in the analysis. If it were a concern, we could of course
+collect distance data and use the <code>gdistsamp</code> function to fit
+a distance sampling model. In other contexts, such as when using arrays
+of live traps, distance sampling is not an option and SCR models offer
+numerous advantages over traditional capture-recapture models.</p>
 </div>
 </div>
 <div id="modeling-temporary-emigration" class="section level1" number="5">
-<h1 number="5"><span class="header-section-number">5</span> Modeling Temporary Emigration</h1>
-<p>In the previous analysis we used data from the first visit only. <span class="citation">Chandler et al. (2011)</span> proposed a model that allows us to make use of the entire alder flycatcher dataset. The model is similar to the temporary emigration model of <span class="citation">Kendall et al. (1997)</span> except that we are interested in modeling variation in abundance among sites.</p>
-<p>The model assumes that no births or deaths occur during the study period, but animals may move on and off the plots between sampling occasions. This type of movement is referred to as temporary emigration. To account for it, define <span class="math inline">\(M_i\)</span> to be the super-population size, the total number of individuals that use site <span class="math inline">\(i\)</span> during the study period. Assume that we visit each site on <span class="math inline">\(T\)</span> primary periods and define <span class="math inline">\(N_{it}\)</span> to be the subset of <span class="math inline">\(M_i\)</span> exposed to sampling during primary period <span class="math inline">\(t\)</span>. We now collect capture-recapture data at each site during each primary period, and obtain the data <span class="math inline">\(\bf y_{it}\)</span>. The model can be written as <span class="math display">\[
+<h1><span class="header-section-number">5</span> Modeling Temporary
+Emigration</h1>
+<p>In the previous analysis we used data from the first visit only.
+<span class="citation">Chandler et al. (2011)</span> proposed a model
+that allows us to make use of the entire alder flycatcher dataset. The
+model is similar to the temporary emigration model of <span class="citation">Kendall et al. (1997)</span> except that we are
+interested in modeling variation in abundance among sites.</p>
+<p>The model assumes that no births or deaths occur during the study
+period, but animals may move on and off the plots between sampling
+occasions. This type of movement is referred to as temporary emigration.
+To account for it, define <span class="math inline">\(M_i\)</span> to be
+the super-population size, the total number of individuals that use site
+<span class="math inline">\(i\)</span> during the study period. Assume
+that we visit each site on <span class="math inline">\(T\)</span>
+primary periods and define <span class="math inline">\(N_{it}\)</span>
+to be the subset of <span class="math inline">\(M_i\)</span> exposed to
+sampling during primary period <span class="math inline">\(t\)</span>.
+We now collect capture-recapture data at each site during each primary
+period, and obtain the data <span class="math inline">\(\bf
+y_{it}\)</span>. The model can be written as <span class="math display">\[
 \begin{gather}
   M_i \sim \mbox{Poisson}(\lambda) \nonumber \\
   N_{it}|M_i \sim \mbox{Binomial}(M_i, \phi) \nonumber \\
   {\bf y_{it}}|N_{it} \sim \mbox{Multinomial}(N_{it}, \pi(p))
   \label{mod:te}
 \end{gather}
-\]</span> where <span class="math inline">\(\phi\)</span> is the probability of being available for capture. This can be modeled as a function of covariates using the logit-link.</p>
-<p>The data structure for the robust design is more complex than before, but it is easy to create in <code>R</code>. We can once again use the <code>table</code> function - but this time, we create a three-dimensional table rather than a two-dimensional one. We also need to expand the <code>obsToY</code> mapping matrix so that it has a block diagonal structure. This isn’t so intuitive, but the commands below are generic and can be applied to other capture-recapture designs.</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true"></a>alfl.H &lt;-<span class="st"> </span><span class="kw">table</span>(alfl<span class="op">$</span>id, alfl<span class="op">$</span>captureHistory, alfl<span class="op">$</span>survey)</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true"></a>alfl.Hmat &lt;-<span class="st"> </span><span class="kw">cbind</span>(alfl.H[,,<span class="dv">1</span>], alfl.H[,,<span class="dv">2</span>], alfl.H[,,<span class="dv">3</span>])</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true"></a>nVisits &lt;-<span class="st"> </span><span class="dv">3</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true"></a>o2yGMM &lt;-<span class="st"> </span><span class="kw">kronecker</span>(<span class="kw">diag</span>(nVisits), o2y)</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true"></a>umf.cr &lt;-<span class="st"> </span><span class="kw">unmarkedFrameGMM</span>(<span class="dt">y=</span>alfl.Hmat,</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true"></a>    <span class="dt">siteCovs=</span>alfl.covs[,<span class="kw">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>)],</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true"></a>    <span class="dt">yearlySiteCovs=</span><span class="kw">list</span>(<span class="dt">date=</span>alfl.covs[,<span class="dv">3</span><span class="op">:</span><span class="dv">5</span>], <span class="dt">time=</span>alfl.covs[,<span class="dv">6</span><span class="op">:</span><span class="dv">8</span>]),</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true"></a>    <span class="dt">obsCovs=</span><span class="kw">list</span>(<span class="dt">interval=</span><span class="kw">cbind</span>(intervalMat,intervalMat,intervalMat)),</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true"></a>    <span class="dt">obsToY=</span>o2yGMM, <span class="dt">piFun=</span><span class="st">&quot;crPiFun&quot;</span>, <span class="dt">numPrimary=</span>nVisits)</span></code></pre></div>
+\]</span> where <span class="math inline">\(\phi\)</span> is the
+probability of being available for capture. This can be modeled as a
+function of covariates using the logit-link.</p>
+<p>The data structure for the robust design is more complex than before,
+but it is easy to create in <code>R</code>. We can once again use the
+<code>table</code> function - but this time, we create a
+three-dimensional table rather than a two-dimensional one. We also need
+to expand the <code>obsToY</code> mapping matrix so that it has a block
+diagonal structure. This isn’t so intuitive, but the commands below are
+generic and can be applied to other capture-recapture designs.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a>alfl.H <span class="ot">&lt;-</span> <span class="fu">table</span>(alfl<span class="sc">$</span>id, alfl<span class="sc">$</span>captureHistory, alfl<span class="sc">$</span>survey)</span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a>alfl.Hmat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(alfl.H[,,<span class="dv">1</span>], alfl.H[,,<span class="dv">2</span>], alfl.H[,,<span class="dv">3</span>])</span>
+<span id="cb36-3"><a href="#cb36-3" tabindex="-1"></a>nVisits <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb36-4"><a href="#cb36-4" tabindex="-1"></a>o2yGMM <span class="ot">&lt;-</span> <span class="fu">kronecker</span>(<span class="fu">diag</span>(nVisits), o2y)</span>
+<span id="cb36-5"><a href="#cb36-5" tabindex="-1"></a>umf.cr <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameGMM</span>(<span class="at">y=</span>alfl.Hmat,</span>
+<span id="cb36-6"><a href="#cb36-6" tabindex="-1"></a>    <span class="at">siteCovs=</span>alfl.covs[,<span class="fu">c</span>(<span class="st">&quot;woody&quot;</span>, <span class="st">&quot;struct&quot;</span>)],</span>
+<span id="cb36-7"><a href="#cb36-7" tabindex="-1"></a>    <span class="at">yearlySiteCovs=</span><span class="fu">list</span>(<span class="at">date=</span>alfl.covs[,<span class="dv">3</span><span class="sc">:</span><span class="dv">5</span>], <span class="at">time=</span>alfl.covs[,<span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>]),</span>
+<span id="cb36-8"><a href="#cb36-8" tabindex="-1"></a>    <span class="at">obsCovs=</span><span class="fu">list</span>(<span class="at">interval=</span><span class="fu">cbind</span>(intervalMat,intervalMat,intervalMat)),</span>
+<span id="cb36-9"><a href="#cb36-9" tabindex="-1"></a>    <span class="at">obsToY=</span>o2yGMM, <span class="at">piFun=</span><span class="st">&quot;crPiFun&quot;</span>, <span class="at">numPrimary=</span>nVisits)</span></code></pre></div>
 <pre><code>## Warning: obsCovs contains characters. Converting them to factors.</code></pre>
-<p>Notice that we have 3 types of covariates now. The site-specific covariates are the same as before. Now, however, the observation covariates must match the dimensions of the <span class="math inline">\({\bf y}\)</span> matrix. We can also have a class of covariates that vary among primary periods but not within primary periods. These are called <code>yearlySiteCovs</code>, which is a misleading name. It is a carry-over from other “open population” models in <code>unmarked</code>, but it should be remembered that these models are most suitable for data from a single year, since we assume no births or mortalities.</p>
-<p>We can fit the model using the <code>gmultmix</code> function, which has a slightly different set of arguments. Rather than a single formula, the function takes 3 formulas for abundance covariates, availability covariates, and detection covariates in that order.</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true"></a>(fm1 &lt;-<span class="st"> </span><span class="kw">gmultmix</span>(<span class="op">~</span>woody, <span class="op">~</span><span class="dv">1</span>, <span class="op">~</span>time<span class="op">+</span>date, umf.cr, <span class="dt">engine=</span><span class="st">&quot;R&quot;</span>))</span></code></pre></div>
+<p>Notice that we have 3 types of covariates now. The site-specific
+covariates are the same as before. Now, however, the observation
+covariates must match the dimensions of the <span class="math inline">\({\bf y}\)</span> matrix. We can also have a class
+of covariates that vary among primary periods but not within primary
+periods. These are called <code>yearlySiteCovs</code>, which is a
+misleading name. It is a carry-over from other “open population” models
+in <code>unmarked</code>, but it should be remembered that these models
+are most suitable for data from a single year, since we assume no births
+or mortalities.</p>
+<p>We can fit the model using the <code>gmultmix</code> function, which
+has a slightly different set of arguments. Rather than a single formula,
+the function takes 3 formulas for abundance covariates, availability
+covariates, and detection covariates in that order.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>(fm1 <span class="ot">&lt;-</span> <span class="fu">gmultmix</span>(<span class="sc">~</span>woody, <span class="sc">~</span><span class="dv">1</span>, <span class="sc">~</span>time<span class="sc">+</span>date, umf.cr, <span class="at">engine=</span><span class="st">&quot;R&quot;</span>))</span></code></pre></div>
 <pre><code>## Warning: K was not specified and was set to 103.</code></pre>
 <pre><code>## 
 ## Call:
 ## gmultmix(lambdaformula = ~woody, phiformula = ~1, pformula = ~time + 
 ##     date, data = umf.cr, engine = &quot;R&quot;)
 ## 
-## Abundance:
+## Abundance (log-scale):
 ##             Estimate    SE      z P(&gt;|z|)
 ## (Intercept)  -0.0896 0.393 -0.228 0.81953
 ## woody         2.4294 0.591  4.107 0.00004
 ## 
-## Availability:
+## Availability (logit-scale):
 ##  Estimate    SE     z P(&gt;|z|)
 ##    -0.782 0.495 -1.58   0.114
 ## 
-## Detection:
+## Detection (logit-scale):
 ##             Estimate     SE      z  P(&gt;|z|)
 ## (Intercept)   2.1050 1.1139  1.890 0.058792
 ## time         -0.0499 0.0142 -3.526 0.000422
 ## date         -0.0285 0.1369 -0.208 0.835258
 ## 
-## AIC: 580.4508</code></pre>
-<p>Results from this model are similar to those obtained using the subset of data, but the standard error for the woody estimate has decreased. If we back-transform the estimate of <span class="math inline">\(\phi\)</span>, we see that the probability of being available for detection is 0.31.</p>
-<p>Another feature of <code>gmultmix</code> is that <span class="math inline">\(N\)</span> can be modeled using either the Poisson or negative binomial distribution. We might eventually add other options such as the zero-inflated Poisson.</p>
+## AIC: 580.4508 
+## Number of sites: 50</code></pre>
+<p>Results from this model are similar to those obtained using the
+subset of data, but the standard error for the woody estimate has
+decreased. If we back-transform the estimate of <span class="math inline">\(\phi\)</span>, we see that the probability of
+being available for detection is 0.31.</p>
+<p>Another feature of <code>gmultmix</code> is that <span class="math inline">\(N\)</span> can be modeled using either the Poisson
+or negative binomial distribution. We might eventually add other options
+such as the zero-inflated Poisson.</p>
 </div>
-<div id="references" class="section level1 unnumbered" number>
-<h1 class="unnumbered" number>References</h1>
-<div id="refs" class="references hanging-indent">
-<div id="ref-alldredge_etal:2007">
-<p>Alldredge, M. W., K. H. Pollock, T. R. Simons, J. A. Collazo, S. A. Shriner, and D. Johnson. 2007. Time-of-detection method for estimating abundance from point-count surveys. The Auk 124:653–664.</p>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" line-spacing="2">
+<div id="ref-alldredge_etal:2007" class="csl-entry">
+Alldredge, M. W., K. H. Pollock, T. R. Simons, J. A. Collazo, S. A.
+Shriner, and D. Johnson. 2007. Time-of-detection method for estimating
+abundance from point-count surveys. The Auk 124:653–664.
 </div>
-<div id="ref-chandler_etal:2009">
-<p>Chandler, R. B., D. I. King, and S. DeStefano. 2009. Scrub-shrub bird habitat associations at multiple spatial scales in beaver meadows in massachusetts. The Auk:186–197.</p>
+<div id="ref-chandler_etal:2009" class="csl-entry">
+Chandler, R. B., D. I. King, and S. DeStefano. 2009. Scrub-shrub bird
+habitat associations at multiple spatial scales in beaver meadows in
+massachusetts. The Auk:186–197.
 </div>
-<div id="ref-chandlerEA_2011">
-<p>Chandler, R. B., J. A. Royle, and D. I. King. 2011. Inference about density and temporary emigration in unmarked populations. Ecology 92:1429–1435.</p>
+<div id="ref-chandlerEA_2011" class="csl-entry">
+Chandler, R. B., J. A. Royle, and D. I. King. 2011. Inference about
+density and temporary emigration in unmarked populations. Ecology
+92:1429–1435.
 </div>
-<div id="ref-dorazio_etal:2005">
-<p>Dorazio, R. M., H. L. Jelks, and F. Jordan. 2005. Improving removal-based estimates of abundance by sampling a population of spatially distinct subpopulations. Biometrics 61:1093–1101.</p>
+<div id="ref-dorazio_etal:2005" class="csl-entry">
+Dorazio, R. M., H. L. Jelks, and F. Jordan. 2005. Improving <span class="nocase">removal-based</span> estimates of abundance by sampling a
+population of spatially distinct subpopulations. Biometrics
+61:1093–1101.
 </div>
-<div id="ref-efford:2004">
-<p>Efford, M. 2004. Density estimation in live-trapping studies. Oikos 106:598–610.</p>
+<div id="ref-efford:2004" class="csl-entry">
+Efford, M. 2004. <span class="nocase">Density estimation in
+live-trapping studies</span>. Oikos 106:598–610.
 </div>
-<div id="ref-kendall_etal:1997">
-<p>Kendall, W. L., J. D. Nichols, and J. E. Hines. 1997. Estimating temporary emigration using capture-recapture data with Pollock’s robust design. Ecology 78:563–578.</p>
+<div id="ref-kendall_etal:1997" class="csl-entry">
+Kendall, W. L., J. D. Nichols, and J. E. Hines. 1997. Estimating
+temporary emigration using <span class="nocase">capture-recapture</span>
+data with <span>P</span>ollock<span>’</span>s robust design. Ecology
+78:563–578.
 </div>
-<div id="ref-link:2003">
-<p>Link, W. A. 2003. Nonidentifiability of population size from capture-recapture data with heterogeneous detection probabilities. Biometrics 59:1123–1130.</p>
+<div id="ref-link:2003" class="csl-entry">
+Link, W. A. 2003. Nonidentifiability of population size from
+capture-recapture data with heterogeneous detection probabilities.
+Biometrics 59:1123–1130.
 </div>
-<div id="ref-otis_etal:1978">
-<p>Otis, D. L., K. P. Burnham, G. C. White, and D. R. Anderson. 1978. Statistical inference from capture data on closed animal populations. Wildlife monographs:3–135.</p>
+<div id="ref-otis_etal:1978" class="csl-entry">
+Otis, D. L., K. P. Burnham, G. C. White, and D. R. Anderson. 1978.
+Statistical inference from capture data on closed animal populations.
+Wildlife monographs:3–135.
 </div>
-<div id="ref-royle_generalized_2004">
-<p>Royle, J. A. 2004. Generalized estimators of avian abundance from count survey data. Animal Biodiversity and Conservation 27:375–386.</p>
+<div id="ref-royle_generalized_2004" class="csl-entry">
+Royle, J. A. 2004. Generalized estimators of avian abundance from count
+survey data. Animal Biodiversity and Conservation 27:375–386.
 </div>
-<div id="ref-royle_dorazio:2008">
-<p>Royle, J. A., and R. M. Dorazio. 2008. Hierarchical modeling and inference in ecology: The analysis of data from populations, metapopulations and communities. Academic Press.</p>
+<div id="ref-royle_dorazio:2008" class="csl-entry">
+Royle, J. A., and R. M. Dorazio. 2008. Hierarchical modeling and
+inference in ecology: The analysis of data from populations,
+metapopulations and communities. Academic Press.
 </div>
-<div id="ref-royle_young:2008">
-<p>Royle, J. A., and K. V. Young. 2008. A Hierarchical Model For Spatial Capture-Recapture Data. Ecology 89:2281–2289.</p>
+<div id="ref-royle_young:2008" class="csl-entry">
+Royle, J. A., and K. V. Young. 2008. <span>A Hierarchical Model For
+Spatial Capture-Recapture Data</span>. Ecology 89:2281–2289.
 </div>
-<div id="ref-williams_etal:2002">
-<p>Williams, B. K., J. D. Nichols, and M. J. Conroy. 2002. Analysis and management of animal populations: modeling, estimation, and decision making. Academic Pr.</p>
+<div id="ref-williams_etal:2002" class="csl-entry">
+Williams, B. K., J. D. Nichols, and M. J. Conroy. 2002. <span class="nocase">Analysis and management of animal populations: modeling,
+estimation, and decision making</span>. Academic Pr.
 </div>
 </div>
 </div>

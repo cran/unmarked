@@ -1,8 +1,34 @@
 context("pcount fitting function")
 skip_on_cran()
 
-test_that("pcount can fit simple models",{
+test_that("unmarkedFramePCount subset works", {
 
+  y <- matrix(c(
+      8,7,
+      6,7,
+      8,8,
+      8,6,
+      7,7), nrow=5, ncol=2, byrow=TRUE)
+  siteCovs <- data.frame(x = c(0,2,3,4,1))
+  obsCovs <- data.frame(o1 = 1:10)
+  umf <- unmarkedFramePCount(y = y, siteCovs = siteCovs, obsCovs = obsCovs)
+
+  umf_sub <- umf[2:3,]
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[3,])
+
+  umf_sub <- umf[c(2,2,4),]
+  expect_equal(numSites(umf_sub), 3)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[4,])
+
+  keep <- c(FALSE, FALSE, TRUE, FALSE, TRUE)
+  expect_error(umf_sub <- umf[keep,]) # this should work
+})
+
+test_that("pcount can fit simple models",{
+  set.seed(123)
   y <- matrix(c(
       8,7,
       6,7,
@@ -44,6 +70,12 @@ test_that("pcount can fit simple models",{
 
   gp <- getP(fm)
   expect_equal(dim(gp), dim(umf@y))
+  expect_equal(as.vector(gp[1:2,1:2]), c(0.9387,0.9327,0.9372,0.9312), tol=1e-4)
+
+  ft <- fitted(fm)
+  expect_equal(dim(ft), dim(umf@y))
+  expect_equal(round(ft,4)[1:2,1:2],
+    structure(c(6.4001, 5.991, 6.3904, 5.981), dim = c(2L, 2L)), tol=1e-4)
 
   res <- residuals(fm)
   expect_equal(dim(res), dim(umf@y))
@@ -64,7 +96,43 @@ test_that("pcount can fit simple models",{
 
   pb <- parboot(fm, nsim=1)
   expect_is(pb, "parboot")
+  expect_equal(pb@t.star[1,1], 39.2175, tol=1e-4)
 
+  npb <- nonparboot(fm, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 66.4802, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
+
+})
+
+test_that("pcount handles missing values", {
+  y <- matrix(c(
+      8,7,7,8,
+      6,7,7,5,
+      8,8,7,8,
+      4,5,5,5,
+      4,4,3,3), nrow=5, ncol=4, byrow=TRUE)
+  siteCovs <- data.frame(x = c(0,2,3,4,1))
+  siteCovs$x[2] <- NA
+  obsCovs <- data.frame(o1 = seq(-1, 1, length=length(y)))
+  obsCovs$o1[1] <- NA
+  umf <- unmarkedFramePCount(y = y, siteCovs = siteCovs, obsCovs = obsCovs)
+  fm <- expect_warning(pcount(~ o1 ~ x, data = umf, K=30))
+
+  ft <- fitted(fm)
+  expect_equal(dim(ft), dim(umf@y))
+  expect_true(is.na(ft[1,1])) # missing obs cov
+  expect_true(all(is.na(ft[2,]))) # missing site cov
+
+  gp <- getP(fm)
+  expect_equal(dim(gp), dim(umf@y))
+  expect_true(is.na(gp[1,1])) # missing obs cov
+
+  r <- ranef(fm)
+  expect_equal(nrow(r@post), numSites(fm@data))
+  expect_true(all(is.na(r@post[2,,1]))) # missing site cov
 })
 
 test_that("pcount predict works",{

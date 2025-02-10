@@ -98,14 +98,16 @@ setMethod("[", c("unmarkedFrameGDR", "numeric", "missing", "missing"),
 
   if(!is.null(oc)){
     site_idx <- rep(1:M, each=Rrem)
-    keep <- site_idx %in% i
-    oc <- oc[keep,,drop=FALSE]
+    oc <- do.call("rbind", lapply(i, function(ind){
+      obsCovs(x)[site_idx == ind,,drop=FALSE]
+    }))
   }
 
   if(!is.null(ysc)){
     site_idx <- rep(1:M, each=T)
-    keep <- site_idx %in% i
-    ysc <- ysc[keep,,drop=FALSE]
+    ysc <- do.call("rbind", lapply(i, function(ind){
+      yearlySiteCovs(x)[site_idx == ind,,drop=FALSE]
+    }))
   }
 
   umf <- x
@@ -199,19 +201,19 @@ setMethod("getDesign", "unmarkedFrameGDR",
 
   if(return.frames) return(list(sc=sc, ysc=ysc, oc=oc))
 
-  lam_fixed <- lme4::nobars(formula$lambdaformula)
+  lam_fixed <- reformulas::nobars(formula$lambdaformula)
   Xlam <- model.matrix(lam_fixed,
             model.frame(lam_fixed, sc, na.action=NULL))
 
-  phi_fixed <- lme4::nobars(formula$phiformula)
+  phi_fixed <- reformulas::nobars(formula$phiformula)
   Xphi <- model.matrix(phi_fixed,
             model.frame(phi_fixed, ysc, na.action=NULL))
 
-  dist_fixed <- lme4::nobars(formula$distanceformula)
+  dist_fixed <- reformulas::nobars(formula$distanceformula)
   Xdist <- model.matrix(dist_fixed,
             model.frame(dist_fixed, ysc, na.action=NULL))
 
-  rem_fixed <- lme4::nobars(formula$removalformula)
+  rem_fixed <- reformulas::nobars(formula$removalformula)
   Xrem <- model.matrix(rem_fixed,
             model.frame(rem_fixed, oc, na.action=NULL))
 
@@ -473,7 +475,7 @@ gdistremoval <- function(lambdaformula=~1, phiformula=~1, removalformula=~1,
 
 # Methods
 
-setMethod("getP", "unmarkedFitGDR", function(object){
+setMethod("getP_internal", "unmarkedFitGDR", function(object){
 
   M <- numSites(object@data)
   T <- object@data@numPrimary
@@ -536,7 +538,7 @@ setMethod("getP", "unmarkedFitGDR", function(object){
   out
 })
 
-setMethod("fitted", "unmarkedFitGDR", function(object){
+setMethod("fitted_internal", "unmarkedFitGDR", function(object){
 
   T <- object@data@numPrimary
 
@@ -586,14 +588,14 @@ setMethod("fitted", "unmarkedFitGDR", function(object){
   list(dist=ft_dist, rem=ft_rem)
 })
 
-setMethod("residuals", "unmarkedFitGDR", function(object){
+setMethod("residuals_internal", "unmarkedFitGDR", function(object){
   ft <- fitted(object)
   list(dist=object@data@yDistance - ft$dist, rem=object@data@yRemoval-ft$rem)
 })
 
 # ranef
 
-setMethod("ranef", "unmarkedFitGDR", function(object){
+setMethod("ranef_internal", "unmarkedFitGDR", function(object, ...){
 
   M <- numSites(object@data)
   T <- object@data@numPrimary
@@ -674,7 +676,7 @@ setMethod("ranef", "unmarkedFitGDR", function(object){
   new("unmarkedRanef", post=post)
 })
 
-setMethod("simulate", "unmarkedFitGDR", function(object, nsim, seed=NULL, na.rm=FALSE){
+setMethod("simulate_internal", "unmarkedFitGDR", function(object, nsim){
 
   # Adjust log lambda when there is a random intercept
   #loglam <- log(predict(object, "lambda", level=NULL)$Predicted)
@@ -761,45 +763,30 @@ setMethod("simulate", "unmarkedFitGDR", function(object, nsim, seed=NULL, na.rm=
   out
 })
 
+setMethod("get_fitting_function", "unmarkedFrameGDR", 
+          function(object, model, ...){
+  gdistremoval
+})
 
-setMethod("update", "unmarkedFitGDR",
-    function(object, lambdaformula, phiformula, removalformula, distanceformula,
-             ..., evaluate = TRUE)
-{
+setMethod("y_to_zeros", "unmarkedFrameGDR", function(object, ...){
+  object@yDistance[] <- 0
+  object@yRemoval[] <- 0
+  object
+})
 
-    call <- object@call
-    if (is.null(call))
-        stop("need an object with call slot")
-
-    if(!missing(lambdaformula)){
-      call$lambdaformula <- lambdaformula
-    }
-    if(!missing(phiformula)){
-      if(!is.null(call$phiformula)){
-        call$phiformula <- phiformula
-      }
-    }
-    if(!missing(removalformula)){
-      call$removalformula <- removalformula
-    }
-    if(!missing(distanceformula)){
-      call$distanceformula <- distanceformula
-    }
-
-    extras <- match.call(call=sys.call(-1),
-                         expand.dots = FALSE)$...
-    if (length(extras) > 0) {
-        existing <- !is.na(match(names(extras), names(call)))
-        for (a in names(extras)[existing])
-            call[[a]] <- extras[[a]]
-        if (any(!existing)) {
-            call <- c(as.list(call), extras[!existing])
-            call <- as.call(call)
-            }
-        }
-    if (evaluate)
-        eval(call, parent.frame(2))
-    else call
+setMethod("rebuild_call", "unmarkedFitGDR", function(object){           
+  cl <- object@call
+  cl[["data"]] <- quote(object@data)
+  cl[["lambdaformula"]] <- object@formlist$lambdaformula
+  cl[["phiformula"]] <- object@formlist$phiformula
+  cl[["removalformula"]] <- object@formlist$removalformula
+  cl[["distanceformula"]] <- object@formlist$distanceformula
+  cl[["mixture"]] <- object@mixture
+  cl[["K"]] <- object@K
+  cl[["keyfun"]] <- object@keyfun
+  cl[["unitsOut"]] <- object@unitsOut
+  cl[["output"]] <- object@output
+  cl
 })
 
 
@@ -827,14 +814,8 @@ setMethod("SSE", "unmarkedFitGDR", function(fit, ...){
     return(c(SSE = sum(r)))
 })
 
-setMethod("nonparboot", "unmarkedFitGDR",
-    function(object, B = 0, keepOldSamples = TRUE, ...)
-{
-   stop("Not currently supported for unmarkedFitGDR", call.=FALSE)
-})
 
-
-setMethod("plot", c(x = "unmarkedFitGDR", y = "missing"), function(x, y, ...)
+setMethod("residual_plot", "unmarkedFitGDR", function(x, ...)
 {
     r <- residuals(x)
     e <- fitted(x)

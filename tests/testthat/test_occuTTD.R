@@ -37,6 +37,12 @@ test_that("unmarkedFrameOccuTTD can be constructed",{
 
   umf_sub <- umf[c(1,3),]
   expect_equivalent(as(umf_sub, 'data.frame'), as(umf, 'data.frame')[c(1,3),])
+  
+  umf_sub <- umf[c(2,2,4),]
+  expect_equal(numSites(umf_sub), 3)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[4,])
 
   expect_error(umf[,2])
 
@@ -178,15 +184,39 @@ test_that("occuTTD can fit a single-season 1 obs model",{
   expect_equivalent(fit_naC@AIC, 1185.15, tol=1e-4)
   expect_equivalent(fit_naC@sitesRemoved, 1)
 
+  umf_na@siteCovs$elev[2] <- NA
+  fit_naC <- expect_warning(occuTTD(psiformula=~elev+forest, detformula=~elev+wind,
+                  data=umf_na, linkPsi='cloglog', ttdDist='weibull',
+                  engine="C"))
+  expect_equivalent(fit_naC@sitesRemoved, c(1,2))
+  ft <- fitted(fit_naC)
+  expect_equal(dim(ft), dim(fit_naC@data@y))
+  expect_true(is.na(ft[2,1]))
+
+  r <- ranef(fit_naC)
+  expect_equal(nrow(r@post), N)
+  expect_true(all(is.na(r@post[2,,])))
+
   set.seed(123)
   p <- parboot(fitC, nsim=3)
   expect_equivalent(p@t.star[1,], 87.90704)
 
+  npb <- nonparboot(fitC, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 1232.123, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
+
   r <- ranef(fitC)
   expect_equivalent(dim(r@post), c(N,2,1))
+  
   b <- bup(r)
   expect_equivalent(length(b), N)
-
+  expect_equal(b[1:4], c(1,1,0.052295,0.221098), tol=1e-4)
+  
+  gp <- getP(fitC)
+  expect_equal(dim(gp), dim(fitC@data@y))
 })
 
 test_that("occuTTD can fit a single-season multi-obs model",{
@@ -248,6 +278,7 @@ test_that("occuTTD can fit a single-season multi-obs model",{
   expect_equivalent(dim(r@post), c(N,2,1))
   b <- bup(r)
   expect_equivalent(length(b), N)
+  expect_equal(b[1:4], c(1,1,0.028935,0.12426), tol=1e-4)
 
   #Check site is retained when only one observation is missing
   ttd_na <- ttd; ttd_na[1,1] <- NA
@@ -452,7 +483,7 @@ test_that("occuTTD can fit a dynamic model",{
 
 })
 
-test_that("occuMulti predict works",{
+test_that("occuTTD predict works",{
 
   #One observer------------------------------------
   set.seed(123)

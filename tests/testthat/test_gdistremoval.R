@@ -223,6 +223,12 @@ test_that("unmarkedFrameGDR is constructed correctly",{
   expect_equivalent(numSites(umf_sub), 3)
   expect_error(umf[,1:2])
 
+  umf_sub <- umf[c(2,2,3),]
+  expect_equal(numSites(umf_sub), 3)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[3,])
+
   # Input mistake handling
 
   # Wrong number of dist.breaks
@@ -330,17 +336,34 @@ test_that("gdistremoval can fit models",{
   gp <- getP(fit)
   expect_equivalent(dim(gp$dist), c(50,4,1))
   expect_equivalent(dim(gp$rem), c(50,5,1))
+  expect_equal(as.vector(gp$dist[1:2,1:2,1]), c(0.05957, 0.05957, 0.14775,0.14775), tol=1e-4)
+  expect_equal(as.vector(gp$rem[1:2,1:2,1]), c(0.16639,0.1979,0.1333,0.1031), tol=1e-4)
 
   s <- simulate(fit, 2)
   expect_equivalent(length(s), 2)
   expect_equivalent(dim(s[[1]]$yDistance), dim(fit@data@yDistance))
   expect_equivalent(dim(s[[1]]$yRemoval), dim(fit@data@yRemoval))
+  
+  ft <- fitted(fit)
+  expect_equal(length(ft), 2)
+  expect_equal(round(ft[[1]],4)[1:2,1:2],
+      structure(c(0.1269, 0.1413, 0.3148, 0.3505), dim = c(2L, 2L)))
+  expect_equal(round(ft[[2]],4)[1:2,1:2],
+      structure(c(0.3009, 0.4001, 0.2411, 0.2084), dim = c(2L, 2L)))
 
   r <- ranef(fit)
   expect_equivalent(length(bup(r)), 50)
+  expect_equal(bup(r)[1:4], c(2.4701,3.7661,8.2107,3.9931), tol=1e-4)
 
   pb <- parboot(fit, nsim=2)
-  expect_is(pb, "parboot")
+  expect_equal(pb@t.star[1,1], 126, tol=1e-4)
+
+  np <- nonparboot(fit, B=2)
+  expect_equal(length(np@bootstrapSamples), 2)
+  expect_true(np@bootstrapSamples[[1]]@AIC != np@bootstrapSamples[[2]]@AIC)
+  expect_true(all(sapply(np@bootstrapSamples, function(x) numSites(x@data)) ==
+                  numSites(fit@data)))
+  expect_equal(nrow(vcov(np, method='nonparboot')), length(coef(np)))
 
   # Fit list construction
   fl <- fitList(fits=list(fit1=fit, fit2=fit))
@@ -430,6 +453,21 @@ test_that("gdistremoval handles NAs",{
   umf2@obsCovs$oc1[6] <- NA
   fit <- gdistremoval(~1,removalformula=~oc1,distanceformula=~1, data=umf2)
   expect_true(is.na(predict(fit, 'rem')$Predicted[6]))
+
+  ft <- fitted(fit)
+  # All of row 2 is NA because oc1[6] corresponds to first removal bin of site 2
+  expect_true(all(is.na(ft$rem[2,])))
+  # Dist is also NA for site 2 because these probs are multiplied
+  # by the removal probs which are NA 
+  expect_true(all(is.na(ft$dist[2,])))
+
+  gp <- getP(fit)
+  expect_equal(dim(gp$rem), c(50,5,1))
+  expect_true(all(is.na(gp$rem[2,,1])))
+  expect_true(all(!is.na(gp$dist[2,,1]))) # not removed because only removal prob is NA
+
+  r <- ranef(fit)
+  expect_equal(nrow(r@post), numSites(fit@data))
 })
 
 test_that("multi-period data works with gdistremoval",{

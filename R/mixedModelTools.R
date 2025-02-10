@@ -5,46 +5,59 @@ get_xlev <- function(data, model_frame){
 }
 
 get_reTrms <- function(formula, data, newdata=NULL){
-  fb <- lme4::findbars(formula)
-  mf <- model.frame(lme4::subbars(formula), data, na.action=stats::na.pass)
-  if(is.null(newdata)) return(lme4::mkReTrms(fb, mf))
+  fb <- reformulas::findbars(formula)
+  mf <- model.frame(reformulas::subbars(formula), data, na.action=stats::na.pass)
+  if(is.null(newdata)) return(reformulas::mkReTrms(fb, mf, calc.lambdat = FALSE))
   new_mf <- model.frame(stats::terms(mf), newdata, na.action=stats::na.pass,
                         xlev=get_xlev(data, mf))
-  lme4::mkReTrms(fb, new_mf, drop.unused.levels=FALSE)
+  reformulas::mkReTrms(fb, new_mf, drop.unused.levels=FALSE, calc.lambdat = FALSE)
 }
 
 get_Z <- function(formula, data, newdata=NULL){
-  if(is.null(lme4::findbars(formula))){
+  if(is.null(reformulas::findbars(formula))){
     if(is.null(newdata)){
       return(Matrix::Matrix(matrix(0, nrow=nrow(data), ncol=0),sparse=TRUE))
     } else{
       return(Matrix::Matrix(matrix(0, nrow=nrow(newdata), ncol=0),sparse=TRUE))
     }
   }
-  check_formula(formula, data)
-  Zt <- get_reTrms(formula, data, newdata)$Zt
-  Z <- t(as.matrix(Zt))
-  Matrix::Matrix(Z, sparse=TRUE)
+  check_formula(formula)
+  Zt_list <- get_reTrms(formula, data, newdata)$Ztlist
+
+  # Reorder rows by random effect instead of by level
+  # so d d d e e e --> d e d e d e
+  # this should only change things for factors
+  out <- lapply(Zt_list, function(x){
+    id <- stats::ave(rownames(x) == rownames(x), rownames(x), FUN=cumsum)
+    x[order(id),,drop=FALSE]
+  })
+  Zt <- do.call(rbind, out)
+  Matrix::t(Zt)
 }
 
-get_group_vars <- function(formula){
-  rand <- lme4::findbars(formula)
-  ifelse(is.null(rand), 0, length(rand))
+get_group_vars <- function(formula, data){
+  rand <- reformulas::findbars(formula)
+  if(is.null(rand)) return(0)
+  re <- get_reTrms(formula, data)
+  length(unlist(re$cnms))
 }
 
 get_nrandom <- function(formula, data){
-  rand <- lme4::findbars(formula)
+  rand <- reformulas::findbars(formula)
   if(length(rand)==0) return(as.array(0))
+  
+  re <- get_reTrms(formula, data)
 
-  out <- sapply(rand, function(x){
-    col_nm <- as.character(x[[3]])
-    length(unique(data[[col_nm]]))
+  col_nms <- rep(names(re$cnms), sapply(re$cnms, length))
+  out <- sapply(col_nms, function(x){
+    length(unique(data[[x]]))
   })
+
   as.array(out)
 }
 
 has_random <- function(formula){
-  length(lme4::findbars(formula)) > 0
+  length(reformulas::findbars(formula)) > 0
 }
 
 sigma_names <- function(formula, data){
@@ -56,18 +69,33 @@ sigma_names <- function(formula, data){
   nms
 }
 
-check_formula <- function(formula, data){
-  rand <- lme4::findbars(formula)
+form_has_correlated_effects <- function(formula){
+  bars <- reformulas::findbars(formula)
+  if(is.null(bars)) return(FALSE)
+  out <- sapply(bars, function(x){
+    form <- stats::as.formula(as.call(list(as.name("~"), x[[2]])))
+    terms_obj <- stats::terms(form)
+    terms <- attr(terms_obj, "term.labels")
+    if(attr(terms_obj, "intercept")) terms <- c("1", terms)
+    length(terms) > 1
+  })
+  any(out)
+}
+
+check_formula <- function(formula){
+  rand <- reformulas::findbars(formula)
   if(is.null(rand)) return(invisible())
 
-  char <- paste(formula, collapse=" ")
+  if(form_has_correlated_effects(formula)){
+    stop("Correlated random slopes and intercepts are not supported. Replace | with || in your formula(s).", call.=FALSE)
+  }
+ 
+  rhs <- lapply(rand, function(x) x[[3]])
+  rhs_all <- lapply(rhs, function(x) paste(deparse(x), collapse=""))
+
+  char <- paste(rhs_all, collapse=" ")
   if(grepl(":|/", char)){
     stop("Nested random effects (using / and :) are not supported",
-         call.=FALSE)
-  }
-  theta <- get_reTrms(formula, data)$theta
-  if(0 %in% theta){
-    stop("Correlated slopes and intercepts are not supported. Use || instead of |.",
          call.=FALSE)
   }
 }
@@ -123,7 +151,7 @@ use_tmb_bootstrap <- function(mod, type, re.form){
 
 # Gather information about grouping variables for a given submodel
 get_randvar_info <- function(tmb_report, type, formula, data){
-  ngv <- get_group_vars(formula)
+  ngv <- get_group_vars(formula, data)
   if(ngv == 0) return(list()) #Return blank list if there are no grouping variables
 
   sigma_type <- paste0("lsigma_",type)
@@ -131,11 +159,12 @@ get_randvar_info <- function(tmb_report, type, formula, data){
   sigma_est <- tmb_report$par.fixed[sigma_ind]
   sigma_cov <- as.matrix(tmb_report$cov.fixed[sigma_ind,sigma_ind])
   re <- get_reTrms(formula, data)
+  Z <- get_Z(formula, data) # inefficient!!
 
   list(names=sigma_names(formula, data), estimates=sigma_est, covMat=sigma_cov,
        invlink="exp", invlinkGrad="exp", n_obs=nrow(data),
        n_levels=lapply(re$flist, function(x) length(levels(x))), cnms=re$cnms,
-       levels=rownames(re$Zt))
+       levels=colnames(Z))
 }
 
 get_fixed_names <- function(tmb_report){
@@ -150,7 +179,8 @@ print_randvar_info <- function(object){
 
   val <- do.call(object$invlink, list(object$estimates))
 
-  disp <- data.frame(Groups=names(object$cnms), Name=unlist(object$cnms),
+  disp <- data.frame(Groups=rep(names(object$cnms), sapply(object$cnms, length)), 
+                     Name=unlist(object$cnms),
                      Variance=round(val^2,3), Std.Dev.=round(val,3))
   cat("Random effects:\n")
   print(disp, row.names=FALSE)
@@ -159,7 +189,7 @@ print_randvar_info <- function(object){
 }
 
 check_no_support <- function(formula_list){
-  has_bars <- any(sapply(formula_list, function(x) !is.null(lme4::findbars(x))))
+  has_bars <- any(sapply(formula_list, function(x) !is.null(reformulas::findbars(x))))
   if(has_bars){
     stop("This function does not support random effects", call.=FALSE)
   }
@@ -221,7 +251,7 @@ setMethod("sigma", "unmarkedEstimate", function(object, level=0.95, ...){
   ses <- sqrt(diag(rinf$covMat))
   lower <- vals - z*ses
   upper <- vals + z*ses
-  Groups <- names(rinf$cnms)
+  Groups <- rep(names(rinf$cnms), sapply(rinf$cnms, length))
   Name <- unlist(rinf$cnms)
   data.frame(Model=object@short.name, Groups=Groups, Name=Name, sigma=exp(vals),
              lower=exp(lower), upper=exp(upper))
@@ -248,29 +278,50 @@ setMethod("sigma", "unmarkedFit", function(object, type, level=0.95, ...){
 setGeneric("randomTerms", function(object, ...) standardGeneric("randomTerms"))
 
 
-setMethod("randomTerms", "unmarkedEstimate", function(object, level=0.95, ...){
+setMethod("randomTerms", "unmarkedEstimate", 
+          function(object, level=0.95, addMean = FALSE, ...){
 
   rv <- object@randomVarInfo
   if(length(rv)==0){
     stop("No random effects in this submodel", call.=FALSE)
   }
 
-  Groups <- lapply(1:length(rv$cnms), function(x){
-                  gn <- names(rv$cnms)[x]
-                  rep(gn, rv$n_levels[[gn]])
+  gname <- rep(names(rv$cnms), sapply(rv$cnms, length))
+
+  Groups <- lapply(1:length(gname), function(x){
+                  rep(gname[x], rv$n_levels[[gname[x]]])
           })
   Groups <- do.call(c, Groups)
 
-  Name <-  lapply(1:length(rv$cnms), function(x){
-                  gn <- names(rv$cnms)[x]
-                  var <- rv$cnms[[x]]
-                  rep(var, rv$n_levels[[gn]])
+  Name <- unlist(rv$cnms)
+
+  Name <-  lapply(1:length(Name), function(x){
+                  rep(Name[x], rv$n_levels[[gname[x]]])
           })
   Name <- do.call(c, Name)
 
   rv_idx <- !1:length(object@estimates) %in% object@fixed
   b_var <- object@estimates[rv_idx]
   b_se <- sqrt(diag(object@covMat[rv_idx,rv_idx,drop=FALSE]))
+
+  if(addMean){
+    #b_se <- rep(NA, length(b_var)) 
+    fixed <- object@estimates[!rv_idx]
+
+    for (i in unique(Name)){
+      if(is.na(fixed[i])) next
+      b_var[Name == i] <- b_var[Name == i] + fixed[i] 
+      
+      # Calculate SE of sum
+      fixed_ind <- which(names(fixed) == i)
+      rand_inds <- which(Name == i) + length(fixed)
+      var_fixed <- object@covMat[fixed_ind, fixed_ind]
+      vars_rand <- diag(object@covMat[rand_inds, rand_inds,drop=FALSE])
+      covvar <- object@covMat[fixed_ind, rand_inds]
+      b_se[Name == i] <- sqrt(var_fixed + vars_rand + 2 * covvar)      
+    }
+    
+  }
 
   z <- qnorm((1-level)/2, lower.tail = FALSE)
   lower <- b_var - z*b_se
@@ -281,10 +332,10 @@ setMethod("randomTerms", "unmarkedEstimate", function(object, level=0.95, ...){
 })
 
 
-setMethod("randomTerms", "unmarkedFit", function(object, type, level=0.95, ...){
+setMethod("randomTerms", "unmarkedFit", function(object, type, level=0.95, addMean = FALSE, ...){
 
   if(!missing(type)){
-    return(randomTerms(object[type], level))
+    return(randomTerms(object[type], level, addMean))
   }
 
   has_random <- sapply(object@estimates@estimates,
@@ -293,7 +344,7 @@ setMethod("randomTerms", "unmarkedFit", function(object, type, level=0.95, ...){
     stop("No random effects in this model", call.=FALSE)
   }
   keep <- object@estimates@estimates[has_random]
-  out <- lapply(keep, randomTerms, level=level)
+  out <- lapply(keep, randomTerms, level=level, addMean=addMean)
   out <- do.call(rbind, out)
   rownames(out) <- NULL
   out
@@ -302,7 +353,7 @@ setMethod("randomTerms", "unmarkedFit", function(object, type, level=0.95, ...){
 get_ranef_inputs <- function(forms, datalist, dms, Zs){
   stopifnot(!is.null(names(datalist)))
   mods <- names(datalist)
-  ngv <- lapply(forms, get_group_vars)
+  ngv <- mapply(get_group_vars, forms, datalist)
   names(ngv) <- paste0("n_group_vars_",mods)
   ngroup <- mapply(get_nrandom, forms, datalist, SIMPLIFY=FALSE)
   names(ngroup) <- paste0("n_grouplevels_",mods)
@@ -343,7 +394,7 @@ add_covariates <- function(covs_long, covs_short, n){
 
   rep_idx <- rep(1:nrow(covs_short), each=exp_factor)
 
-  to_add <- covs_short[rep_idx, ]
+  to_add <- covs_short[rep_idx, ,drop=FALSE]
   stopifnot(nrow(covs_long) == nrow(to_add))
 
   cbind(covs_long, to_add)

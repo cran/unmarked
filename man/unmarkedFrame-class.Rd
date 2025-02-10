@@ -2,14 +2,10 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{unmarkedFrame-class}
-\alias{coordinates,unmarkedFrame-method}
-\alias{coordinates}
-\alias{coords}
 \alias{getY}
 \alias{getY,unmarkedFrame-method}
 \alias{head,unmarkedFrame-method}
 \alias{hist,unmarkedFrameDS-method}
-\alias{mapInfo}
 \alias{numSites}
 \alias{numSites,unmarkedFrame-method}
 \alias{numY}
@@ -27,26 +23,11 @@
 \alias{plot,unmarkedFrame,missing-method}
 \alias{plot,unmarkedFrameOccuMulti,missing-method}
 \alias{plot,unmarkedFrameOccuTTD,missing-method}
-\alias{projection,unmarkedFrame-method}
-\alias{projection}
+\alias{plot,unmarkedFrameOccuComm,missing-method}
 \alias{siteCovs,unmarkedFrame-method}
 \alias{siteCovs<-,unmarkedFrame-method}
 \alias{siteCovs}
 \alias{siteCovs<-}
-\alias{unmarkedFrameOccu-class}
-\alias{unmarkedFrameOccuMulti-class}
-\alias{unmarkedFrameOccuMS-class}
-\alias{unmarkedFrameOccuTTD-class}
-\alias{unmarkedFrameMPois-class}
-\alias{unmarkedFramePCount-class}
-\alias{unmarkedFrameDS-class}
-\alias{unmarkedMultFrame-class}
-\alias{unmarkedFramePCO-class}
-\alias{unmarkedFrameGMM-class}
-\alias{unmarkedFrameGDS-class}
-\alias{unmarkedFrameGPC-class}
-\alias{unmarkedFrameDSO-class}
-\alias{unmarkedFrameMMO-class}
 \alias{show,unmarkedFrame-method}
 \alias{show,unmarkedFrameOccuMulti-method}
 \alias{show,unmarkedFrameOccuTTD-method}
@@ -58,6 +39,7 @@
 \alias{summary,unmarkedFrameOccuMulti-method}
 \alias{summary,unmarkedFrameOccuTTD-method}
 \alias{summary,unmarkedFrameOccuCOP-method}
+\alias{summary,unmarkedFrameOccuComm-method}
 \alias{[,unmarkedFrameOccuMulti,missing,numeric,missing-method}
 \alias{[,unmarkedFrameOccuTTD,missing,numeric,missing-method}
 \alias{[,unmarkedFrameGDR,missing,numeric,missing-method}
@@ -65,11 +47,13 @@
 \alias{[,unmarkedFrameOccuTTD,numeric,missing,missing-method}
 \alias{[,unmarkedFrameOccuMulti,numeric,missing,missing-method}
 \alias{[,unmarkedFrameDSO,numeric,missing,missing-method}
+\alias{[,unmarkedFrameMMO,numeric,missing,missing-method}
 \alias{[,unmarkedFrameGDR,numeric,missing,missing-method}
 \alias{[,unmarkedFrameGDR,logical,missing,missing-method}
 \alias{[,unmarkedFrameOccuCOP,missing,numeric,missing-method}
 \alias{[,unmarkedFrameOccuCOP,numeric,missing,missing-method}
 \alias{[,unmarkedFrameOccuCOP,numeric,numeric,missing-method}
+\alias{[,unmarkedFrameOccuComm,numeric,missing,missing-method}
 
 \title{Class "unmarkedFrame" }
 \description{Methods for manipulating, summarizing and viewing
@@ -84,7 +68,6 @@ argument of the fitting functions.
     \item{\code{y}:}{Object of class \code{"matrix"}}
     \item{\code{obsCovs}:}{Object of class \code{"optionalDataFrame"}}
     \item{\code{siteCovs}:}{Object of class \code{"optionalDataFrame"}}
-    \item{\code{mapInfo}:}{Object of class \code{"optionalMapInfo"}}
     \item{\code{obsToY}:}{Object of class \code{"optionalMatrix"}}
   }
 }
@@ -96,8 +79,6 @@ argument of the fitting functions.
 	"numeric", drop = "missing")}: ... }
     \item{[}{\code{signature(x = "unmarkedFrame", i = "missing", j =
 	"numeric", drop = "missing")}: ... }
-    \item{coordinates}{\code{signature(object = "unmarkedFrame")}: extract
-		coordinates }
     \item{getY}{\code{signature(object = "unmarkedFrame")}: extract y
       matrix }
     \item{numSites}{\code{signature(object = "unmarkedFrame")}: extract M }
@@ -115,8 +96,6 @@ argument of the fitting functions.
       visualize response variable.
       Takes additional argument \code{panels} which specifies how many
       panels data should be split over.}
-    \item{projection}{\code{signature(object = "unmarkedFrame")}: extract
-		projection information }
     \item{show}{\code{signature(object = "unmarkedFrame")}: view data as
 		data.frame }
     \item{siteCovs}{\code{signature(object = "unmarkedFrame")}: extract

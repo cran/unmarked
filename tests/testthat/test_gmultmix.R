@@ -51,6 +51,8 @@ test_that("unmarkedFrameGMM subset works",{
   expect_equal(class(umf1.site1)[1], "unmarkedFrameGMM")
 
   umf1.sites1and1 <- umf1[c(1,1),]
+  expect_equivalent(umf1.sites1and1[1,], umf1[1,])
+  expect_equivalent(umf1.sites1and1[2,], umf1[1,])
   umf1.obs1and2 <- umf1[,c(1,2)]
 
   expect_equivalent(dim(getY(umf1.obs1and2)), c(3,6))
@@ -67,6 +69,7 @@ test_that("unmarkedFrameGMM subset works",{
 })
 
 test_that("gmultmix removal model works",{
+  set.seed(123)
   y <- matrix(0:3, 5, 4)
   siteCovs <- data.frame(x = c(0,2,3,4,1))
   siteCovs[3,1] <- NA
@@ -126,8 +129,10 @@ test_that("gmultmix removal model works",{
                                   1.86049,9.38619), tol=1e-4)
 
   #Check methods
-  expect_warning(gp <- getP(fm_C))
-  expect_equal(dim(gp), c(4,4)) # missing site dropped
+  gp <- getP(fm_C)
+  expect_equal(dim(gp), dim(fm_C@data@y))
+  expect_equal(as.vector(gp[1:2,1:2]), c(0.2779,0.2227,0.1891,0.1700), tol=1e-4)
+  expect_true(is.na(gp[3,2]))
 
   expect_warning(pr <- predict(fm_C, 'lambda'))
   expect_equal(dim(pr), c(4,4))
@@ -136,17 +141,32 @@ test_that("gmultmix removal model works",{
   pr <- predict(fm_C, 'lambda', newdata=nd)
   expect_equal(dim(pr), c(2,4))
 
+  ft <- fitted(fm_C)
+  expect_equal(dim(ft), c(5,4))
+  expect_true(all(is.na(ft[3,]))) # missing site cov for site 3
+  expect_true(all(is.na(ft[1,3:4]))) # missing ysc for period 2 site 1
+  expect_equal(round(ft, 4)[1:2, 1:2],
+    structure(c(0.8346, 1.4128, 0.5681, 1.0784), dim = c(2L, 2L)))
+
   res <- residuals(fm_C)
   expect_equal(dim(res), dim(y))
 
-  expect_warning(r <- ranef(fm_C))
-  expect_equal(dim(r@post), c(4,24,1))
+  r <- ranef(fm_C)
+  expect_equal(dim(r@post), c(5,24,1))
+  expect_equal(bup(r), c(2.8579,6.9914,NA,14.3773,5.2012), tol=1e-4)
 
   expect_warning(s <- simulate(fm_C, 2))
   expect_equal(length(s), 2)
 
   expect_warning(pb <- parboot(fm_C, nsim=1))
+  expect_equal(pb@t.star[1,1], 8.8994, tol=1e-4)
   expect_is(pb, "parboot")
+
+  npb <- expect_warning(nonparboot(fm_C, B=2))
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 30.0654, tol=1e-4)
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   expect_error(gmultmix(~(1|dummy),~1,~1,umf))
 
@@ -180,6 +200,7 @@ test_that("gmultmix double model works",{
 
   gp <- getP(fm)
   expect_equal(dim(gp), c(nSites, 3))
+  expect_equal(gp[1,], c(0.3469,0.1651,0.1964), tol=1e-4)
 
 })
 
@@ -211,6 +232,7 @@ test_that("gmultmix dependent double model works",{
 
   gp <- getP(fm)
   expect_equal(dim(gp), c(nSites, 2))
+  expect_equal(gp[1,], c(0.5620,0.2675), tol=1e-4)
 
 })
 

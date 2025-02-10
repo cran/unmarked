@@ -16,11 +16,11 @@ head(umf)
 (fm.occu <- occu(~date ~ele + I(ele^2) + forest, umf))
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library(lattice)
-#  data(Switzerland)
-#  print(levelplot(elevation ~ x + y, Switzerland, aspect="iso",
-#                  xlab="Easting (m)", ylab="Northing (m)",
-#                  col.regions=terrain.colors(100)))
+# library(lattice)
+# data(Switzerland)
+# print(levelplot(elevation ~ x + y, Switzerland, aspect="iso",
+#                 xlab="Easting (m)", ylab="Northing (m)",
+#                 col.regions=terrain.colors(100)))
 
 ## ----echo=FALSE, fig.height=4, fig.width=5, fig.cap="Figure 1. Elevation in Switzerland"----
 if(requireNamespace("lattice", quietly = TRUE)){
@@ -35,7 +35,7 @@ if(requireNamespace("lattice", quietly = TRUE)){
 }
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library(raster)
+# library(raster)
 
 ## ----echo=FALSE---------------------------------------------------------------
 if(requireNamespace("raster", quietly = TRUE)){

@@ -30,11 +30,22 @@ test_that("unmarkedMultFrame construction works",{
                             obsCovs=list(oc=oc), numPrimary=3))
 
   plot(umf1)
+
+  # Subsetting
+  umf_sub <- umf1[2:3,]
+  expect_equal(numSites(umf_sub), 2)
+  expect_equivalent(umf_sub[1,], umf1[2,])
+  expect_equivalent(umf_sub[2,], umf1[3,])
+  umf_sub <- umf1[c(2,2,4),]
+  expect_equivalent(umf_sub[1,], umf1[2,])
+  expect_equivalent(umf_sub[2,], umf1[2,])
+  expect_equivalent(umf_sub[3,], umf1[4,])
 })
 
 
 test_that("colext model fitting works", {
 
+  set.seed(123)
   umf1 <- unmarkedMultFrame(y=y, siteCovs=sc, obsCovs=list(oc=oc),
                             yearlySiteCovs=list(ysc=ysc), numPrimary=nyr)
 
@@ -47,6 +58,11 @@ test_that("colext model fitting works", {
   fm2 <- colext(~sc1, ~1, ~1, ~1, umf1)
   expect_equivalent(coef(fm2), c(1.3423, -6.2788,-1.5831,0.1413,1.1638),
                     tol=1e-4)
+
+  ft <- fitted(fm2)
+  expect_equal(ft[1:3,1:3],
+    structure(c(0.75617, 0.71782, 0.00016, 0.75617, 0.71782, 0.00016,
+    0.35241, 0.34112, 0.12987), dim = c(3L, 3L)), tol = 1e-5)
 
   # With obs covs
   fm3 <- colext(~1, ~1, ~1, ~oc, umf1)
@@ -63,7 +79,27 @@ test_that("colext model fitting works", {
   r <- ranef(fm4)
   expect_equal(dim(r@post), c(nsites, nrep, nyr))
   expect_equal(dim(bup(r)), c(nsites, nyr))
+  expect_equal(r@post[1,1,], c(0,0,0.9865,0.99098), tol=1e-4)
 
+  # nonparboot
+  expect_true(is.null(fm4@projected.mean.bsse))
+  expect_true(is.null(fm4@smoothed.mean.bsse))
+  npb <- nonparboot(fm4, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 19.7288, tol=1e-4)
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
+  expect_is(npb@projected.mean.bsse, "matrix")
+  expect_is(npb@smoothed.mean.bsse, "matrix")
+   
+  # parboot
+  pb <- parboot(fm4, nsim=2)
+  expect_equal(pb@t.star[1,1], 10.2840, tol=1e-4)
+
+  # getP
+  gp <- getP(fm4)
+  expect_equal(dim(gp), c(6,8))
+  expect_equal(gp[1,1], 0.75089, tol=1e-4)
 })
 
 test_that("colext handles missing values",{
@@ -88,18 +124,26 @@ test_that("colext handles missing values",{
   fm3 <- colext(~1, ~1, ~1, ~1, umf4)
   expect_is(fm3, "unmarkedFitColExt")
 
-  umf5 <- umf1
-  umf5@siteCovs$sc1[1] <- NA
-  expect_warning(fm4 <- colext(~sc1, ~1, ~1, ~1, umf5))
-  expect_warning(pr <- predict(fm4, 'psi'))
-  expect_equal(nrow(pr), 5)
-
 umf5 <- umf1
+  umf5@siteCovs$sc1[2] <- NA
   umf5@obsCovs$oc[1] <- NA
-  expect_warning(fm4 <- colext(~1, ~1, ~1, ~oc, umf5))
+  expect_warning(fm4 <- colext(~sc1, ~1, ~1, ~oc, umf5))
   expect_warning(pr <- predict(fm4, 'det'))
-  expect_equal(nrow(pr), nsites*nyr*nrep)
+  expect_equal(nrow(pr), (nsites-1)*nyr*nrep)
   expect_true(all(is.na(pr[1,])))
+  ft <- fitted(fm4)
+  expect_equal(dim(ft), dim(umf5@y))
+  expect_true(is.na(ft[1,1]))
+  expect_true(all(is.na(ft[2,])))
+
+  gp <- getP(fm4)
+  expect_equal(dim(gp), dim(umf5@y))
+  expect_true(all(!is.na(gp[2,])))
+  expect_equal(as.vector(gp[1:2,1:2]), c(NA, 0.74517,0.81052,0.8001), tol=1e-4)
+
+  r <- ranef(fm4)
+  expect_true(all(is.na(r@post[fm4@sitesRemoved,,1])))
+  expect_equal(nrow(r@post), numSites(fm4@data))
 
   umf5 <- umf1
   umf5@yearlySiteCovs$ysc[1] <- NA

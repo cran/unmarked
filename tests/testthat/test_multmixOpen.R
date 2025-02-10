@@ -48,6 +48,32 @@ simData <- function(lambda=1, gamma=0.5, omega=0.8, p=0.5, M=100, T=5,
     return(list(y=matrix(y, M),N=N))
 }
 
+test_that("subsetting unmarkedFrameMMO works", {
+  set.seed(123)
+  simy <- simData(lambda=4, gamma=0.5, omega=0.8, p=0.5,
+                M=100, T=5)
+
+  sc <- data.frame(x1=rnorm(100))
+  ysc <- data.frame(x2=rnorm(100*5))
+  oc <- data.frame(x3 = rnorm(100*5*3))
+
+  umf <- unmarkedFrameMMO(y=simy$y, numPrimary=5, siteCovs=sc, yearlySiteCovs=ysc,
+                          obsCovs=oc, type='removal')
+  
+  # subset sites
+  umf_sub <- umf[2:3,]
+  expect_equal(numSites(umf_sub), 2)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[3,])
+  umf_sub <- umf[c(2,2,4),]
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[4,])
+  set.seed(123)
+  keep <- runif(numSites(umf), 0, 1) > 0.5
+  expect_error(umf_sub <- umf[keep,]) # this should work
+})
+
 test_that("multmixOpen can fit removal models",{
 
   set.seed(123)
@@ -84,6 +110,11 @@ test_that("multmixOpen can fit removal models",{
   expect_equivalent(pv[1,1:3], pv[1,4:6])
   expect_equivalent(pv[1,1:3], c(0.5086598,0.2499250,0.1227982), tol=1e-5)
 
+  # Check fitted
+  ft <- fitted(fit)
+  expect_equal(round(ft,4)[1:2,1:2],
+    structure(c(1.9329, 2.068, 0.9497, 1.018), dim = c(2L, 2L)))
+
   #Check residuals
   r <- residuals(fit)
   expect_equivalent(r[1,1:3], c(0.067122,-0.9497006,0.533337), tol=1e-4)
@@ -97,7 +128,20 @@ test_that("multmixOpen can fit removal models",{
   #Check ranef
   set.seed(123)
   ran <- ranef(fit)
+  expect_equal(nrow(ran@post), numSites(fit@data))
   expect_equivalent(bup(ran)[1,1], 3.450738, tol=1e-5)
+
+  #parboot
+  pb <- parboot(fit, nsim=2)
+  expect_equal(pb@t.star[1,1], 1552.707, tol=1e-4)
+
+  #nonparboot
+  npb <- nonparboot(fit, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 2208.432, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   #Check error when random effect in formula
   expect_error(multmixOpen(~(1|dummy), ~1, ~1, ~1, umf))
@@ -128,6 +172,17 @@ test_that("multmixOpen handles NAs",{
   expect_equivalent(coef(fit), c(1.3800182,0.0390053,
                                   -0.679937,1.398098,
                                   0.02802259,0.010705), tol=1e-4)
+
+  ft <- fitted(fit)
+  expect_equal(dim(ft), dim(umf@y))
+  expect_true(all(is.na(ft[3,]))) # missing site cov
+
+  gp <- getP(fit)
+  expect_equal(dim(gp), dim(umf@y))
+
+  r <- ranef(fit)
+  expect_equal(nrow(r@post), numSites(fit@data))
+  expect_true(all(is.na(r@post[3,,])))
 
   # Check ranef
   set.seed(123)

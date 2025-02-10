@@ -79,7 +79,7 @@ setMethod(
     
     # Occupancy submodel -------------------------------------------------------
     # Retrieve the fixed-effects part of the formula
-    psiformula <- lme4::nobars(as.formula(formlist$psiformula))
+    psiformula <- reformulas::nobars(as.formula(formlist$psiformula))
     psiVars <- all.vars(psiformula)
     
     # Retrieve the site covariates
@@ -109,7 +109,7 @@ setMethod(
     # Detection submodel -------------------------------------------------------
     
     # Retrieve the fixed-effects part of the formula
-    lambdaformula <- lme4::nobars(as.formula(formlist$lambdaformula))
+    lambdaformula <- reformulas::nobars(as.formula(formlist$lambdaformula))
     lambdaVars <- all.vars(lambdaformula)
     
     # Retrieve the observation covariates
@@ -311,8 +311,7 @@ setMethod("[", c("unmarkedFrameOccuCOP", "numeric", "numeric", "missing"),
               L = L,
               siteCovs = siteCovs,
               obsCovs = obsCovs,
-              obsToY = diag(length(j)),
-              mapInfo = x@mapInfo
+              obsToY = diag(length(j))
             )
           })
 
@@ -366,25 +365,22 @@ setMethod("get_orig_data", "unmarkedFitOccuCOP", function(object, type, ...){
 
 
 ## getP ----
-setMethod("getP", "unmarkedFitOccuCOP", function(object, na.rm = TRUE) {
+setMethod("getP_internal", "unmarkedFitOccuCOP", function(object) {
   data <- object@data
   M = nrow(getY(data))
   J = ncol(getY(data))
-  des <- getDesign(data, object@formlist, na.rm = na.rm)
-  matLambda =  do.call(object["lambda"]@invlink, 
-                       list(matrix(
-                         as.numeric(des$Xlambda %*% coef(object, 'lambda')),
-                         nrow = M, ncol = J, byrow = T)))
-  return(matLambda)
+  lam <- predict(object, type="lambda", level=NULL, na.rm=FALSE)$Predicted
+  lam <- matrix(lam, M, J, byrow=TRUE)
+  lam
 })
 
 
 ## fitted ----
-setMethod("fitted", "unmarkedFitOccuCOP", function(object, na.rm = FALSE) {
+setMethod("fitted_internal", "unmarkedFitOccuCOP", function(object) {
   data <- object@data
   M = nrow(getY(data))
   J = ncol(getY(data))
-  des <- getDesign(data, object@formlist, na.rm = na.rm)
+  des <- getDesign(data, object@formlist, na.rm = FALSE)
   estim_psi = as.numeric(do.call(object["psi"]@invlink,
                                  list(as.matrix(des$Xpsi %*% coef(object, 'psi')))))
   estim_lambda = do.call(object["lambda"]@invlink, 
@@ -395,17 +391,8 @@ setMethod("fitted", "unmarkedFitOccuCOP", function(object, na.rm = FALSE) {
 })
 
 
-## residuals ----
-setMethod("residuals", "unmarkedFitOccuCOP", function(object) {
-  y <- getY(object@data)
-  e <- fitted(object)
-  r <- y - e
-  return(r)
-})
-
-
 ## plot ----
-setMethod("plot", c(x = "unmarkedFitOccuCOP", y = "missing"), function(x, y, ...) {
+setMethod("residual_plot", "unmarkedFitOccuCOP", function(x, ...) {
   y <- getY(x)
   r <- residuals(x)
   e <- fitted(x)
@@ -432,50 +419,15 @@ setMethod("plot", c(x = "unmarkedFitOccuCOP", y = "missing"), function(x, y, ...
 })
 
 
-## get_umf_components ----
-setMethod("get_umf_components", "unmarkedFitOccuCOP",
-  function(object, formulas, guide, design, ...){
-    sc <- generate_data(formulas$psi, guide, design$M)
-    oc <- generate_data(formulas$lambda, guide, design$J*design$M)
-    yblank <- matrix(0, design$M, design$J)
-    list(y=yblank, siteCovs=sc, obsCovs=oc)
-})
-
-
-## simulate_fit ----
-setMethod("simulate_fit", "unmarkedFitOccuCOP",
-  function(object, formulas, guide, design, ...){
-    # Generate covariates and create a y matrix of zeros
-    parts <- get_umf_components(object, formulas, guide, design, ...)
-    umf <- unmarkedFrameOccuCOP(y = parts$y, siteCovs = parts$siteCovs, obsCovs=parts$obsCovs)
-    fit <- suppressMessages(
-      occuCOP(
-        data = umf,
-        psiformula = formula(formulas$psi),
-        lambdaformula = formula(formulas$lambda),
-        se = FALSE,
-        control = list(maxit = 1)
-      )
-    )
-    return(fit)
-})
-
-
 ## simulate ----
-setMethod("simulate", "unmarkedFitOccuCOP",
-  function(object, nsim = 1, seed = NULL, na.rm = TRUE){
-  # set.seed(seed) 
-  # Purposefully not implemented
-  formula <- object@formula
-  umf <- object@data
-  designMats <- getDesign(umf = umf, formlist = object@formlist, na.rm = na.rm)
-  y <- designMats$y
+setMethod("simulate_internal", "unmarkedFitOccuCOP",
+  function(object, nsim){
+  y <- object@data@y
   M <- nrow(y)
   J <- ncol(y)
   
   # Occupancy probability psi depending on the site covariates
-  psiParms = coef(object, type = "psi", fixedOnly = FALSE)
-  psi <- as.numeric(plogis(as.matrix(designMats$Xpsi %*% psiParms)))
+  psi <- predict(object, type = "psi", level = NULL, na.rm=FALSE)$Predicted
   
   # Detection rate lambda depending on the observation covariates
   lambda = getP(object = object)
@@ -485,6 +437,7 @@ setMethod("simulate", "unmarkedFitOccuCOP",
   for(i in 1:nsim) {
     Z <- rbinom(M, 1, psi)
     # Z[object@knownOcc] <- 1
+    # TODO: should Z be replicated J times here?
     y = matrix(rpois(n = M * J, lambda = as.numeric(t(lambda))),
                nrow = M, ncol = J, byrow = T) * Z
     simList[[i]] <- y
@@ -492,16 +445,20 @@ setMethod("simulate", "unmarkedFitOccuCOP",
   return(simList)
 })
 
+setMethod("get_fitting_function", "unmarkedFrameOccuCOP",
+          function(object, model, ...){
+  occuCOP
+})
 
 ## nonparboot ----
-setMethod("nonparboot", "unmarkedFitOccuCOP",
-  function(object, B = 0, keepOldSamples = TRUE, ...) {
+setMethod("nonparboot_internal", "unmarkedFitOccuCOP",
+  function(object, B, keepOldSamples) {
   stop("Not currently supported for unmarkedFitOccuCOP", call.=FALSE)
 })
 
 
 ## ranef ----
-setMethod("ranef", "unmarkedFitOccuCOP", function(object, ...) {
+setMethod("ranef_internal", "unmarkedFitOccuCOP", function(object, ...) {
   # Sites removed (srm) and sites kept (sk)
   srm <- object@sitesRemoved
   if (length(srm) > 0) {
@@ -545,6 +502,14 @@ setMethod("ranef", "unmarkedFitOccuCOP", function(object, ...) {
   new("unmarkedRanef", post = post)
 })
 
+
+# Used by update() method
+setMethod("rebuild_call", "unmarkedFitOccuCOP", function(object){ 
+  cl <- methods::callNextMethod(object)
+  cl[["psiformula"]] <- object@formlist$psiformula
+  cl[["lambdaformula"]] <- object@formlist$lambdaformula
+  cl
+})
 
 # Useful functions -------------------------------------------------------------
 

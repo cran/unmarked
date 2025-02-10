@@ -69,7 +69,7 @@ powerAnalysis_internal <- function(object, model, data_sims,
     parallel::clusterEvalQ(cl, library(unmarked))
   }
   
-  sum_dfs <- pbapply::pblapply(data_sims, function(x){
+  sum_dfs <- lapply2(data_sims, function(x){
               fit <- fun(..., data = x)
           }, cl=cl)
   sum_dfs <- lapply(sum_dfs, get_summary_df, effects=effects, nulls=nulls)
@@ -99,7 +99,7 @@ get_summary_df <- function(fit, effects, nulls){
   # Remove random effects from output list
   effects <- check_coefs(effects, fit, quiet=TRUE)
   rvars <- sapply(names(fit), function(x){
-                       bars <- lme4::findbars(get_formula(fit, x))
+                       bars <- reformulas::findbars(get_formula(fit, x))
                        all.vars(bars[[1]])
                       })
 

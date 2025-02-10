@@ -40,6 +40,10 @@ test_that("distsamp works with covariates", {
         dist.breaks=c(0, 5, 10)/1000, survey="line", tlength=rep(1, 5),
         unitsIn="km")
   fm <- distsamp(~ x ~ x, data = umf)
+  
+  # Check summary returns an object
+  nul <- capture.output(s <- summary(fm))
+  expect_is(s, "list")
 
   lam <- fm['state']
   det <- fm['det']
@@ -56,6 +60,10 @@ test_that("distsamp works with covariates", {
   expect_equivalent(coef(backTransform(lam.lc)), 3.365655, tol = 1e-4)
   expect_equivalent(coef(backTransform(det.lc)), 0.007957658, tol = 1e-4)
 
+  ft <- fitted(fm)
+  expect_equal(round(ft,4)[1:2,1:2],
+              structure(c(4.0133, 3.1567, 3.077, 2.1544), dim = c(2L, 2L)))
+  expect_equal(dim(ft), c(5,2))               
 })
 
 test_that("distsamp methods work",{
@@ -77,6 +85,15 @@ test_that("distsamp methods work",{
   pr <- predict(fm, 'state', newdata=nd)
   expect_equal(dim(pr), c(2,4))
 
+  ft <- fitted(fm)
+  expect_equal(round(ft,4)[1:2,1:2],
+              structure(c(4.0133, 3.1567, 3.077, 2.1544), dim = c(2L, 2L)))
+  expect_equal(dim(ft), c(5,2))
+
+  gp <- getP(fm)
+  expect_equal(as.vector(gp[1:2,1:2]), c(0.4782,0.4689,0.3667,0.3201), tol=1e-4)
+  expect_equal(dim(gp), c(5,2))     
+
   res <- residuals(fm)
   expect_equal(dim(res), dim(y))
   expect_equal(res[1,1], -0.01333, tol=1e-4)
@@ -84,12 +101,38 @@ test_that("distsamp methods work",{
   r <- ranef(fm, K=50)
   expect_is(r, "unmarkedRanef")
   expect_equal(dim(r@post), c(5,51,1))
+  expect_equivalent(r@post[2,4,1], 0.24167, tol=1e-4)
 
   expect_error(hist(fm))
 
   pdf(NULL)
   plot(fm)
   dev.off()
+})
+
+test_that("distsamp works with missing values",{
+
+  yna <- y
+  yna[1,1] <- NA
+  siteCovs$x[2] <- NA
+  yna[3,] <- NA
+  umf <- unmarkedFrameDS(y = yna, siteCovs = siteCovs,
+        dist.breaks=c(0, 5, 10)/1000, survey="line", tlength=rep(1, 5),
+        unitsIn="km")
+
+  fm <- suppressWarnings(distsamp(~ x ~ x, data = umf))
+
+  ft <- fitted(fm)
+  expect_equal(dim(ft), c(5,2))
+  expect_true(all(is.na(ft[2,])))
+
+  gp <- getP(fm)
+  expect_equal(dim(gp), c(5,2))
+  expect_true(all(is.na(gp[2,])))
+
+  r <- ranef(fm, K=15)
+  expect_equal(numSites(fm@data), nrow(r@post))
+  expect_true(all(is.na(r@post[1:3,,1])))
 })
 
 test_that("distsamp ranef method works",{
@@ -153,6 +196,8 @@ test_that("distsamp line keyfunctions work",{
     expect_equivalent(SE(D), 9.446125, tol=1e-4)
     expect_equivalent(coef(S), 18.15386, tol=1e-4)
     expect_equivalent(SE(S), 2.893362, tol=1e-4)
+    gp <- getP(fm.halfnorm)
+    expect_equal(gp[1,], c(0.149320,0.52341,0.09922,0.05783), tol=1e-5)
 
     fm.exp <- distsamp(~1~1, umf, keyfun="exp", starts=c(4, 0))
     D <- backTransform(fm.exp, type="state")
@@ -161,21 +206,29 @@ test_that("distsamp line keyfunctions work",{
     expect_equivalent(SE(D), 14.31655, tol=1e-4)
     expect_equivalent(coef(S), 31.75738, tol=1e-4)
     expect_equivalent(SE(S), 9.711254, tol=1e-4)
+    gp <- getP(fm.exp)
+    expect_equal(gp[1,], c(0.143133,0.45462,0.089250,0.054984), tol=1e-5)
 
     fm.haz <- distsamp(~1~1, umf, keyfun="hazard", starts=c(4, 3, 1))
     D <- backTransform(fm.haz, type="state")
     Sh <- backTransform(fm.haz, type="det")
     Sc <- backTransform(fm.haz, type="scale")
+    pr <- predict(fm.haz, type='scale')$Predicted[1] # make sure predict works with scale
+    expect_equal(Sc@estimate, pr) 
     expect_equivalent(coef(D), 137.0375, tol=1e-4)
     expect_equivalent(SE(D), 16.82505, tol=1e-4)
     expect_equivalent(coef(Sh), 15.90262, tol=1e-4)
     expect_equivalent(SE(Sh), 5.099981, tol=1e-4)
     expect_equivalent(coef(Sc), 0.8315524, tol=1e-4)
     expect_equivalent(SE(Sc), 0.4753275, tol=1e-4)
+    gp <- getP(fm.haz)
+    expect_equal(gp[1,], c(0.149442,0.48402,0.09319,0.05780), tol=1e-5)
 
     fm.unif <- distsamp(~1~1, umf, keyfun="uniform")
     D <- backTransform(fm.unif, type="state")
     expect_equivalent(coef(D), 107.5000, tol=1e-4)
+    gp <- getP(fm.unif)
+    expect_equal(gp[1,], c(0.15,0.6,0.15,0.1), tol=1e-5)
 
     expect_equivalent(coef(fm.halfnorm),
                        coef(update(fm.halfnorm, engine="R")))
@@ -205,6 +258,8 @@ test_that("distsamp point keyfunctions work",{
     expect_equivalent(SE(D), 37.08797, tol=1e-4)
     expect_equivalent(coef(S), 18.05958, tol=1e-4)
     expect_equivalent(SE(S), 3.341798, tol=1e-4)
+    gp <- getP(fm.halfnorm)
+    expect_equal(gp[1,], c(0.022345,0.45339,0.16264,0.10913), tol=1e-5)
 
     fm.exp <- distsamp(~1~1, umf, keyfun="exp", starts=c(6, 0))
     D <- backTransform(fm.exp, type="state")
@@ -213,6 +268,8 @@ test_that("distsamp point keyfunctions work",{
     expect_equivalent(SE(D), 68.11901, tol=1e-4)
     expect_equivalent(coef(S), 28.90848, tol=1e-4)
     expect_equivalent(SE(S), 11.66219, tol=1e-4)
+    gp <- getP(fm.exp)
+    expect_equal(gp[1,], c(0.021002,0.38007,0.13970,0.098437), tol=1e-5)
 
     fm.haz <- distsamp(~1~1, umf, keyfun="hazard", starts=c(5, 3, 1))
     D <- backTransform(fm.haz, type="state")
@@ -224,10 +281,14 @@ test_that("distsamp point keyfunctions work",{
     expect_equivalent(SE(Sh), 0.8950444, tol=1e-4)
     expect_equivalent(coef(Sc), 5.797366, tol=1e-4)
     expect_equivalent(SE(Sc), 4.054381, tol=1e-4)
+    gp <- getP(fm.haz)
+    expect_equal(gp[1,], c(0.02250,0.53885,0.21242,0.11342), tol=1e-5)
 
     fm.unif <- distsamp(~1~1, umf, keyfun="uniform")
     D <- backTransform(fm.unif, type="state")
     expect_equivalent(coef(D), 236.3451, tol=1e-4)
+    gp <- getP(fm.unif)
+    expect_equal(gp[1,], c(0.0225,0.540,0.2475,0.190))
 
     expect_equivalent(coef(fm.halfnorm),
                        coef(update(fm.halfnorm, engine="R")))

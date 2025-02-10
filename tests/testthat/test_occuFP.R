@@ -2,6 +2,7 @@ context("occuFP fitting function")
 skip_on_cran()
 
 test_that("occuFP model can be fit",{
+  set.seed(123)
   n = 100
   o = 10
   o1 = 5
@@ -28,6 +29,31 @@ test_that("occuFP model can be fit",{
 
   pr <- predict(m1, "fp")
   expect_equal(dim(pr), c(1000, 4))
+
+  # Check update
+  new_fit <- update(m1, stateformula=~1, data=umf1[1:10,])
+  expect_equal(length(coef(new_fit, "state")), 1)
+  expect_equal(nrow(new_fit@data@y), 10)
+
+  # Check parboot (SSE doesn't work)
+  pb <- parboot(new_fit, statistic=function(x) x@AIC, nsim=2)
+  expect_equal(pb@t.star[1,1], 109.8942, tol=1e-4)
+
+  # Nonparboot
+  npb <- nonparboot(new_fit, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 136.29, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
+
+  # getP
+  gp <- getP(m1)
+  expect_equal(dim(gp), dim(m1@data@y))
+  expect_equal(as.vector(gp[5:6, 5:6]), c(0.4513,0.4513,0.7232,0.7232), tol=1e-4)
+
+  # ranef
+  expect_error(r <- ranef(m1))
 
   # Check error when random effect in formula
   expect_error(occuFP(~(1|dummy), ~1, ~1, data=umf1))

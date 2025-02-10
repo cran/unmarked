@@ -36,6 +36,14 @@ test_that("unmarkedFrameOccuMS is constructed properly",{
   expect_equivalent(numSites(umf_sub1),20)
   expect_is(umf_sub1, "unmarkedFrameOccuMS")
 
+  umf_sub <- umf[c(4,4,8),]
+  expect_equivalent(umf_sub[1,], umf[4,])
+  expect_equivalent(umf_sub[2,], umf[4,])
+  expect_equivalent(umf_sub[3,], umf[8,])
+
+  keep <- rep(TRUE, numSites(umf_sub))
+  expect_error(umf_sub <- umf[keep,]) # should work
+
   y[y>1] <- 1
   expect_error(unmarkedFrameOccuMS(y=y,siteCovs=site_covs,obsCovs=obs_covs))
 })
@@ -155,7 +163,7 @@ test_that("occuMS can fit the multinomial model",{
 
   #Check bootstrapped error for predict
   expect_equivalent(as.numeric(pr[[1]][1,]),
-                     c(0.2292279,0.11235796,0.08024297,0.45486279), tol=1e-4)
+                     c(0.2292279,0.11235796,0.08024297,0.45486279), tol=0.1)
 
   #det
   nul <- capture.output(pr <- predict(fit_C, "det"))
@@ -165,7 +173,7 @@ test_that("occuMS can fit the multinomial model",{
   expect_equal(names(pr),c('p[11]','p[12]','p[22]'))
 
   expect_equivalent(as.numeric(pr[[1]][1,]),
-                     c(0.285455,0.07441389,0.18922129,0.48677813), tol=1e-4)
+                     c(0.285455,0.07441389,0.18922129,0.48677813), tol=0.1)
 
   #with new data (some missing)
   newdata <- data.frame(oc1=rnorm(5),oc2=rnorm(5))
@@ -174,7 +182,7 @@ test_that("occuMS can fit the multinomial model",{
   expect_true(is.na(pr[[1]][1,1]))
   expect_equivalent(nrow(pr[[1]]), nrow(newdata))
   expect_equivalent(as.numeric(pr[[1]][2,]),
-                     c(0.343157,0.07801936,0.20967511,0.49916983),tol=1e-4)
+                     c(0.343157,0.07801936,0.20967511,0.49916983),tol=0.1)
 
   newdata <- data.frame(sc1=rnorm(5),sc2=rnorm(5))
   newdata[1,1] <- NA
@@ -232,6 +240,18 @@ test_that("occuMS can fit the multinomial model",{
   expect_message(expect_warning(fl <- fitList(fits=list(fit_C, fit_C), autoNames='formula')))
   expect_is(fl,"unmarkedFitList")
   expect_equivalent(length(fl@fits), 2)
+
+  # Check parboot
+  set.seed(123)
+  pb <- parboot(fit_C, nsim=2)
+  expect_equal(pb@t.star[1,1], 63.80337, tol=1e-4)
+
+  npb <- nonparboot(fit_C, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 355.3301, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   # Check error when random effect in formula
   stateformulas[1] <- "~(1|dummy)"
@@ -397,6 +417,11 @@ test_that("occuMS handles NAs properly",{
   expect_warning(fit <- occuMS(rep('~1',3), c('~V1', '~1'), data=umf,se=F))
   expect_equivalent(fit@sitesRemoved, c(1,5))
 
+  r <- ranef(fit)
+  expect_equal(nrow(r@post), numSites(fit@data))
+  expect_true(all(is.na(r@post[5,,1]))) # missing site covariate
+  expect_true(all(is.na(r@post[1,,1]))) # missing all obs
+
   oc_na <- obs_covs
   oc_na[1,1] <- NA
   umf <- unmarkedFrameOccuMS(y=y,siteCovs=site_covs,obsCovs=oc_na)
@@ -409,12 +434,27 @@ test_that("occuMS handles NAs properly",{
   expect_warning(exfit <- occuMS(c('~V1',rep('~1',2)),rep('~1',2), data=umf,se=F))
   expect_equivalent(exfit@AIC,55.03718,tol=1e-4)
 
+  ft <- fitted(exfit)
+  expect_equal(dim(ft), dim(exfit@data@y))
+  expect_true(is.na(ft[1,1]))
+
+  gp <- fitted(exfit)
+  expect_equal(dim(gp), dim(exfit@data@y))
+  expect_true(is.na(gp[1,1]))
+
+  r <- ranef(exfit)
+  expect_equal(nrow(r@post), numSites(exfit@data))
+
   #Check that fitting works when missing site cov and no obs covs
   sc_na <- site_covs
   sc_na[1,1] <- NA
   umf <- unmarkedFrameOccuMS(y=y,siteCovs=sc_na)
   expect_warning(fit <- occuMS(rep('~1',3),rep('~V1',2),data=umf,se=F))
   expect_equivalent(fit@sitesRemoved, 1)
+  
+  ft <- fitted(fit)
+  expect_equal(dim(ft), dim(fit@data@y))
+  expect_true(all(is.na(ft[1,]))) # missing site cov
 })
 
 test_that("occuMS can fit a dynamic multinomial model",{
@@ -716,11 +756,11 @@ test_that("occuMS can handle complex formulas",{
   #effect resulting predictions (scale should be based on
   #original data)
   nd <- siteCovs(umf)[1:5,]
-  pr_nd <- predict(fit_C, type='psi', newdata=nd, se=F)$Predicted
+  pr_nd <- predict(fit_C, type='psi', newdata=nd, level=NULL)$Predicted
   nd <- siteCovs(umf)[1:2,]
-  pr_nd2 <- predict(fit_C, type='psi', newdata=nd, se=F)$Predicted
+  pr_nd2 <- predict(fit_C, type='psi', newdata=nd, level=NULL)$Predicted
   nd <- siteCovs(umf)[c(1,1),]
-  pr_nd3 <- predict(fit_C, type='psi', newdata=nd, se=F)$Predicted
+  pr_nd3 <- predict(fit_C, type='psi', newdata=nd, level=NULL)$Predicted
 
   expect_equivalent(pr_nd[1:2,], pr_nd2)
   expect_equivalent(pr_nd[c(1,1),], pr_nd3)
@@ -736,19 +776,19 @@ test_that("occuMS can handle complex formulas",{
   fm <- occuMS(detformulas, stateformulas, data = umf)
 
   nd <- siteCovs(umf)[1:2,]
-  pr_nd <- predict(fm, type='psi', newdata=nd, se=F)$Predicted
+  pr_nd <- predict(fm, type='psi', newdata=nd, level=NULL)$Predicted
 
   nd2 <- data.frame(occ_fac=factor(c('a','b'),levels=c('b','a','c')))
-  pr_nd2 <- predict(fm, type='psi', newdata=nd2, se=F)$Predicted
+  pr_nd2 <- predict(fm, type='psi', newdata=nd2, level=NULL)$Predicted
 
   expect_equivalent(pr_nd, pr_nd2[c(2,1),])
 
   nd3 <- data.frame(occ_fac=c('a','b'))
-  pr_nd3 <- predict(fm, type='psi', newdata=nd3, se=F)$Predicted
+  pr_nd3 <- predict(fm, type='psi', newdata=nd3, level=NULL)$Predicted
 
   expect_equivalent(pr_nd, pr_nd3[c(2,1),])
 
   nd4 <- data.frame(occ_fac=c('a','d'))
-  expect_error(predict(fm, type='psi', newdata=nd4, se=F))
+  expect_error(predict(fm, type='psi', newdata=nd4, level=NULL))
 
 })

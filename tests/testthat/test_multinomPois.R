@@ -42,12 +42,19 @@ test_that("unmarkedFrameMPois can be constructed",{
     expect_error(unmarkedFrameMPois(y=y, siteCovs=sc,
                                obsCovs=lapply(oc, function(x) x[,1:2]),
                                type="depDouble"))
-
-
+    # subset sites
+    umf_sub <- umf3[2:3,]
+    expect_equal(numSites(umf_sub), 2)
+    expect_equivalent(umf_sub[1,], umf3[2,])
+    expect_equivalent(umf_sub[2,], umf3[3,])
+    umf_sub <- umf3[c(2,2,4),]
+    expect_equivalent(umf_sub[1,], umf3[2,])
+    expect_equivalent(umf_sub[2,], umf3[2,])
+    expect_equivalent(umf_sub[3,], umf3[4,])
 })
 
 test_that("multinomPois can fit a removal model",{
-
+    set.seed(123)
     y <- matrix(c(
         5, 3, 2,
         3, 3, 1,
@@ -85,9 +92,11 @@ test_that("multinomPois can fit a removal model",{
     #checkEqualsNumeric(coef(m3_R),coef(m3_C), tol=1e-5)
 
     # check methods
-    expect_warning(gp <- getP(m2_C))
-    expect_equal(dim(gp), c(3,3))
-    expect_equal(gp[1,1], 0.51101, tol=1e-4)
+    gp <- getP(m2_C)
+    expect_equal(dim(gp), dim(m2_C@data@y))
+    expect_equal(as.vector(gp[1:2, 1:2]), c(0.5110,0.4213,0.2499,NA), tol=1e-4)
+    expect_true(all(is.na(gp[4,])))
+    expect_true(all(is.na(gp[5,])))
 
     expect_warning(pr <- predict(m2_C, 'state'))
     expect_equal(dim(pr), c(3,4))
@@ -98,12 +107,19 @@ test_that("multinomPois can fit a removal model",{
     expect_equal(dim(pr), c(2,4))
     expect_equal(pr[1,1], 0.55598, tol=1e-4)
 
+    ft <- fitted(m3_C)
+    expect_equal(dim(ft), dim(m3_C@data@y))
+    expect_equal(round(ft,4)[1:2,1:2],
+      structure(c(NA, 2.9967, NA, NA), dim = c(2L, 2L)))
+    expect_true(all(is.na(ft[2,2:3]))) # missing obs covs
+    expect_true(all(is.na(ft[1,]))) # missing site covs
+
     res <- residuals(m2_C)
     expect_equal(dim(res), dim(umf1@y))
 
     expect_warning(r <- ranef(m2_C, K=50))
-    expect_equal(dim(r@post), c(3,51,1))
-    expect_equal(bup(r), c(10.794,6.9317,2.655), tol=1e-4)
+    expect_equal(dim(r@post), c(numSites(m2_C@data),51,1))
+    expect_equal(bup(r), c(10.794,6.9317,2.655,NA,NA), tol=1e-4)
 
     umf2 <- unmarkedFrameMPois(y=y, siteCovs=data.frame(x1=rnorm(5)), type="removal")
     m4 <- multinomPois(~1~x1, umf2)
@@ -117,6 +133,14 @@ test_that("multinomPois can fit a removal model",{
 
     expect_warning(pb <- parboot(m2_C, nsim=1))
     expect_is(pb, "parboot")
+    expect_equal(pb@t.star[1,1], 5.2789, tol=1e-4)
+
+    npb <- expect_warning(nonparboot(m2_C, B=2))
+    expect_equal(length(npb@bootstrapSamples), 2)
+    expect_equal(npb@bootstrapSamples[[1]]@AIC, 30.45706, tol=1e-4)
+    expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+    v <- vcov(npb, method='nonparboot')
+    expect_equal(nrow(v), length(coef(npb)))
 })
 
 test_that("multinomPois can fit a double observer model",{
@@ -162,7 +186,7 @@ test_that("multinomPois can fit a dependent double observer model",{
 
   fm_C <- multinomPois(~observer-1 ~1, umf, engine="C")
   expect_equivalent(coef(fm_C), c(2.0416086, 0.7430343, 0.4564236), tol = 1e-5)
-  expect_warning(r <- ranef(fm_C, K=30))
+  r <- ranef(fm_C, K=30)
   expect_is(r, "unmarkedRanef")
 })
 

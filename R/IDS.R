@@ -97,8 +97,11 @@ IDS <- function(lambdaformula = ~1,
   stopifnot(is.null(durationOC) || (length(durationOC) == numSites(dataOC)))
   surveyDurations <- list(ds=durationDS, pc=durationPC, oc=durationOC)
 
-  stopifnot(keyfun %in% c("halfnorm", "exp"))
-  keyidx <- switch(keyfun, "halfnorm"={1}, "exp"={2})
+  stopifnot(keyfun %in% c("halfnorm", "exp", "hazard"))
+  if(keyfun == "hazard"){
+    warning("Support for hazard key function is experimental and may yield poor estimates.", call.=FALSE)
+  }
+  keyidx <- switch(keyfun, "halfnorm"={1}, "exp"={2}, "hazard"={3})
 
   if(missing(maxDistPC)) maxDistPC <- max(dataDS@dist.breaks)
   if(missing(maxDistOC)) maxDistOC <- max(dataDS@dist.breaks)
@@ -153,8 +156,7 @@ IDS <- function(lambdaformula = ~1,
     kmsq = lam_adjust <- lam_adjust)
 
   # Parameter stuff------------------------------------------------------------
-  # Doesn't support hazard
-  pind_mat <- matrix(0, nrow=5, ncol=2)
+  pind_mat <- matrix(0, nrow=8, ncol=2)
   pind_mat[1,] <- c(1, ncol(gd_hds$X))
   pind_mat[2,] <- max(pind_mat) + c(1, ncol(gd_hds$V))
   if(!is.null(detformulaPC) & !is.null(dataPC)){
@@ -166,6 +168,16 @@ IDS <- function(lambdaformula = ~1,
   if(has_avail){
     pind_mat[5,] <- max(pind_mat) + c(1, ncol(Xavail_ds))
   }
+  # Hazard-rate scale parameter(s)
+  if(keyfun == "hazard"){
+    pind_mat[6,] <- max(pind_mat) + 1
+    if(!is.null(detformulaPC) & !is.null(dataPC)){
+      pind_mat[7,] <- max(pind_mat) + 1
+    }
+    if(!is.null(detformulaOC) & !is.null(dataOC)){
+      pind_mat[8,] <- max(pind_mat) + 1
+    }
+  }
 
   if(is.null(starts)){
     lam_init <- log(mean(apply(dataDS@y, 1, sum, na.rm=TRUE)) / lam_adjust[1])
@@ -173,13 +185,20 @@ IDS <- function(lambdaformula = ~1,
                      beta_hds = c(log(median(dataDS@dist.breaks)),rep(0, ncol(gd_hds$V)-1)),
                      beta_pc = rep(0,0),
                      beta_oc = rep(0,0),
-                     beta_avail = rep(0,0))
+                     beta_avail = rep(0,0),
+                     beta_schds = rep(0,0),  # hazard rate scale inits
+                     beta_scpc = rep(0,0), 
+                     beta_scoc = rep(0,0))
 
+    if(keyfun == "hazard") params_tmb$beta_schds <- 0
+    
     if(!is.null(detformulaPC) & !is.null(dataPC)){
       params_tmb$beta_pc <- c(log(maxDistPC/2), rep(0, ncol(gd_pc$V)-1))
+      if(keyfun == "hazard") params_tmb$beta_scpc <- 0
     }
     if(!is.null(detformulaOC) & !is.null(dataOC)){
       params_tmb$beta_oc <- c(log(maxDistOC/2), rep(0, ncol(gd_oc$V)-1))
+      if(keyfun == "hazard") params_tmb$beta_scoc <- 0
     }
     if(has_avail){
       params_tmb$beta_avail <- rep(0, ncol(Xavail_ds))
@@ -193,13 +212,20 @@ IDS <- function(lambdaformula = ~1,
                      beta_hds = starts[pind_mat[2,1]:pind_mat[2,2]],
                      beta_pc = rep(0,0),
                      beta_oc = rep(0,0),
-                     beta_avail = rep(0,0))
+                     beta_avail = rep(0,0),
+                     beta_schds = rep(0,0),  # hazard rate scale inits
+                     beta_scpc = rep(0,0), 
+                     beta_scoc = rep(0,0))
+    
+    if(keyfun == "hazard") params_tmb$beta_schds <- pind_mat[6,1]
 
     if(!is.null(detformulaPC) & !is.null(dataPC)){
       params_tmb$beta_pc <- starts[pind_mat[3,1]:pind_mat[3,2]]
+      if(keyfun == "hazard") params_tmb$beta_scpc <- starts[pind_mat[7,1]]
     }
     if(!is.null(detformulaOC) & !is.null(dataOC)){
       params_tmb$beta_oc <- starts[pind_mat[4,1]:pind_mat[4,2]]
+      if(keyfun == "hazard") params_tmb$beta_scoc <- starts[pind_mat[8,1]]
     }
     if(has_avail){
       params_tmb$beta_avail <- starts[pind_mat[5,1]:pind_mat[5,2]]
@@ -283,11 +309,35 @@ IDS <- function(lambdaformula = ~1,
     est_list <- c(est_list, list(phi=avail_est))
   }
 
+  if(keyfun == "hazard"){
+    ds_haz_coef <- get_coef_info(sdr, "schds", "(Intercept)", pind_mat[6,1]:pind_mat[6,2])
+    ds_est_haz <- unmarkedEstimate("Distance sampling scale", short.name="ds_scale",
+      estimates = ds_haz_coef$ests[1], covMat = ds_haz_coef$cov, fixed=1,
+      invlink="exp", invlinkGrad="exp")
+    est_list <- c(est_list, list(schds=ds_est_haz))
+
+    if(!is.null(detformulaPC) & !is.null(dataPC)){
+      pc_haz_coef <- get_coef_info(sdr, "scpc", "(Intercept)", pind_mat[7,1]:pind_mat[7,2])
+      pc_est_haz <- unmarkedEstimate("Point count scale", short.name="pc_scale",
+        estimates = pc_haz_coef$ests[1], covMat = pc_haz_coef$cov, fixed=1,
+        invlink="exp", invlinkGrad="exp")
+      est_list <- c(est_list, list(scpc=pc_est_haz))
+    }
+
+    if(!is.null(detformulaOC) & !is.null(dataOC)){
+      oc_haz_coef <- get_coef_info(sdr, "scoc", "(Intercept)", pind_mat[8,1]:pind_mat[8,2])
+      oc_est_haz <- unmarkedEstimate("Presence/absence scale", short.name="oc_scale",
+        estimates = oc_haz_coef$ests[1], covMat = oc_haz_coef$cov, fixed=1,
+        invlink="exp", invlinkGrad="exp")
+      est_list <- c(est_list, list(scoc=oc_est_haz))
+    }
+  }
+
   est_list <- unmarkedEstimateList(est_list)
 
   new("unmarkedFitIDS", fitType = "IDS", call = match.call(),
     opt = opt, formula = lambdaformula, formlist=formlist,
-    data = dataDS, dataPC=dataPC, dataOC=dataOC,
+    data = dataDS, dataPC=dataPC, dataOC=dataOC, K=K,
     surveyDurations=surveyDurations,
     maxDist = list(pc=maxDistPC, oc=maxDistOC),
     keyfun=keyfun,
@@ -299,7 +349,7 @@ IDS <- function(lambdaformula = ~1,
 
 }
 
-setMethod("summary", "unmarkedFitIDS", function(object)
+setMethod("summary_internal", "unmarkedFitIDS", function(object)
 {
     cat("\nCall:\n")
     print(object@call)
@@ -371,10 +421,10 @@ IDS_convert_class <- function(inp, type, ds_type=NULL){
       AIC=inp@AIC, output="density", TMB=inp@TMB)
 }
 
-# This predict method uses IDS_convert_class to allow pass-through to
+# This predict_internal method uses IDS_convert_class to allow pass-through to
 # distsamp predict method
-setMethod("predict", "unmarkedFitIDS", function(object, type, newdata,
-          backTransform=TRUE, appendData=FALSE, level=0.95, ...){
+setMethod("predict_internal", "unmarkedFitIDS", function(object, type, newdata,
+          backTransform=TRUE, na.rm=FALSE, appendData=FALSE, level=0.95, re.form=NULL, ...){
   stopifnot(type %in% names(object))
 
   # Special case of phi and  no newdata
@@ -392,7 +442,7 @@ setMethod("predict", "unmarkedFitIDS", function(object, type, newdata,
   } else { # Regular situation
     conv <- IDS_convert_class(object, type)
     type <- switch(type, lam="state", ds="det", pc="det", oc="det", phi="det")
-    out <- predict(conv, type, newdata, backTransform=backTransform, appendData=appendData,
+    out <- predict(conv, type=type, newdata=newdata, backTransform=backTransform, appendData=appendData,
                    level=level, ...)
   }
   out
@@ -404,7 +454,7 @@ setGeneric("getAvail", function(object, ...) standardGeneric("getAvail"))
 # Get availability for each data type and site as a probability
 setMethod("getAvail", "unmarkedFitIDS", function(object, ...){
   stopifnot("phi" %in% names(object))
-  phi <- predict(object, "phi")
+  phi <- predict(object, "phi", level = NULL, na.rm=FALSE)
   dur <- object@surveyDurations
   out <- lapply(names(phi), function(x){
     1 - exp(-1 * dur[[x]] * phi[[x]]$Predicted)
@@ -414,7 +464,7 @@ setMethod("getAvail", "unmarkedFitIDS", function(object, ...){
 })
 
 # Fitted method returns a list of matrices, one per data type
-setMethod("fitted", "unmarkedFitIDS", function(object, na.rm=FALSE){
+setMethod("fitted_internal", "unmarkedFitIDS", function(object){
 
   dists <- names(object)[names(object) %in% c("ds", "pc")]
 
@@ -435,7 +485,7 @@ setMethod("fitted", "unmarkedFitIDS", function(object, na.rm=FALSE){
   # fitted for occupancy data
   if("oc" %in% names(object)){
     conv <- IDS_convert_class(object, type="oc")
-    lam <- predict(conv, 'state')$Predicted
+    lam <- predict(conv, 'state', level = NULL, na.rm=FALSE)$Predicted
     A <- pi*max(conv@data@dist.breaks)^2
     switch(conv@data@unitsIn,
             m = A <- A / 1e6,
@@ -446,7 +496,7 @@ setMethod("fitted", "unmarkedFitIDS", function(object, na.rm=FALSE){
             kmsq = A <- A)
     lam <- lam * A
 
-    p <- getP(conv) * avail$oc
+    p <- getP(conv, na.rm=FALSE) * avail$oc
     out$oc <- 1 - exp(-lam*p) ## analytical integration.
   }
 
@@ -454,7 +504,7 @@ setMethod("fitted", "unmarkedFitIDS", function(object, na.rm=FALSE){
 })
 
 # getP returns detection probability WITHOUT availability
-setMethod("getP", "unmarkedFitIDS", function(object, ...){
+setMethod("getP_internal", "unmarkedFitIDS", function(object){
 
   dets <- names(object)[! names(object) %in% c("lam","phi")]
 
@@ -467,7 +517,7 @@ setMethod("getP", "unmarkedFitIDS", function(object, ...){
 })
 
 
-setMethod("residuals", "unmarkedFitIDS", function(object, ...){
+setMethod("residuals_internal", "unmarkedFitIDS", function(object){
 
   dists <- names(object)[names(object) %in% c("ds", "pc")]
 
@@ -495,7 +545,7 @@ setMethod("hist", "unmarkedFitIDS", function(x, lwd=1, lty=1, ...){
 
 })
 
-setMethod("plot", c(x="unmarkedFitIDS", y="missing"), function(x, y, ...){
+setMethod("residual_plot", "unmarkedFitIDS", function(x, ...){
 
   r <- residuals(x)
   f <- fitted(x)
@@ -516,8 +566,8 @@ setMethod("plot", c(x="unmarkedFitIDS", y="missing"), function(x, y, ...){
 })
 
 
-setMethod("simulate", "unmarkedFitIDS",
-          function(object,  nsim = 1, seed = NULL, na.rm = FALSE){
+setMethod("simulate_internal", "unmarkedFitIDS",
+          function(object,  nsim){
 
   dets <- c("ds","pc","oc")
 
@@ -526,7 +576,7 @@ setMethod("simulate", "unmarkedFitIDS",
   temp <- lapply(dets, function(x){
     if(! x %in% names(object)) return(NULL)
     conv <- IDS_convert_class(object, type=x)
-    sims <- simulate(conv, nsim=nsim, na.rm=na.rm)
+    sims <- simulate(conv, nsim=nsim, na.rm=FALSE)
     # availability process
     if("phi" %in% names(object)){
       sims <- lapply(sims, function(z){
@@ -553,132 +603,51 @@ setMethod("simulate", "unmarkedFitIDS",
 
 })
 
-setMethod("update", "unmarkedFitIDS",
-  function(object, lambdaformula, detformulaDS, detformulaPC, detformulaOC,
-           dataDS, dataPC, dataOC, ...){
-    call <- object@call
 
-    if(!missing(lambdaformula)){
-      call[["lambdaformula"]] <- lambdaformula
-    } else {
-      call[["lambdaformula"]] <- object@formlist$lam
-    }
-
-    if(!missing(detformulaDS)){
-      call[["detformulaDS"]] <- detformulaDS
-    } else {
-      call[["detformulaDS"]] <- split_formula(object@formlist$ds)[[1]]
-    }
-
-    if(!missing(detformulaPC)){
-      call[["detformulaPC"]] <- detformulaPC
-    } else if(!is.null(object@dataPC) & !is.null(call$detformulaPC)){
-      call[["detformulaPC"]] <- split_formula(object@formlist$pc)[[1]]
-    }
-
-    if(!missing(detformulaOC)){
-      call[["detformulaOC"]] <- detformulaOC
-    } else if(!is.null(object@dataOC) & !is.null(call$detformulaOC)){
-      call[["detformulaOC"]] <- split_formula(object@formlist$oc)[[1]]
-    }
-
-    if(!missing(dataDS)){
-      call$dataDS <- dataDS
-    } else {
-      call$dataDS <- object@data
-    }
-
-    if(!missing(dataPC)){
-      call$dataPC <- dataPC
-    } else {
-      call$dataPC <- object@dataPC
-    }
-    
-    if(!missing(dataOC)){
-      call$dataOC <- dataOC
-    } else {
-      call$dataOC <- object@dataOC
-    }
-
-    extras <- match.call(call=sys.call(-1),
-                         expand.dots = FALSE)$...
-    if (length(extras) > 0) {
-        existing <- !is.na(match(names(extras), names(call)))
-        for (a in names(extras)[existing])
-            call[[a]] <- extras[[a]]
-        if (any(!existing)) {
-            call <- c(as.list(call), extras[!existing])
-            call <- as.call(call)
-            }
-        }
-
-    eval(call, parent.frame(2))
-
+setMethod("rebuild_call", "unmarkedFitIDS", function(object){           
+  cl <- object@call
+  cl[["dataDS"]] <- quote(object@data)
+  cl[["dataPC"]] <- quote(object@dataPC)
+  cl[["dataOC"]] <- quote(object@dataOC)
+  cl[["lambdaformula"]] <- object@formlist$lam
+  cl[["detformulaDS"]] <- split_formula(object@formlist$ds)[[1]]
+  if(!is.null(cl[["detformulaPC"]])){
+    cl[["detformulaPC"]] <- split_formula(object@formlist$pc)[[1]]
+  }
+  if(!is.null(cl[["detformulaOC"]])){
+    cl[["detformulaOC"]] <- split_formula(object@formlist$oc)[[1]]
+  }
+  if(!is.null(cl[["availformula"]])){
+    cl[["availformula"]] <- object@formlist$phi
+  }
+  cl[["K"]] <- object@K
+  cl[["keyfun"]] <- object@keyfun
+  cl[["unitsOut"]] <- object@unitsOut
+  cl[["durationDS"]] <- quote(object@surveyDurations$ds)
+  cl[["durationPC"]] <- quote(object@surveyDurations$pc)
+  cl[["durationOC"]] <- quote(object@surveyDurations$oc)
+  cl[["maxDistPC"]] <- object@maxDist$pc
+  cl[["maxDistOC"]] <- object@maxDist$oc
+  cl
 })
 
-
-setMethod("parboot", "unmarkedFitIDS",
-    function(object, statistic=SSE, nsim=10, ...)
-{
-    dots <- list(...)
-    statistic <- match.fun(statistic)
-    call <- match.call(call = sys.call(-1))
-    starts <- as.numeric(coef(object))
-
-    t0 <- statistic(object, ...)
-    lt0 <- length(t0)
-    t.star <- matrix(NA, nsim, lt0)
-    #if(!missing(report))
-    #    cat("t0 =", t0, "\n")
-
-    simList <- simulate(object, nsim = nsim, na.rm = FALSE)
-
-    dataDS <- object@data
-    dataPC <- object@dataPC
-    has_pc <- "pc" %in% names(object)
-    dataOC <- object@dataOC
-    has_oc <- "oc" %in% names(object)
-
-    t.star <- lapply(1:nsim, function(i){
-      dataDS@y <- simList[[i]]$ds
-      if(has_pc) dataPC@y <- simList[[i]]$pc
-      if(has_oc) dataOC@y <- simList[[i]]$oc
-      fit <- update(object, dataDS=dataDS, dataPC=dataPC, dataOC=dataOC, 
-                    durationDS = object@surveyDurations$ds,
-                    durationPC = object@surveyDurations$pc,
-                    durationOC = object@surveyDurations$oc,
-                    starts=starts)
-      statistic(fit)
-    })
-    if(lt0 > 1){
-      t.star <- t(t.star)
-    } else {
-      t.star <- matrix(t.star, ncol=lt0)
-    }
-
-    if (!is.null(names(t0))){
-      colnames(t.star) <- names(t0)
-    } else{
-      colnames(t.star) <- paste("t*", 1:lt0, sep="")
-    }
-
-    out <- new("parboot", call = call, t0 = t0, t.star = t.star)
-    return(out)
-})
 
 setMethod("SSE", "unmarkedFitIDS", function(fit, ...){
-    r <- unlist(residuals(fit))
-    return(c(SSE = sum(r^2, na.rm=T)))
+  stop("Not currently supported for unmarkedFitIDS", call.=FALSE)
 })
 
-setMethod("nonparboot", "unmarkedFitIDS",
-    function(object, B = 0, keepOldSamples = TRUE, ...)
+setMethod("replaceY", "unmarkedFitIDS", function(object, newY, replNA, ...){
+  stop("Not currently supported for unmarkedFitIDS", call.=FALSE)
+})
+
+setMethod("nonparboot_internal", "unmarkedFitIDS",
+    function(object, B, keepOldSamples)
 {
    stop("Not currently supported for unmarkedFitIDS", call.=FALSE)
 })
 
-setMethod("ranef", "unmarkedFitIDS",
-    function(object, B = 0, keepOldSamples = TRUE, ...)
+setMethod("ranef_internal", "unmarkedFitIDS",
+    function(object, ...)
 {
    stop("Not currently supported for unmarkedFitIDS", call.=FALSE)
 })

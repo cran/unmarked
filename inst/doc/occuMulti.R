@@ -7,7 +7,7 @@ data(MesoCarnivores)
 names(MesoCarnivores)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  ?unmarkedFrameOccuMulti
+# ?unmarkedFrameOccuMulti
 
 ## -----------------------------------------------------------------------------
 ylist <- list(bobcat=MesoCarnivores$bobcat, coyote=MesoCarnivores$coyote, 
@@ -33,7 +33,7 @@ stateformulas <- c("~1","~1","~1","~1","~1","~1","0")
 detformulas <- c("~1","~1","~1")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  ?occuMulti
+# ?occuMulti
 
 ## -----------------------------------------------------------------------------
 mod_null <- occuMulti(detformulas=detformulas, stateformulas=stateformulas, data=umf)
@@ -142,14 +142,14 @@ mods <- fitList(mod_null, mod_hdens)
 modSel(mods)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  state_complex <- c(rep("~scale(Dist_5km)+scale(HDens_5km)", 6), 0)
-#  det_complex <- rep("~Trail",3)
-#  
-#  mod_complex <- occuMulti(stateformulas=state_complex, detformulas=det_complex, umf)
-#  summary(mod_complex)
+# state_complex <- c(rep("~scale(Dist_5km)+scale(HDens_5km)", 6), 0)
+# det_complex <- rep("~Trail",3)
+# 
+# mod_complex <- occuMulti(stateformulas=state_complex, detformulas=det_complex, umf)
+# summary(mod_complex)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  set.seed(123)
-#  mod_penalty <- optimizePenalty(mod_complex, penalties=c(0.5,1))
-#  summary(mod_penalty)
+# set.seed(123)
+# mod_penalty <- optimizePenalty(mod_complex, penalties=c(0.5,1))
+# summary(mod_penalty)
 

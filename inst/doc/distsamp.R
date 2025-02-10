@@ -37,10 +37,13 @@ haz_Null
 
 ## -----------------------------------------------------------------------------
 names(haz_Null)
-backTransform(haz_Null, type="state")
-backTransform(haz_Null, type="det")
-backTransform(haz_Null, type="scale")
-backTransform(linearComb(hn_Hab.Ht['det'], c(1, 5)))
+predict(haz_Null, type="state")[1,]
+predict(haz_Null, type="det")[1,]
+predict(haz_Null, type="scale")[1,]
+
+## -----------------------------------------------------------------------------
+nd <- data.frame(canopyHt = 5)
+predict(hn_Hab.Ht, type = 'det', newdata=nd, appendData = TRUE)
 
 ## -----------------------------------------------------------------------------
 site.level.density <- predict(hn_Hab.Ht, type="state")$Predicted

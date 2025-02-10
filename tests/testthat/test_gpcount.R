@@ -29,6 +29,8 @@ test_that("unmarkedFrameGPC subset works",{
     expect_is(umf1.site1, "unmarkedFrameGPC")
 
     umf1.sites1and1 <- umf1[c(1,1),]
+    expect_equivalent(umf1.sites1and1[1,], umf1[1,])
+    expect_equivalent(umf1.sites1and1[2,], umf1[1,])
 
     umf1.obs1and2 <- umf1[,c(1,2)]
 
@@ -47,6 +49,7 @@ test_that("unmarkedFrameGPC subset works",{
 })
 
 test_that("gpcount function works", {
+  set.seed(123)
   y <- matrix(c(0,0,0, 1,0,1, 2,2,2,
                 3,2,3, 2,2,2, 1,1,1,
                 NA,0,0, 0,0,0, 0,0,0,
@@ -68,8 +71,10 @@ test_that("gpcount function works", {
           2.52037155, -0.10950615), tol = 1e-5)
 
   # Check methods
-  expect_warning(gp <- getP(fm))
+  gp <- getP(fm)
   expect_equal(dim(gp), dim(y))
+  expect_true(all(is.na(gp[5,4:6])))
+  expect_equal(as.vector(gp[1:2, 1:2]), c(0.9452,0.9445,0.9413,0.9404), tol=1e-4)
 
   expect_warning(pr <- predict(fm, 'lambda'))
   expect_equal(dim(pr), c(nrow(y), 4))
@@ -79,19 +84,42 @@ test_that("gpcount function works", {
   expect_equal(dim(pr), c(2,4))
   expect_equal(pr[1,1], c(3.15045), tol=1e-4)
 
+  ft <- fitted(fm)
+  expect_equal(dim(ft), dim(umf@y))
+  expect_equal(round(ft,4)[1:2,1:2],
+    structure(c(0.5341, 1.2995, 0.5318, 1.2939), dim = c(2L, 2L)))
+  expect_true(all(is.na(ft[5,4:6]))) # missing obs covs
+  expect_true(all(is.na(ft[4,4:6]))) # missing ysc cov for site 4 yr 2
+
+  sc2 <- siteCovs
+  sc2$x[1] <- NA
+  umf2 <- umf
+  umf2@siteCovs <- sc2
+  expect_warning(fm2 <- gpcount(~x, ~yr, ~o1, data = umf2, K=10))
+  ft2 <- fitted(fm2)
+  expect_equal(dim(ft2), dim(umf2@y))
+  expect_true(all(is.na(ft2[1,]))) # missing site cov
+
   res <- residuals(fm)
   expect_equal(dim(res), dim(y))
 
-  expect_warning(r <- ranef(fm))
+  r <- ranef(fm)
   expect_equal(dim(r@post), c(nrow(y), 24, 1))
-  expect_equal(bup(r), c(7.31, 12.63, 1.30, 16.12, 2.04), tol=1e-3)
+  expect_equal(bup(r), c(7.31, 12.63, 1.30, 14.90, 2.04), tol=1e-3)
 
   expect_warning(s <- simulate(fm, 2))
   expect_equal(length(s), 2)
   expect_equal(dim(s[[1]]), dim(y))
 
   expect_warning(pb <- parboot(fm, nsim=1))
+  expect_equal(pb@t.star[1], 24.06449, tol=1e-4)
   expect_is(pb, "parboot")
+
+  npb <- expect_warning(nonparboot(fm, B=2))
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 36.08938, tol=1e-4)
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   # Check error when random effect in formula
   expect_error(gpcount(~(1|dummy),~1,~1,umf))

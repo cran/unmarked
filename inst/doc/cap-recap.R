@@ -95,7 +95,7 @@ lines(lower ~ woody, E.abundance, col=gray(0.7))
 lines(upper ~ woody, E.abundance, col=gray(0.7))
 
 ## -----------------------------------------------------------------------------
-backTransform(M0.woody, type="det")
+predict(M0.woody, type='det')[1,]
 
 ## -----------------------------------------------------------------------------
 round(getP(M0.woody), 2)[1,]
@@ -162,12 +162,12 @@ return(il)
 }
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  parID <- matrix(c('p','sig','sig'), 50, 3, byrow=TRUE)
-#  umf.cr2 <- unmarkedFrameMPois(y=alfl.H1,
-#    siteCovs=alfl.covs[,c("woody", "struct", "time.1")],
-#    obsCovs=list(parID=parID),
-#    obsToY=o2y, piFun="MhPiFun")
-#  multinomPois(~parID-1 ~woody, umf.cr2)
+# parID <- matrix(c('p','sig','sig'), 50, 3, byrow=TRUE)
+# umf.cr2 <- unmarkedFrameMPois(y=alfl.H1,
+#   siteCovs=alfl.covs[,c("woody", "struct", "time.1")],
+#   obsCovs=list(parID=parID),
+#   obsToY=o2y, piFun="MhPiFun")
+# multinomPois(~parID-1 ~woody, umf.cr2)
 
 ## -----------------------------------------------------------------------------
 alfl.H <- table(alfl$id, alfl$captureHistory, alfl$survey)

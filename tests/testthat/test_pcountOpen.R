@@ -27,12 +27,20 @@ test_that("unmarkedFramePCO subset works",{
 
     umf1.sites1and3 <- umf1[c(1,3),]
 
+    umf_sub <- umf1[c(2,2,3),]
+    expect_equal(numSites(umf_sub), 3)
+    expect_equivalent(umf_sub[1,], umf1[2,])
+    expect_equivalent(umf_sub[2,], umf1[2,])
+    expect_equivalent(umf_sub[3,], umf1[3,])
+
     # subset by primary period
     umf_sub <- umf1[,1:2]
     expect_equal(umf_sub@numPrimary, 2)
 })
 
 test_that("pcountOpen can fit a null model",{
+
+  set.seed(123)
   y <- matrix(c(
       3, 2, 1, 4,
       3, 4, 2, 1,
@@ -63,6 +71,7 @@ test_that("pcountOpen can fit a null model",{
   # methods
   gp <- getP(fm1)
   expect_equal(dim(gp), dim(umf@y))
+  expect_equal(gp[1,1], 0.99909, tol=1e-5)
 
   res <- residuals(fm1)
   expect_equal(dim(res), dim(umf@y))
@@ -79,6 +88,14 @@ test_that("pcountOpen can fit a null model",{
 
   pb <- parboot(fm1, nsim=1)
   expect_is(pb, "parboot")
+  expect_equal(pb@t.star[1,1], 50.7096, tol=1e-4)
+
+  npb <- nonparboot(fm1, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 70.26772, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   # Check error when random effect in formula
   expect_error(pcountOpen(~(1|dummy),~1,~1,~1, data=umf))
@@ -156,7 +173,10 @@ test_that("pcountOpen handles NAs",{
                      c(0.9714456, 0.4481042, -0.8920462, 4.0379739 ),
                      tol = 1e-4)
   expect_equal(fm3@sitesRemoved, 6)
-
+  
+  r <- ranef(fm3)
+  expect_equal(nrow(r@post), numSites(fm3@data))
+  expect_equal(bup(r)[1:4], c(2.6409,3.0457,0.04577,5.04577), tol=1e-4)
 
 
   y4 <- matrix(c(
@@ -410,6 +430,23 @@ test_that("pcountOpen simulate and fitted methods work",{
      expect_equivalent(m3_sim[[1]][1,],c(2,1,3,5,4))
      m3_fit <- fitted(m3)
      expect_equivalent(m3_fit[1,1], 2.481839, tol=1e-4)
+
+     sc <- data.frame(x=rnorm(M))
+     sc$x[2] <- NA
+     oc <- data.frame(x2 = rnorm(M*T))
+     oc$x2[1] <- NA
+     siteCovs(umf) <- sc
+     obsCovs(umf) <- oc
+
+     m3 <- expect_warning(pcountOpen(~x, ~1, ~1, ~x2, umf, K=20))
+     ft <- fitted(m3)
+     expect_equal(dim(ft), dim(m3@data@y))
+     expect_true(is.na(ft[1,1])) # missing obs cov
+     expect_true(all(is.na(ft[2,]))) # missing site cov
+
+     gp <- getP(m3)
+     expect_equal(dim(gp), dim(m3@data@y))
+     expect_true(is.na(gp[1,1]))
 })
 
 

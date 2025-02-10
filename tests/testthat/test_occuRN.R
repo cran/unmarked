@@ -3,6 +3,7 @@ skip_on_cran()
 
 test_that("occuRN can fit models",{
 
+  set.seed(123)
   data(birds)
   woodthrushUMF <- unmarkedFrameOccu(woodthrush.bin)
 
@@ -26,6 +27,7 @@ test_that("occuRN can fit models",{
   # check methods
   gp <- getP(fm_C)
   expect_equal(dim(gp), dim(woodthrushUMF@y))
+  expect_equal(as.vector(gp[1:2,1:2]), c(0.1381,0.1381,0.1971,0.1971), tol=1e-4)
 
   pr <- predict(fm_C, 'state')
   expect_equal(dim(pr), c(50,4))
@@ -35,11 +37,17 @@ test_that("occuRN can fit models",{
   expect_equal(dim(pr), c(550,4))
   expect_equal(pr[1,1], 0.13806, tol=1e-4)
 
+  ft <- fitted(fm_C)
+  expect_equal(dim(ft), dim(fm_C@data@y))
+  expect_equal(ft[1,1], 0.262429)
+
   res <- residuals(fm_C)
   expect_equal(dim(res), dim(woodthrushUMF@y))
   expect_equal(res[1,1], 0.73757, tol=1e-4)
-  r <- ranef(fm_C, K=10)
+  
+  r <- ranef(fm_C)
   expect_equal(dim(r@post), c(50,11,1))
+  expect_equal(bup(r)[1:4], c(5.1059,5.6125,3.2689,5.6125), tol=1e-4)
 
   s <- simulate(fm_C, 2)
   expect_equal(length(s), 2)
@@ -47,6 +55,14 @@ test_that("occuRN can fit models",{
 
   pb <- parboot(fm_C, nsim=1)
   expect_is(pb, "parboot")
+  expect_equal(pb@t.star[1,1], 129.774, tol=1e-4)
+
+  npb <- nonparboot(fm_C, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 670.201, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   # check error if random effect in formula
   expect_error(occuRN(~(1|dummy)~1, umf))
@@ -89,5 +105,29 @@ test_that("occuRN can handle NAs",{
   expect_equivalent(coef(fm_C),
     c(0.783066, -1.920232, 0.448369, -0.009701, 0.490085, 0.814767,
     0.837669, 1.097903, 0.842467, 0.916831, 0.976707, 0.740672), tol=1e-3)
+
+  # Missing covariates
+  sc <- data.frame(x = rnorm(numSites(woodthrushUMF)))
+  sc$x[2] <- NA
+  oc <- data.frame(x2 = rnorm(numSites(woodthrushUMF) * obsNum(woodthrushUMF)))
+  oc$x2[1] <- NA
+  siteCovs(woodthrushUMF) <- sc
+  obsCovs(woodthrushUMF) <- oc
+  
+  fm_na <- expect_warning( occuRN(~x2~x, woodthrushUMF, K=10))
+
+  ft <- fitted(fm_na)
+  expect_equal(dim(ft), dim(fm_na@data@y))
+  expect_true(is.na(ft[1,1])) # missing obs cov
+  expect_true(all(is.na(ft[2,]))) # missing site cov
+
+  ft <- getP(fm_na)
+  expect_equal(dim(ft), dim(fm_na@data@y))
+  expect_true(is.na(ft[1,1])) # missing obs cov
+  expect_true(all(!is.na(ft[2,]))) # missing site cov
+
+  r <- ranef(fm_na)
+  expect_equal(nrow(r@post), numSites(fm_na@data))
+  expect_true(all(is.na(r@post[1:2,,1])))
 })
 

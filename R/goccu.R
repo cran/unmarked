@@ -34,7 +34,7 @@ goccu <- function(psiformula, phiformula, pformula, data,
 
   # Pass phiformula as gamma/eps formula so it will be applied to
   # yearlySiteCovs in getDesign
-  formlist <- list(psiformula=psiformula, phi=phiformula,
+  formlist <- list(psiformula=psiformula, phiformula=phiformula,
                   pformula=pformula)
 
   formula <- as.formula(paste(unlist(formlist), collapse=" "))
@@ -82,11 +82,23 @@ goccu <- function(psiformula, phiformula, pformula, data,
     }
   }
 
+  # Determine which configurations of available states should not be
+  # included in likelihood because relevant primary periods were missing
+  alpha_drop <- matrix(NA, M, nrow(alpha_potential))
+  for (i in 1:M){
+    dropped <- rep(0, nrow(alpha_potential))
+    for (j in 1:nrow(alpha_potential)){
+      check_drop <- alpha_potential[j,] * missing_session[i,]
+      if(sum(check_drop) > 0) dropped[j] <- 1
+    }
+    alpha_drop[i,] <- dropped
+  }
+
   # Bundle data for TMB
   dataList <- list(y=y, T=T, link=ifelse(linkPsi=='cloglog', 1, 0), 
                    Xpsi=Xpsi, Xphi=Xphi, Xp=Xp,
                    n_possible=n_possible,
-                   alpha_potential=alpha_potential,
+                   alpha_potential=alpha_potential, alpha_drop = alpha_drop,
                    known_present=known_present, known_available=known_available, 
                    missing_session=missing_session)
 
@@ -180,22 +192,19 @@ setMethod("get_orig_data", "unmarkedFitGOccu", function(object, type, ...){
   clean_covs[[datatype]]
 })
 
-setMethod("getP", "unmarkedFitGOccu",
-  function(object, na.rm=FALSE){
-  gd <- getDesign(object@data, object@formula, na.rm=na.rm)
-  p <- drop(plogis(gd$Xdet %*% coef(object, "det")))
+setMethod("getP_internal", "unmarkedFitGOccu", function(object){
   M <- numSites(object@data)
-  p <- matrix(p, nrow=M, ncol=obsNum(object@data), 
-              byrow=TRUE)
+  J <- ncol(object@data@y)
+  p <- predict(object, type="det", level=NULL, na.rm=FALSE)$Predicted
+  p <- matrix(p, nrow=M, ncol=J, byrow=TRUE)
   p
 })
 
-setMethod("fitted", "unmarkedFitGOccu",
-  function(object, na.rm= FALSE){
-
+setMethod("fitted_internal", "unmarkedFitGOccu", function(object){
+  # TODO: Use predict here
   M <- numSites(object@data)
   JT <- obsNum(object@data)  
-  gd <- getDesign(object@data, object@formula, na.rm=na.rm)
+  gd <- getDesign(object@data, object@formula, na.rm=FALSE)
 
   psi <- drop(plogis(gd$Xpsi %*% coef(object, "psi")))
   psi <- matrix(psi, nrow=M, ncol=JT)
@@ -211,7 +220,7 @@ setMethod("fitted", "unmarkedFitGOccu",
 
 
 # based on ranef for GPC
-setMethod("ranef", "unmarkedFitGOccu", function(object, ...){
+setMethod("ranef_internal", "unmarkedFitGOccu", function(object, ...){
 
   M <- numSites(object@data)
   JT <- obsNum(object@data)
@@ -267,18 +276,18 @@ setMethod("ranef", "unmarkedFitGOccu", function(object, ...){
 })
 
 
-setMethod("simulate", "unmarkedFitGOccu", 
-          function(object, nsim = 1, seed = NULL, na.rm = FALSE){
-  
-  gd <- getDesign(object@data, object@formula, na.rm=FALSE)
-  M <- nrow(gd$y)
+setMethod("simulate_internal", "unmarkedFitGOccu", 
+          function(object, nsim){
+ 
+  y <- object@data@y
+  M <- nrow(y)
   T <- object@data@numPrimary
-  JT <- ncol(gd$y)
+  JT <- ncol(y)
   J <- JT / T
-  y_array <- array(t(gd$y), c(J, T, M)) 
+  y_array <- array(t(y), c(J, T, M)) 
 
-  psi <- drop(plogis(gd$Xpsi %*% coef(object, "psi")))
-  phi <- drop(plogis(gd$Xphi %*% coef(object, "phi")))
+  psi <- predict(object, type = "psi", level = NULL, na.rm=FALSE)$Predicted
+  phi <- predict(object, type = "phi", level = NULL, na.rm=FALSE)$Predicted
   phi <- matrix(phi, nrow=M, ncol=T, byrow=TRUE)
   p <- getP(object)
 
@@ -296,39 +305,22 @@ setMethod("simulate", "unmarkedFitGOccu",
 
     y <- suppressWarnings(rbinom(M*T*J, 1, zz*p))
     y <- matrix(y, M, JT)
-    if(na.rm) y[which(is.na(gd$y))] <- NA 
     sim_list[[i]] <- y
   }
 
   return(sim_list)
 })
 
+setMethod("get_fitting_function", "unmarkedFrameGOccu",
+          function(object, model, ...){
+  goccu
+})
 
-setMethod("update", "unmarkedFitGOccu",
-    function(object, psiformula, phiformula, pformula, ...,
-        evaluate = TRUE)
-{
-    call <- object@call
-    if (is.null(call))
-        stop("need an object with call slot")
-    formlist <- object@formlist
-    if (!missing(psiformula))
-        call$psiformula <- update.formula(formlist$psiformula, psiformula)
-    if (!missing(phiformula))
-        call$phiformula <- update.formula(formlist$phiformula, phiformula)
-    if (!missing(pformula))
-        call$pformula <- update.formula(formlist$pformula, pformula)
-    extras <- match.call(call=sys.call(-1),
-                         expand.dots = FALSE)$...
-    if(length(extras) > 0) {
-        existing <- !is.na(match(names(extras), names(call)))
-        for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
-        if (any(!existing)) {
-            call <- c(as.list(call), extras[!existing])
-            call <- as.call(call)
-            }
-        }
-    if (evaluate)
-        eval(call, parent.frame(2))
-    else call
+setMethod("rebuild_call", "unmarkedFitGOccu", function(object){           
+  cl <- object@call
+  cl[["data"]] <- quote(object@data)
+  cl[["psiformula"]] <- object@formlist$psiformula
+  cl[["phiformula"]] <- object@formlist$phiformula
+  cl[["pformula"]] <- object@formlist$pformula
+  cl
 })

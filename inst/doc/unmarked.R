@@ -47,18 +47,19 @@ fm2 <- occu(~ MinAfterSunset + Temperature ~ 1, pcru)
 fm2
 
 ## -----------------------------------------------------------------------------
-backTransform(fm2, 'state')
+predict(fm2, 'state')[1,]
 
 ## -----------------------------------------------------------------------------
-backTransform(linearComb(fm2, coefficients = c(1,0,0), type = 'det'))
+nd <- data.frame(MinAfterSunset = 0, Temperature = 0)
+round(predict(fm2, type = 'det', newdata = nd, appendData = TRUE), 2)
 
 ## -----------------------------------------------------------------------------
-newData <- data.frame(MinAfterSunset = 0, Temperature = -2:2)
-round(predict(fm2, type = 'det', newdata = newData, appendData=TRUE), 2)
+nd <- data.frame(MinAfterSunset = 0, Temperature = -2:2)
+round(predict(fm2, type = 'det', newdata = nd, appendData=TRUE), 2)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  confint(fm2, type='det')
-#  confint(fm2, type='det', method = "profile")
+# confint(fm2, type='det')
+# confint(fm2, type='det', method = "profile")
 
 ## ----echo=FALSE---------------------------------------------------------------
 confint(fm2, type='det')
@@ -68,21 +69,18 @@ ci
 ## -----------------------------------------------------------------------------
 fms <- fitList('psi(.)p(.)' = fm1, 'psi(.)p(Time+Temp)' = fm2)
 modSel(fms)
-predict(fms, type='det', newdata = newData)
+predict(fms, type='det', newdata = nd)
 
 ## ----warning=FALSE------------------------------------------------------------
 chisq <- function(fm) {
     umf <- fm@data
     y <- umf@y
     y[y>1] <- 1
-    sr <- fm@sitesRemoved
-    if(length(sr)>0)
-        y <- y[-sr,,drop=FALSE]
-    fv <- fitted(fm, na.rm=TRUE)
-    y[is.na(fv)] <- NA
+    fv <- fitted(fm)
     sum((y-fv)^2/(fv*(1-fv)), na.rm=TRUE)
     }
 
+set.seed(1)
 (pb <- parboot(fm2, statistic=chisq, nsim=100, parallel=FALSE))
 
 ## -----------------------------------------------------------------------------

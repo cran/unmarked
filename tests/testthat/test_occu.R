@@ -2,11 +2,41 @@ context("occu fitting function")
 
 skip_on_cran()
 
+test_that("unmarkedFrameOccu subset works", {
+  
+  y <- matrix(rep(1,10)[1:10],5,2)
+  sc <- data.frame(x=rnorm(5))
+  oc <- data.frame(x2=rnorm(10))
+  umf <- unmarkedFrameOccu(y=y, siteCovs=sc, obsCovs=oc)
+
+  umf_sub <- umf[2:3,]
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[3,])
+
+  umf_sub <- umf[c(2,2,4),]
+  expect_equal(numSites(umf_sub), 3)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[4,])
+
+  keep <- c(FALSE, FALSE, TRUE, FALSE, TRUE)
+  expect_error(umf_sub <- umf[keep,]) # this should work
+})
+
 test_that("occu can fit simple models",{
 
   y <- matrix(rep(1,10)[1:10],5,2)
   umf <- unmarkedFrameOccu(y = y)
   fm <- occu(~ 1 ~ 1, data = umf)
+
+  # Expect warning about big SEs
+  nul <- capture.output(expect_warning(summary(fm)))
+
+  # Check warning about NaN/NA SEs
+  fm2 <- fm
+  fm2@estimates@estimates$state@covMat[1,1] <- NaN
+  fm2@estimates@estimates$det@covMat[1,1] <- 1
+  nul <- capture.output(expect_warning(summary(fm2)))
 
   occ <- fm['state']
   det <- fm['det']
@@ -50,7 +80,7 @@ test_that("occu can fit simple models",{
 })
 
 test_that("occu can fit models with covariates",{
-  skip_on_cran()
+  set.seed(123)
   y <- matrix(rep(0:1,10)[1:10],5,2)
   siteCovs <- data.frame(x = c(0,2,3,4,1))
   obsCovs <- data.frame(o1 = 1:10, o2 = exp(-5:4)/10)
@@ -92,6 +122,8 @@ test_that("occu can fit models with covariates",{
   # methods
   gp <- getP(fm)
   expect_equal(dim(gp), c(5,2))
+  expect_equal(as.vector(gp[1:2,1:2]), c(0.5739,0.5014,0.5377,0.4656), tol=1e-4)
+
   res <- residuals(fm)
   expect_equal(dim(res), c(5,2))
   expect_equal(res[1,1], -0.57380, tol=1e-4)
@@ -116,6 +148,14 @@ test_that("occu can fit models with covariates",{
   }
   pb <- parboot(fm, fitstats, nsim=3)
   expect_equal(dim(pb@t.star), c(3,3))
+  expect_equivalent(pb@t.star[1,1], 0.9124, tol=1e-4)
+
+  npb <- nonparboot(fm, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  expect_equal(npb@bootstrapSamples[[1]]@AIC, 21.36324, tol=1e-4)
+  expect_equal(numSites(npb@bootstrapSamples[[1]]@data), numSites(npb@data))
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
 
   y <- matrix(rep(0,10)[1:10],5,2)
   siteCovs <- data.frame(x = c(0,2,3,4,1))
@@ -149,7 +189,22 @@ test_that("occu handles NAs",{
   expect_warning(fm <- occu(~ o1 + o2 ~ x, data = umf))
   expect_equal(fm@sitesRemoved, 3)
   expect_equivalent(coef(fm), c(8.91289, 1.89291, -1.42471, 0.67011, -8.44608), tol = 1e-5)
+  
+  ft <- fitted(fm)
+  expect_equal(dim(ft), dim(fm@data@y))
+  expect_true(all(is.na(ft[3,]))) # missing site cov
+  expect_true(is.na(ft[5,2]))     # missing obs cov
 
+  gp <- getP(fm)
+  expect_equal(dim(gp), dim(fm@data@y))
+  expect_true(all(!is.na(gp[3,]))) # missing site cov
+  expect_true(is.na(gp[5,2]))     # missing obs cov
+
+  r <- ranef(fm)
+  expect_equal(nrow(r@post), 5)
+  expect_true(all(is.na(r@post[3,,1]))) # missing site cov
+  ci <- confint(r)
+  expect_true(all(is.na(ci[3,])))
 })
 
 ## Add some checks here.
@@ -413,6 +468,13 @@ test_that("occu can handle random effects",{
   #on.exit(options(warn=0))
   test <- modSel(fl) # shouldn't warn
   #options(warn=0)
+
+  # Test that site cov can be used as random group for detection
+  # when it's the only covariate
+  new_sc <- data.frame(siteno = factor(1:nrow(y)))
+  siteCovs(umf) <- new_sc
+  fm <- occu(~(1|siteno)~1, umf)
+  expect_equal(sigma(fm)$Groups, "siteno")
 })
 
 test_that("TMB engine gives correct det estimates when there are lots of NAs", {

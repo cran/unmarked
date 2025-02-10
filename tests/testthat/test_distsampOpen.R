@@ -116,8 +116,14 @@ test_that("unmarkedFrameDSO build properly", {
                                   survey='line', unitsIn='m', tlength=rep(1,100)))
 
   # subset sites
-  umf_sub <- umf[1:3,]
-  expect_equal(nrow(umf_sub@y), 3)
+  umf_sub <- umf[2:3,]
+  expect_equal(numSites(umf_sub), 2)
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[3,])
+  umf_sub <- umf[c(2,2,4),]
+  expect_equivalent(umf_sub[1,], umf[2,])
+  expect_equivalent(umf_sub[2,], umf[2,])
+  expect_equivalent(umf_sub[3,], umf[4,])
 })
 
 test_that("dso halfnorm key function works",{
@@ -160,11 +166,16 @@ test_that("dso halfnorm key function works",{
   expect_equal(pval[1,1:4], c(0.2110,0.0776,0.0104,0.0005),
                      tol=1e-4)
 
+  ft <- fitted(fm)
+  expect_equal(round(ft,5)[1:2,1:2],
+               structure(c(0.87167, 0.89629, 0.32067, 0.38776), dim = c(2L,2L)))
+
   r <- residuals(fm)
   expect_equal(dim(r), dim(y))
   expect_equal(r[1,1:2], c(-0.8717,-0.3207),tol=1e-4)
 
   ran <- ranef(fm)
+  expect_equal(nrow(ran@post), numSites(fm@data))
   expect_equal(bup(ran)[1,1], 2.8916, tol=1e-4)
 
   set.seed(123)
@@ -174,6 +185,14 @@ test_that("dso halfnorm key function works",{
 
   fm2 <- update(fm, pformula=~1)
   expect_equal(length(coef(fm2)), 4)
+
+  npb <- nonparboot(fm, B=2)
+  expect_equal(length(npb@bootstrapSamples), 2)
+  v <- vcov(npb, method='nonparboot')
+  expect_equal(nrow(v), length(coef(npb)))
+
+  pb <- parboot(fm, nsim=2)
+  expect_equal(pb@t.star[1,1], 432.0433, tol=1e-4)
 
   fm <- distsampOpen(~1, ~1, ~1, ~x1, data = umf, K=10,keyfun="halfnorm",
                      mixture="ZIP")
@@ -219,6 +238,17 @@ test_that("distsampOpen works with NAs", {
   expect_warning(fm <- distsampOpen(~x1, ~x2, ~1, ~1, data=umf, K=7, keyfun="halfnorm"))
   expect_equivalent(coef(fm), c(1.3058,-0.2966,-7.9133,-7.9281,8.6582,3.3108), tol=1e-4)
 
+  ft <- fitted(fm)
+  expect_true(all(is.na(ft[3,])))
+  expect_true(all(is.na(ft[1,5:8])))
+
+  gp <- getP(fm)
+  expect_equal(dim(gp), dim(fm@data@y))
+
+  r <- ranef(fm)
+  expect_equal(nrow(r@post), numSites(fm@data))
+  expect_true(all(is.na(r@post[3,,])))
+  
   set.seed(123)
   ysim <- simData(lambda=5, gamma=2, omega=0.5, sigma=40, M=50, T=5,type="line",
             keyfun="halfnorm")
@@ -231,7 +261,7 @@ test_that("distsampOpen works with NAs", {
 
   fm <- distsampOpen(~1, ~1, ~1, ~1, data=umf, K=10, keyfun="halfnorm")
 
-  expect_warning(r <- ranef(fm))
+  r <- ranef(fm)
   expect_equal(cor(bup(r)[,1],ysim$N[,1]), 0.6593, tol=1e-4)
 
 })

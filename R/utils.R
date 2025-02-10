@@ -513,6 +513,7 @@ imputeMissing <- function(umf, whichCovs = seq(length=ncol(obsCovs(umf))))
     .Deprecated("imputeMissing", package=NULL, 
               msg = paste("imputeMissing will be deprecated in the next version."),
              old = as.character(sys.call(sys.parent()))[1L])
+
     ## impute observation covariates
     if(!is.null(umf@obsCovs)) {
         obsCovs <- umf@obsCovs
@@ -743,8 +744,10 @@ getUA <- function(umf){
   M <- numSites(umf)
   if(inherits(umf, "unmarkedFrameGDR")){
     J <- ncol(umf@yDistance) / umf@numPrimary
-  } else{
+  } else if(methods::.hasSlot(umf, "numPrimary")){
     J <- ncol(getY(umf)) / umf@numPrimary
+  } else {
+    J <- ncol(getY(umf))
   }
   db <- umf@dist.breaks
   w <- diff(db)
@@ -760,13 +763,90 @@ getUA <- function(umf){
     point = {
         for(i in 1:M) {
             a[i, 1] <- pi*db[2]^2
-            for(j in 2:J)
+            if(J > 1){
+              for(j in 2:J){
                 a[i, j] <- pi*db[j+1]^2 - sum(a[i, 1:(j-1)])
+              }
+            }
             u[i,] <- a[i,] / sum(a[i,])
             }
         })
   list(a=a, u=u)
 
+}
+
+# Distance probability
+# Consolidate this with functions below?
+get_dist_prob <- function(object){
+  db <- object@data@dist.breaks
+  M <- numSites(object@data)
+  T <- 1
+  if(methods::.hasSlot(object@data, "numPrimary")){
+    T <- object@data@numPrimary
+  }
+
+  if(inherits("object", "unmarkedFitGDR")){
+    J <- ncol(object@data@yDist) / T
+    type <- "dist"
+  } else {
+    J <- ncol(object@data@y) / T
+    type <- "det"
+  }
+  stopifnot(J == length(db) - 1)
+
+  par1 <- matrix(0, M, T)
+  if(object@keyfun != "uniform"){
+    par1 <- predict(object, type=type, level=NULL, na.rm=FALSE)$Predicted
+    par1 <- matrix(par1, M, T, byrow=TRUE)
+  }
+
+  scale <- 0.0
+  if(object@keyfun == "hazard"){
+    scale <- exp(coef(object, type = "scale"))
+  }
+
+  ua <- getUA(object@data)
+  u <- ua$u
+  a <- ua$a
+  w <- diff(db)
+
+  cp <- array(NA, c(M,J,T))
+
+  for (i in 1:M){
+    for (t in 1:T){
+      if(is.na(par1[i,t])) next    
+      cp[i,,t] <- getDistCP(object@keyfun, par1[i,t], scale, object@data@survey,
+                            db, w, a[i,], u[i,])
+    }
+  }
+  matrix(cp, nrow=M)
+}
+
+
+# Get area for converting density to abundance in distance sampling models
+get_ds_area <- function(umf, unitsOut){
+  db <- umf@dist.breaks
+ 
+  # Calculate area based on survey type
+  A <- switch(umf@survey,
+    line = umf@tlength * max(db) * 2,
+    point = pi * max(db)^2
+  )
+
+  # Convert input unit to kmsq
+  A <- switch(umf@unitsIn,
+    m = A / 1e6,
+    km = A
+  )
+
+  # Convert kmsq to output unit
+  A <- switch(unitsOut,
+    m = A * 1e6,
+    ha = A * 100,
+    kmsq = A
+  )
+
+  A
 }
 
 pHalfnorm <- function(sigma, survey, db, w, a){
@@ -803,7 +883,7 @@ pExp <- function(rate, survey, db, w, a){
       for(j in 1:J) {
         cp[j] <- integrate(grexp, db[j], db[j+1],
                             rate=rate, rel.tol=1e-4)$value *
-                            2 * pi * a[j]
+                            2 * pi / a[j]
       }
     }
   )

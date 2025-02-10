@@ -29,46 +29,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -80,55 +65,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -161,6 +145,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
 
 <style type="text/css">body {
 background-color: #fff;
@@ -361,67 +367,123 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="TOC">
 <ul>
-<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
-<li><a href="#components-of-a-call-to-simulate"><span class="toc-section-number">2</span> Components of a call to simulate</a></li>
-<li><a href="#simulating-an-occupancy-dataset"><span class="toc-section-number">3</span> Simulating an occupancy dataset</a>
+<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#components-of-a-call-to-simulate" id="toc-components-of-a-call-to-simulate"><span class="toc-section-number">2</span> Components of a call to
+simulate</a></li>
+<li><a href="#simulating-an-occupancy-dataset" id="toc-simulating-an-occupancy-dataset"><span class="toc-section-number">3</span> Simulating an occupancy dataset</a>
 <ul>
-<li><a href="#the-unmarkedframe"><span class="toc-section-number">3.1</span> 1. The <code>unmarkedFrame</code></a></li>
-<li><a href="#specify-the-model-type"><span class="toc-section-number">3.2</span> 2. Specify the model type</a></li>
-<li><a href="#specify-other-arguments-to-the-fitting-function"><span class="toc-section-number">3.3</span> 3. Specify other arguments to the fitting function</a></li>
-<li><a href="#specify-the-corresponding-parameter-values"><span class="toc-section-number">3.4</span> 4. Specify the corresponding parameter values</a></li>
-<li><a href="#run-simulate"><span class="toc-section-number">3.5</span> Run simulate</a></li>
-<li><a href="#fit-a-model-to-the-simulated-dataset"><span class="toc-section-number">3.6</span> Fit a model to the simulated dataset</a></li>
+<li><a href="#the-unmarkedframe" id="toc-the-unmarkedframe"><span class="toc-section-number">3.1</span> 1. The
+<code>unmarkedFrame</code></a></li>
+<li><a href="#specify-the-model-type" id="toc-specify-the-model-type"><span class="toc-section-number">3.2</span> 2. Specify the model type</a></li>
+<li><a href="#specify-other-arguments-to-the-fitting-function" id="toc-specify-other-arguments-to-the-fitting-function"><span class="toc-section-number">3.3</span> 3. Specify other arguments to the
+fitting function</a></li>
+<li><a href="#specify-the-corresponding-parameter-values" id="toc-specify-the-corresponding-parameter-values"><span class="toc-section-number">3.4</span> 4. Specify the corresponding
+parameter values</a></li>
+<li><a href="#run-simulate" id="toc-run-simulate"><span class="toc-section-number">3.5</span> Run simulate</a></li>
+<li><a href="#fit-a-model-to-the-simulated-dataset" id="toc-fit-a-model-to-the-simulated-dataset"><span class="toc-section-number">3.6</span> Fit a model to the simulated
+dataset</a></li>
 </ul></li>
-<li><a href="#simulating-a-more-complex-dataset-gdistremoval"><span class="toc-section-number">4</span> Simulating a more complex dataset: gdistremoval</a>
+<li><a href="#simulating-a-more-complex-dataset-gdistremoval" id="toc-simulating-a-more-complex-dataset-gdistremoval"><span class="toc-section-number">4</span> Simulating a more complex dataset:
+gdistremoval</a>
 <ul>
-<li><a href="#the-unmarkedframe-1"><span class="toc-section-number">4.1</span> 1. The <code>unmarkedFrame</code></a></li>
-<li><a href="#arguments-sent-to-gdistremoval"><span class="toc-section-number">4.2</span> 2. Arguments sent to <code>gdistremoval</code></a></li>
-<li><a href="#coefficient-values"><span class="toc-section-number">4.3</span> 3. Coefficient values</a></li>
-<li><a href="#run-simulation"><span class="toc-section-number">4.4</span> 4. Run simulation</a></li>
-<li><a href="#fit-model-to-simulated-dataset"><span class="toc-section-number">4.5</span> Fit model to simulated dataset</a></li>
+<li><a href="#the-unmarkedframe-1" id="toc-the-unmarkedframe-1"><span class="toc-section-number">4.1</span> 1. The
+<code>unmarkedFrame</code></a></li>
+<li><a href="#arguments-sent-to-gdistremoval" id="toc-arguments-sent-to-gdistremoval"><span class="toc-section-number">4.2</span> 2. Arguments sent to
+<code>gdistremoval</code></a></li>
+<li><a href="#coefficient-values" id="toc-coefficient-values"><span class="toc-section-number">4.3</span> 3. Coefficient values</a></li>
+<li><a href="#run-simulation" id="toc-run-simulation"><span class="toc-section-number">4.4</span> 4. Run simulation</a></li>
+<li><a href="#fit-model-to-simulated-dataset" id="toc-fit-model-to-simulated-dataset"><span class="toc-section-number">4.5</span> Fit model to simulated
+dataset</a></li>
 </ul></li>
-<li><a href="#conclusion"><span class="toc-section-number">5</span> Conclusion</a></li>
-<li><a href="#references">References</a></li>
+<li><a href="#conclusion" id="toc-conclusion"><span class="toc-section-number">5</span> Conclusion</a></li>
+<li><a href="#references" id="toc-references">References</a></li>
 </ul>
 </div>
 
 <div id="introduction" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
-<p>Simulating datasets is a powerful and varied tool when conducting <code>unmarked</code> analyses. Writing our own code to simulate a dataset based on a given model is an excellent learning tool, and can help us test if a given model is generating the expected results. If we simulate a series of datasets based on a fitted model, and calculate a statistic from each of those fits, we can generate a distribution of the statistic - this is what the <code>parboot</code> function does. This can be helpful, for example, when testing goodness of fit. Finally, simulation can be a useful component of power analysis when a closed-form equation for power is not available.</p>
-<p><code>unmarked</code> provides two different ways of generating simulated datasets, depending on the stage we are at in the modeling process.</p>
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>Simulating datasets is a powerful and varied tool when conducting
+<code>unmarked</code> analyses. Writing our own code to simulate a
+dataset based on a given model is an excellent learning tool, and can
+help us test if a given model is generating the expected results. If we
+simulate a series of datasets based on a fitted model, and calculate a
+statistic from each of those fits, we can generate a distribution of the
+statistic - this is what the <code>parboot</code> function does. This
+can be helpful, for example, when testing goodness of fit. Finally,
+simulation can be a useful component of power analysis when a
+closed-form equation for power is not available.</p>
+<p><code>unmarked</code> provides two different ways of generating
+simulated datasets, depending on the stage we are at in the modeling
+process.</p>
 <ol style="list-style-type: decimal">
-<li>Generating simulated datasets from a fitted model we already have</li>
+<li>Generating simulated datasets from a fitted model we already
+have</li>
 <li>Generating simulated datasets from scratch</li>
 </ol>
-<p>For (1), we simply call the <code>simulate</code> method on our fitted model object and new dataset(s) are generated. This is the approach used by <code>parboot</code>. In this vignette we will focus on (2), a more flexible approach to simulation, also using the <code>simulate</code> method, that allows us to generate a dataset corresponding to any <code>unmarked</code> model from scratch.</p>
+<p>For (1), we simply call the <code>simulate</code> method on our
+fitted model object and new dataset(s) are generated. This is the
+approach used by <code>parboot</code>. In this vignette we will focus on
+(2), a more flexible approach to simulation, also using the
+<code>simulate</code> method, that allows us to generate a dataset
+corresponding to any <code>unmarked</code> model from scratch.</p>
 </div>
 <div id="components-of-a-call-to-simulate" class="section level1" number="2">
-<h1 number="2"><span class="header-section-number">2</span> Components of a call to simulate</h1>
-<p>We will need to provide several pieces of information to <code>simulate</code> in order to simulate a dataset from scratch in <code>unmarked</code>.</p>
+<h1><span class="header-section-number">2</span> Components of a call to
+simulate</h1>
+<p>We will need to provide several pieces of information to
+<code>simulate</code> in order to simulate a dataset from scratch in
+<code>unmarked</code>.</p>
 <ol style="list-style-type: decimal">
-<li>An <code>unmarkedFrame</code> of the appropriate type defining the desired experimental design</li>
-<li>The model to use (<code>model</code>), if the <code>unmarkedFrame</code> is used for multiple model types</li>
-<li>Other arguments required by the fitting function for which we are simulating. Most importantly this will include formulas for each submodel.</li>
-<li>A named list of parameter or coefficient values (<code>coefs</code>) controlling the simulation, which correspond to the formula(s) specified earlier.</li>
+<li>An <code>unmarkedFrame</code> of the appropriate type defining the
+desired experimental design</li>
+<li>The model to use (<code>model</code>), if the
+<code>unmarkedFrame</code> is used for multiple model types</li>
+<li>Other arguments required by the fitting function for which we are
+simulating. Most importantly this will include formulas for each
+submodel.</li>
+<li>A named list of parameter or coefficient values (<code>coefs</code>)
+controlling the simulation, which correspond to the formula(s) specified
+earlier.</li>
 </ol>
 </div>
 <div id="simulating-an-occupancy-dataset" class="section level1" number="3">
-<h1 number="3"><span class="header-section-number">3</span> Simulating an occupancy dataset</h1>
-<p>The easiest way to demonstrate how to use <code>simulate</code> is to look at an example: we’ll start with a simple one for occupancy.</p>
+<h1><span class="header-section-number">3</span> Simulating an occupancy
+dataset</h1>
+<p>The easiest way to demonstrate how to use <code>simulate</code> is to
+look at an example: we’ll start with a simple one for occupancy.</p>
 <div id="the-unmarkedframe" class="section level2" number="3.1">
-<h2 number="3.1"><span class="header-section-number">3.1</span> 1. The <code>unmarkedFrame</code></h2>
-<p>Suppose we want to simulate a single-season occupancy dataset in which site occupancy is affected by elevation. The first step is to create an <code>unmarkedFrame</code> object of the appropriate type, which defines the experimental design and includes any covariates we want to use in the simulation. Since we want to simulate an occupancy dataset, we’ll create an <code>unmarkedFrameOccu</code>.</p>
-<p>The <code>unmarkedFrameOccu</code> function takes three arguments: the observation matrix <code>y</code>, the site covariates <code>siteCovs</code>, and the observation-level covariates <code>obsCovs</code>. The dimensions of <code>y</code> define how many sites and replicate samples the study includes. We’ll create a blank <code>y</code> matrix (i.e., filled with <code>NA</code>s) of dimension 300 x 8, indicating we want our study to have 300 sites and 8 sampling occasions. The values you put in this <code>y</code> matrix don’t matter, you can put anything in there you want as they’ll be overwritten with the simulated values later. It’s only used to define the number of sites and occasions.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(unmarked)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>M &lt;-<span class="st"> </span><span class="dv">300</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>J &lt;-<span class="st"> </span><span class="dv">8</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>y &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, M, J)</span></code></pre></div>
-<p>Earlier we said we want to include an elevation covariate, so we’ll simulate the covariate now and add it to a data frame. We could create several covariates here, including factors, etc.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>site_covs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">elev =</span> <span class="kw">rnorm</span>(M))</span></code></pre></div>
-<p>We’re not using any observation covariates, so we can now make the complete <code>unmarkedFrameOccu</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>umf &lt;-<span class="st"> </span><span class="kw">unmarkedFrameOccu</span>(<span class="dt">y =</span> y, <span class="dt">siteCovs =</span> site_covs)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="kw">head</span>(umf)</span></code></pre></div>
+<h2><span class="header-section-number">3.1</span> 1. The
+<code>unmarkedFrame</code></h2>
+<p>Suppose we want to simulate a single-season occupancy dataset in
+which site occupancy is affected by elevation. The first step is to
+create an <code>unmarkedFrame</code> object of the appropriate type,
+which defines the experimental design and includes any covariates we
+want to use in the simulation. Since we want to simulate an occupancy
+dataset, we’ll create an <code>unmarkedFrameOccu</code>.</p>
+<p>The <code>unmarkedFrameOccu</code> function takes three arguments:
+the observation matrix <code>y</code>, the site covariates
+<code>siteCovs</code>, and the observation-level covariates
+<code>obsCovs</code>. The dimensions of <code>y</code> define how many
+sites and replicate samples the study includes. We’ll create a blank
+<code>y</code> matrix (i.e., filled with <code>NA</code>s) of dimension
+300 x 8, indicating we want our study to have 300 sites and 8 sampling
+occasions. The values you put in this <code>y</code> matrix don’t
+matter, you can put anything in there you want as they’ll be overwritten
+with the simulated values later. It’s only used to define the number of
+sites and occasions.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(unmarked)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="dv">300</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>J <span class="ot">&lt;-</span> <span class="dv">8</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, M, J)</span></code></pre></div>
+<p>Earlier we said we want to include an elevation covariate, so we’ll
+simulate the covariate now and add it to a data frame. We could create
+several covariates here, including factors, etc.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>site_covs <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">elev =</span> <span class="fu">rnorm</span>(M))</span></code></pre></div>
+<p>We’re not using any observation covariates, so we can now make the
+complete <code>unmarkedFrameOccu</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>umf <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameOccu</span>(<span class="at">y =</span> y, <span class="at">siteCovs =</span> site_covs)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">head</span>(umf)</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
 ##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
 ## 1   NA  NA  NA  NA  NA  NA  NA  NA -0.56047565
@@ -436,21 +498,43 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 10  NA  NA  NA  NA  NA  NA  NA  NA -0.44566197</code></pre>
 </div>
 <div id="specify-the-model-type" class="section level2" number="3.2">
-<h2 number="3.2"><span class="header-section-number">3.2</span> 2. Specify the model type</h2>
-<p>Since <code>unmarkedFrameOccu</code> is used by both the single-season occupancy model (<code>occu</code>) and the Royle-Nichols occupancy model (<code>occuRN</code>), we need to tell <code>unmarked</code> which one to use.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>model &lt;-<span class="st"> </span>occu</span></code></pre></div>
-<p>Most <code>unmarkedFrame</code> types in <code>unmarked</code> are used by only one model fitting function, so this step is often unnecessary.</p>
+<h2><span class="header-section-number">3.2</span> 2. Specify the model
+type</h2>
+<p>Since <code>unmarkedFrameOccu</code> is used by both the
+single-season occupancy model (<code>occu</code>) and the Royle-Nichols
+occupancy model (<code>occuRN</code>), we need to tell
+<code>unmarked</code> which one to use.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> occu</span></code></pre></div>
+<p>Most <code>unmarkedFrame</code> types in <code>unmarked</code> are
+used by only one model fitting function, so this step is often
+unnecessary.</p>
 </div>
 <div id="specify-other-arguments-to-the-fitting-function" class="section level2" number="3.3">
-<h2 number="3.3"><span class="header-section-number">3.3</span> 3. Specify other arguments to the fitting function</h2>
-<p>Take a look at the help file for <code>occu</code>. When fitting a single-season occupancy model we need to provide, in addition to the data, the <code>formula</code> argument defining the model structure. We’ll need to provide these same argument(s) to <code>simulate</code>. Many fitting functions will have multiple required arguments, such as the mixture distribution to use, key functions, etc.</p>
-<p>Here we specify a double right-hand-side formula as required by <code>occu</code>, specifying an effect of elevation on occupancy.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>form &lt;-<span class="st"> </span><span class="er">~</span><span class="dv">1</span><span class="op">~</span>elev</span></code></pre></div>
+<h2><span class="header-section-number">3.3</span> 3. Specify other
+arguments to the fitting function</h2>
+<p>Take a look at the help file for <code>occu</code>. When fitting a
+single-season occupancy model we need to provide, in addition to the
+data, the <code>formula</code> argument defining the model structure.
+We’ll need to provide these same argument(s) to <code>simulate</code>.
+Many fitting functions will have multiple required arguments, such as
+the mixture distribution to use, key functions, etc.</p>
+<p>Here we specify a double right-hand-side formula as required by
+<code>occu</code>, specifying an effect of elevation on occupancy.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>form <span class="ot">&lt;-</span> <span class="er">~</span><span class="dv">1</span><span class="sc">~</span>elev</span></code></pre></div>
 </div>
 <div id="specify-the-corresponding-parameter-values" class="section level2" number="3.4">
-<h2 number="3.4"><span class="header-section-number">3.4</span> 4. Specify the corresponding parameter values</h2>
-<p>The model structure, as defined by the formula above, implies a certain set of parameter/coefficient values (intercepts, slopes) we need to supply to <code>simulate</code>. These need to be supplied as a named list, where each list element corresponds to one submodel (such as <code>state</code> for occupancy and <code>det</code> for detection). Each list element is a numeric vector of the required parameter values. It can be tricky to figure out the structure of this list, so <code>simulate</code> allows you to not include it at first, in which case the function will return a template for you to fill in.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">simulate</span>(umf, <span class="dt">model =</span> model, <span class="dt">formula =</span> form)</span></code></pre></div>
+<h2><span class="header-section-number">3.4</span> 4. Specify the
+corresponding parameter values</h2>
+<p>The model structure, as defined by the formula above, implies a
+certain set of parameter/coefficient values (intercepts, slopes) we need
+to supply to <code>simulate</code>. These need to be supplied as a named
+list, where each list element corresponds to one submodel (such as
+<code>state</code> for occupancy and <code>det</code> for detection).
+Each list element is a numeric vector of the required parameter values.
+It can be tricky to figure out the structure of this list, so
+<code>simulate</code> allows you to not include it at first, in which
+case the function will return a template for you to fill in.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">simulate</span>(umf, <span class="at">model =</span> model, <span class="at">formula =</span> form)</span></code></pre></div>
 <pre><code>## coefs should be a named list of vectors, with the following structure
 ## (replace 0s with your values):
 ##
@@ -462,23 +546,33 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## (Intercept)
 ##           0</code></pre>
 <pre><code>## Error: Specify coefs argument as shown above</code></pre>
-<p>We need to supply a list with two elements <code>state</code> and <code>det</code>. The <code>state</code> element contains two values, the intercept and the slope corresponding to elevation. The <code>det</code> element contains only the intercept since we have no covariates on detection. Note that all values supplied in this list <em>must</em> be on the inverse link scale, which will depend on the specific submodel used. So for example, a value of 0 for <code>det</code> implies a detection probability of 0.5, because we’re using the logit link function.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">plogis</span>(<span class="dv">0</span>)</span></code></pre></div>
+<p>We need to supply a list with two elements <code>state</code> and
+<code>det</code>. The <code>state</code> element contains two values,
+the intercept and the slope corresponding to elevation. The
+<code>det</code> element contains only the intercept since we have no
+covariates on detection. Note that all values supplied in this list
+<em>must</em> be on the inverse link scale, which will depend on the
+specific submodel used. So for example, a value of 0 for
+<code>det</code> implies a detection probability of 0.5, because we’re
+using the logit link function.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">plogis</span>(<span class="dv">0</span>)</span></code></pre></div>
 <pre><code>## [1] 0.5</code></pre>
 <p>Now let’s make our own <code>coefs</code> list:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>cf &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">state =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">-0.4</span>), <span class="dt">det =</span> <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>cf <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">state =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.4</span>), <span class="at">det =</span> <span class="dv">0</span>)</span></code></pre></div>
 <p>Here we’re setting a negative effect of elevation on occupancy.</p>
 </div>
 <div id="run-simulate" class="section level2" number="3.5">
-<h2 number="3.5"><span class="header-section-number">3.5</span> Run simulate</h2>
+<h2><span class="header-section-number">3.5</span> Run simulate</h2>
 <p>We now have all the pieces to simulate a dataset.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>out &lt;-<span class="st"> </span><span class="kw">simulate</span>(umf, <span class="dt">model =</span> occu, <span class="dt">formula =</span> <span class="op">~</span><span class="dv">1</span><span class="op">~</span>elev, <span class="dt">coefs =</span> cf)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">simulate</span>(umf, <span class="at">model =</span> occu, <span class="at">formula =</span> <span class="sc">~</span><span class="dv">1</span><span class="sc">~</span>elev, <span class="at">coefs =</span> cf)</span></code></pre></div>
 <pre><code>## Assumed parameter order for state:
 ## (Intercept), elev</code></pre>
 <pre><code>## Assumed parameter order for det:
 ## (Intercept)</code></pre>
-<p>The result is always a list of <code>unmarkedFrame</code>s. By default, we just get one, but we can get more with the <code>nsim</code> argument.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="kw">head</span>(out[[<span class="dv">1</span>]])</span></code></pre></div>
+<p>The result is always a list of <code>unmarkedFrame</code>s. By
+default, we just get one, but we can get more with the <code>nsim</code>
+argument.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">head</span>(out[[<span class="dv">1</span>]])</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
 ##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
 ## 1    1   1   1   1   1   1   1   1 -0.56047565
@@ -491,49 +585,68 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 8    0   0   0   0   0   0   0   0 -1.26506123
 ## 9    1   1   1   0   1   0   1   0 -0.68685285
 ## 10   1   0   0   1   1   0   0   0 -0.44566197</code></pre>
-<p>The simulated <code>unmarkedFrame</code> now contains <code>y</code> values and is ready to use.</p>
+<p>The simulated <code>unmarkedFrame</code> now contains <code>y</code>
+values and is ready to use.</p>
 </div>
 <div id="fit-a-model-to-the-simulated-dataset" class="section level2" number="3.6">
-<h2 number="3.6"><span class="header-section-number">3.6</span> Fit a model to the simulated dataset</h2>
+<h2><span class="header-section-number">3.6</span> Fit a model to the
+simulated dataset</h2>
 <p>As a quick check, let’s fit a model to our simulated dataset.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="kw">occu</span>(<span class="op">~</span><span class="dv">1</span><span class="op">~</span>elev, <span class="dt">data =</span> out[[<span class="dv">1</span>]])</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">occu</span>(<span class="sc">~</span><span class="dv">1</span><span class="sc">~</span>elev, <span class="at">data =</span> out[[<span class="dv">1</span>]])</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## occu(formula = ~1 ~ elev, data = out[[1]])
 ## 
-## Occupancy:
+## Occupancy (logit-scale):
 ##             Estimate    SE     z  P(&gt;|z|)
 ## (Intercept)   -0.146 0.120 -1.22 0.223241
 ## elev          -0.572 0.136 -4.20 0.000027
 ## 
-## Detection:
+## Detection (logit-scale):
 ##  Estimate     SE      z P(&gt;|z|)
 ##    -0.038 0.0612 -0.621   0.535
 ## 
-## AIC: 1929.538</code></pre>
-<p>We get out roughly the same parameters that we put in, as expected.</p>
+## AIC: 1929.538 
+## Number of sites: 300</code></pre>
+<p>We get out roughly the same parameters that we put in, as
+expected.</p>
 </div>
 </div>
 <div id="simulating-a-more-complex-dataset-gdistremoval" class="section level1" number="4">
-<h1 number="4"><span class="header-section-number">4</span> Simulating a more complex dataset: gdistremoval</h1>
-<p>The <code>gdistremoval</code> function fits the model of <span class="citation">Amundson et al. (2014)</span>, which estimates abundance using a combination of distance sampling and removal sampling data. When simulating a dataset based on this model, we have to provide several additional pieces of information related to the structure of the distance and removal sampling analyses.</p>
+<h1><span class="header-section-number">4</span> Simulating a more
+complex dataset: gdistremoval</h1>
+<p>The <code>gdistremoval</code> function fits the model of <span class="citation">Amundson et al. (2014)</span>, which estimates
+abundance using a combination of distance sampling and removal sampling
+data. When simulating a dataset based on this model, we have to provide
+several additional pieces of information related to the structure of the
+distance and removal sampling analyses.</p>
 <div id="the-unmarkedframe-1" class="section level2" number="4.1">
-<h2 number="4.1"><span class="header-section-number">4.1</span> 1. The <code>unmarkedFrame</code></h2>
-<p>First create the appropriate type of <code>unmarkedFrame</code>, which is <code>unmarkedFrameGDR</code>. There’s two y-matrices: one for distance sampling and one for removal sampling. We’ll create a dataset with 4 distance bins and 5 removal periods.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true"></a>M &lt;-<span class="st"> </span><span class="dv">100</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true"></a>Jdist &lt;-<span class="st"> </span><span class="dv">4</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true"></a>Jrem &lt;-<span class="st"> </span><span class="dv">5</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true"></a></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true"></a>y_dist &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, M, Jdist)</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true"></a>y_rem &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="ot">NA</span>, M, Jrem)</span></code></pre></div>
-<p>We’ll create an elevation site covariate and a wind observation covariate. Observation-level covariates are only used by the removal part of the model, so they should have the same number of values as <code>y_rem</code>.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>site_covs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">elev =</span> <span class="kw">rnorm</span>(M))</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a>obs_covs &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">wind =</span> <span class="kw">rnorm</span>(M <span class="op">*</span><span class="st"> </span>Jrem))</span></code></pre></div>
-<p>Finally we can create the <code>unmarkedFrameGDR</code>. We’ll also need to specify the distance bins and the units for the distance part of the model here. See <code>?unmarkedFrameGDR</code> for more information.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a>umf &lt;-<span class="st"> </span><span class="kw">unmarkedFrameGDR</span>(<span class="dt">yRem =</span> y_rem, <span class="dt">yDist =</span> y_dist, <span class="dt">siteCovs =</span> site_covs, <span class="dt">obsCovs =</span> obs_covs,</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true"></a>                        <span class="dt">dist.breaks =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">25</span>,<span class="dv">50</span>,<span class="dv">75</span>,<span class="dv">100</span>), <span class="dt">unitsIn =</span> <span class="st">&#39;m&#39;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a><span class="kw">head</span>(umf)</span></code></pre></div>
+<h2><span class="header-section-number">4.1</span> 1. The
+<code>unmarkedFrame</code></h2>
+<p>First create the appropriate type of <code>unmarkedFrame</code>,
+which is <code>unmarkedFrameGDR</code>. There’s two y-matrices: one for
+distance sampling and one for removal sampling. We’ll create a dataset
+with 4 distance bins and 5 removal periods.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>Jdist <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>Jrem <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>y_dist <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, M, Jdist)</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>y_rem <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, M, Jrem)</span></code></pre></div>
+<p>We’ll create an elevation site covariate and a wind observation
+covariate. Observation-level covariates are only used by the removal
+part of the model, so they should have the same number of values as
+<code>y_rem</code>.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>site_covs <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">elev =</span> <span class="fu">rnorm</span>(M))</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>obs_covs <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">wind =</span> <span class="fu">rnorm</span>(M <span class="sc">*</span> Jrem))</span></code></pre></div>
+<p>Finally we can create the <code>unmarkedFrameGDR</code>. We’ll also
+need to specify the distance bins and the units for the distance part of
+the model here. See <code>?unmarkedFrameGDR</code> for more
+information.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>umf <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameGDR</span>(<span class="at">yRem =</span> y_rem, <span class="at">yDist =</span> y_dist, <span class="at">siteCovs =</span> site_covs, <span class="at">obsCovs =</span> obs_covs,</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>                        <span class="at">dist.breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">25</span>,<span class="dv">50</span>,<span class="dv">75</span>,<span class="dv">100</span>), <span class="at">unitsIn =</span> <span class="st">&#39;m&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">head</span>(umf)</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
 ##    yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
 ## 1       NA      NA      NA      NA     NA     NA     NA     NA     NA
@@ -559,18 +672,25 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 10 -0.44566197 -0.53090652 -1.4617556  0.68791677  2.10010894 -1.28703048</code></pre>
 </div>
 <div id="arguments-sent-to-gdistremoval" class="section level2" number="4.2">
-<h2 number="4.2"><span class="header-section-number">4.2</span> 2. Arguments sent to <code>gdistremoval</code></h2>
-<p>Looking at <code>?gdistremoval</code>, required arguments include <code>lambdaformula</code>, <code>removalformula</code>, and <code>distanceformula</code>. We need to set these formula values to control the simulation. We’ll also use the negative binomial distribution for abundance.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>lambdaformula &lt;-<span class="st"> </span><span class="er">~</span>elev <span class="co"># elevation effect on abundance</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a>removalformula &lt;-<span class="st"> </span><span class="er">~</span>wind <span class="co"># wind effect on removal p</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true"></a>distanceformula &lt;-<span class="st"> </span><span class="er">~</span><span class="dv">1</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true"></a>mixture &lt;-<span class="st"> &quot;NB&quot;</span></span></code></pre></div>
+<h2><span class="header-section-number">4.2</span> 2. Arguments sent to
+<code>gdistremoval</code></h2>
+<p>Looking at <code>?gdistremoval</code>, required arguments include
+<code>lambdaformula</code>, <code>removalformula</code>, and
+<code>distanceformula</code>. We need to set these formula values to
+control the simulation. We’ll also use the negative binomial
+distribution for abundance.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>lambdaformula <span class="ot">&lt;-</span> <span class="er">~</span>elev <span class="co"># elevation effect on abundance</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>removalformula <span class="ot">&lt;-</span> <span class="er">~</span>wind <span class="co"># wind effect on removal p</span></span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>distanceformula <span class="ot">&lt;-</span> <span class="er">~</span><span class="dv">1</span></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>mixture <span class="ot">&lt;-</span> <span class="st">&quot;NB&quot;</span></span></code></pre></div>
 </div>
 <div id="coefficient-values" class="section level2" number="4.3">
-<h2 number="4.3"><span class="header-section-number">4.3</span> 3. Coefficient values</h2>
-<p>As in the previous section, we’ll leave the <code>coefs</code> argument blank at first and get the correct output structure.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a><span class="kw">simulate</span>(umf, <span class="dt">lambdaformula=</span><span class="op">~</span>elev, <span class="dt">removalformula=</span><span class="op">~</span>wind, <span class="dt">distanceformula=</span><span class="op">~</span><span class="dv">1</span>,</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true"></a>         <span class="dt">mixture=</span><span class="st">&quot;NB&quot;</span>)</span></code></pre></div>
+<h2><span class="header-section-number">4.3</span> 3. Coefficient
+values</h2>
+<p>As in the previous section, we’ll leave the <code>coefs</code>
+argument blank at first and get the correct output structure.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">simulate</span>(umf, <span class="at">lambdaformula=</span><span class="sc">~</span>elev, <span class="at">removalformula=</span><span class="sc">~</span>wind, <span class="at">distanceformula=</span><span class="sc">~</span><span class="dv">1</span>,</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>         <span class="at">mixture=</span><span class="st">&quot;NB&quot;</span>)</span></code></pre></div>
 <pre><code>## coefs should be a named list of vectors, with the following structure
 ## (replace 0s with your values):
 ##
@@ -590,19 +710,27 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## (Intercept)        wind
 ##           0           0</code></pre>
 <pre><code>## Error: Specify coefs argument as shown above</code></pre>
-<p>We need to set two values for the abundance (<code>lambda</code>) model on the log scale, one for <code>dist</code> which represents the distance function sigma parameter (log scale), one for the negative binomial dispersion parameter <code>alpha</code> (log scale), and two for the removal detection probability model (logit scale).</p>
+<p>We need to set two values for the abundance (<code>lambda</code>)
+model on the log scale, one for <code>dist</code> which represents the
+distance function sigma parameter (log scale), one for the negative
+binomial dispersion parameter <code>alpha</code> (log scale), and two
+for the removal detection probability model (logit scale).</p>
 <p>We’ll pick the (relatively arbitrary) values below:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true"></a>cf &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="kw">c</span>(<span class="kw">log</span>(<span class="dv">5</span>), <span class="fl">0.7</span>),</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true"></a>           <span class="dt">dist =</span> <span class="kw">log</span>(<span class="dv">50</span>),</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true"></a>           <span class="dt">alpha =</span> <span class="fl">0.1</span>,</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true"></a>           <span class="dt">rem =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="fl">-0.3</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a>cf <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">lambda =</span> <span class="fu">c</span>(<span class="fu">log</span>(<span class="dv">5</span>), <span class="fl">0.7</span>),</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>           <span class="at">dist =</span> <span class="fu">log</span>(<span class="dv">50</span>),</span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>           <span class="at">alpha =</span> <span class="fl">0.1</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>           <span class="at">rem =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="fl">0.3</span>))</span></code></pre></div>
 </div>
 <div id="run-simulation" class="section level2" number="4.4">
-<h2 number="4.4"><span class="header-section-number">4.4</span> 4. Run simulation</h2>
-<p>Now provide everything to <code>simulate</code>. Note we don’t need to provide the <code>model</code> argument because <code>unmarkedFrameGDR</code> is used for only one fitting function (<code>gdistremoval</code>).</p>
+<h2><span class="header-section-number">4.4</span> 4. Run
+simulation</h2>
+<p>Now provide everything to <code>simulate</code>. Note we don’t need
+to provide the <code>model</code> argument because
+<code>unmarkedFrameGDR</code> is used for only one fitting function
+(<code>gdistremoval</code>).</p>
 <p>We’ll simulate 2 datasets.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true"></a>out &lt;-<span class="st"> </span><span class="kw">simulate</span>(umf, <span class="dt">lambdaformula=</span><span class="op">~</span>elev, <span class="dt">removalformula=</span><span class="op">~</span>wind, <span class="dt">distanceformula=</span><span class="op">~</span><span class="dv">1</span>,</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true"></a>                <span class="dt">coefs=</span>cf, <span class="dt">mixture=</span><span class="st">&quot;NB&quot;</span>, <span class="dt">nsim=</span><span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">simulate</span>(umf, <span class="at">lambdaformula=</span><span class="sc">~</span>elev, <span class="at">removalformula=</span><span class="sc">~</span>wind, <span class="at">distanceformula=</span><span class="sc">~</span><span class="dv">1</span>,</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>                <span class="at">coefs=</span>cf, <span class="at">mixture=</span><span class="st">&quot;NB&quot;</span>, <span class="at">nsim=</span><span class="dv">2</span>)</span></code></pre></div>
 <pre><code>## Assumed parameter order for lambda:
 ## (Intercept), elev</code></pre>
 <pre><code>## Assumed parameter order for alpha:
@@ -611,7 +739,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## (Intercept)</code></pre>
 <pre><code>## Assumed parameter order for rem:
 ## (Intercept), wind</code></pre>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true"></a><span class="kw">lapply</span>(out, head)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">lapply</span>(out, head)</span></code></pre></div>
 <pre><code>## [[1]]
 ## Data frame representation of unmarkedFrame object.
 ##    yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
@@ -663,46 +791,58 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 10 -0.44566197 -0.53090652 -1.4617556  0.68791677  2.10010894 -1.28703048</code></pre>
 </div>
 <div id="fit-model-to-simulated-dataset" class="section level2" number="4.5">
-<h2 number="4.5"><span class="header-section-number">4.5</span> Fit model to simulated dataset</h2>
-<p>As a check, we’ll fit the same model used for simulation to one of the datasets.</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true"></a><span class="kw">gdistremoval</span>(<span class="dt">lambdaformula=</span><span class="op">~</span>elev, <span class="dt">removalformula=</span><span class="op">~</span>wind, <span class="dt">distanceformula=</span><span class="op">~</span><span class="dv">1</span>, <span class="dt">data=</span>out[[<span class="dv">1</span>]],</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true"></a>             <span class="dt">mixture=</span><span class="st">&quot;NB&quot;</span>)</span></code></pre></div>
+<h2><span class="header-section-number">4.5</span> Fit model to
+simulated dataset</h2>
+<p>As a check, we’ll fit the same model used for simulation to one of
+the datasets.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">gdistremoval</span>(<span class="at">lambdaformula=</span><span class="sc">~</span>elev, <span class="at">removalformula=</span><span class="sc">~</span>wind, <span class="at">distanceformula=</span><span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>out[[<span class="dv">1</span>]],</span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a>             <span class="at">mixture=</span><span class="st">&quot;NB&quot;</span>)</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## gdistremoval(lambdaformula = ~elev, removalformula = ~wind, distanceformula = ~1, 
 ##     data = out[[1]], mixture = &quot;NB&quot;)
 ## 
-## Abundance:
+## Abundance (log-scale):
 ##             Estimate    SE     z  P(&gt;|z|)
 ## (Intercept)    1.651 0.152 10.89 1.28e-27
 ## elev           0.887 0.142  6.25 4.16e-10
 ## 
-## Dispersion:
+## Dispersion (log-scale):
 ##  Estimate    SE     z P(&gt;|z|)
 ##     0.118 0.242 0.486   0.627
 ## 
-## Distance:
+## Distance (log-scale):
 ##  Estimate    SE    z P(&gt;|z|)
 ##      3.89 0.053 73.4       0
 ## 
-## Removal:
+## Removal (logit-scale):
 ##             Estimate    SE     z  P(&gt;|z|)
 ## (Intercept)   -0.901 0.141 -6.38 1.74e-10
 ## wind          -0.373 0.088 -4.24 2.20e-05
 ## 
-## AIC: 1162.882</code></pre>
+## AIC: 1162.882 
+## Number of sites: 100</code></pre>
 <p>Looks good.</p>
 </div>
 </div>
 <div id="conclusion" class="section level1" number="5">
-<h1 number="5"><span class="header-section-number">5</span> Conclusion</h1>
-<p>The <code>simulate</code> function provides a flexible tool for simulating data from any model in <code>unmarked</code>. These datasets can be used for a variety of purposes, such as for teaching examples, testing models, or developing new tools that work with <code>unmarked</code>. Additionally, simulating datasets is a key component of the power analysis workflow in <code>unmarked</code> - see the power analysis vignette for more examples.</p>
+<h1><span class="header-section-number">5</span> Conclusion</h1>
+<p>The <code>simulate</code> function provides a flexible tool for
+simulating data from any model in <code>unmarked</code>. These datasets
+can be used for a variety of purposes, such as for teaching examples,
+testing models, or developing new tools that work with
+<code>unmarked</code>. Additionally, simulating datasets is a key
+component of the power analysis workflow in <code>unmarked</code> - see
+the power analysis vignette for more examples.</p>
 </div>
-<div id="references" class="section level1 unnumbered" number>
-<h1 class="unnumbered" number>References</h1>
-<div id="refs" class="references hanging-indent">
-<div id="ref-Amundson_2014">
-<p>Amundson, C. L., J. A. Royle, and C. M. Handel. 2014. A hierarchical model combining distance sampling and time removal to estimate detection probability during avian point counts. The Auk 131:476–494.</p>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" line-spacing="2">
+<div id="ref-Amundson_2014" class="csl-entry">
+Amundson, C. L., J. A. Royle, and C. M. Handel. 2014. <a href="https://doi.org/10.1642/AUK-14-11.1"><span class="nocase">A
+hierarchical model combining distance sampling and time removal to
+estimate detection probability during avian point counts</span></a>. The
+Auk 131:476–494.
 </div>
 </div>
 </div>

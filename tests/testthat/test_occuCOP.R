@@ -269,6 +269,12 @@ test_that("occuCOP can fit simple models", {
     newdata = data.frame("a"=1:5,"b"=10:14),
     type = "psi"
   ))
+
+  # update / parboot
+  new_fit <- update(fit_default, data = umf[1:10,])
+  expect_equal(nrow(new_fit@data@y), 10)
+  pb <- parboot(fit_default, nsim=2)
+  expect_is(pb, "parboot")
   
   # Fitting accurately ----
   ## psi = 0.50, lambda = 1 ----
@@ -442,6 +448,9 @@ test_that("occuCOP can fit and predict models with covariates", {
     design = list(M = 100, J = 5),
     guide = list(habitat = factor(levels = c("A", "B", "C")))
   )))
+
+  # Check subsetting with covariates
+  expect_error(umf_sub <- umf[c(8,8,9),]) # this should work
   
   # Fit ----
   expect_no_error(umfit <- occuCOP(
@@ -481,5 +490,40 @@ test_that("occuCOP can fit and predict models with covariates", {
   expect_no_error(umpredlambda <- predict(umfit, type = "lambda", appendData = TRUE))
   expect_no_error(predict(umfit, type = "lambda", level = 0.5))
   expect_equal(umpredlambda$Predicted[1], 1.092008, tol = 1e-5)
+
+  ft <- fitted(umfit)
+  expect_equal(dim(ft), dim(umfit@data@y))
+  expect_equal(round(ft,4)[1:2,1:2],
+    structure(c(0.4056, 0.189, 2.0418, 2.7056), dim = c(2L, 2L)))
+
+  gp <- getP(umfit)
+  expect_equal(dim(gp), dim(umfit@data@y))
+  expect_equal(as.vector(gp[1:2,1:2]), c(1.0920,0.6409,5.4968,9.1728), tol=1e-4)
+
+  r <- ranef(umfit)
+  expect_equal(nrow(r@post), numSites(umfit@data))
+  expect_equal(bup(r)[1:4], c(0,0,0,0), tol=1e-4) # is this correct?
+
+  # With missing values in covs
+  umf_na <- umf
+  umf_na@obsCovs$rain[1] <- NA
+  #umf_na@siteCovs$elev[2] <- NA # Optim error - should be handled somehow?
+  expect_warning(
+  umfit <- occuCOP(
+    umf_na,
+    psiformula =  ~ habitat + elev,
+    lambdaformula =  ~ rain,
+    L1 = T,
+    na.rm=TRUE
+  ))
+
+  # Errors but it shouldn't
+  expect_error(ft <- fitted(umfit))
+  # ditto
+  expect_error(gp <- getP(umfit))
+  #expect_equal(dim(gp), dim(umfit@data@y))
+  #expect_true(is.na(gp[1,1]))
+
+  expect_error(expect_warning(r <- ranef(umfit)))
 })
 
