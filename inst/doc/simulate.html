@@ -485,17 +485,13 @@ complete <code>unmarkedFrameOccu</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>umf <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameOccu</span>(<span class="at">y =</span> y, <span class="at">siteCovs =</span> site_covs)</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">head</span>(umf)</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
-##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
-## 1   NA  NA  NA  NA  NA  NA  NA  NA -0.56047565
-## 2   NA  NA  NA  NA  NA  NA  NA  NA -0.23017749
-## 3   NA  NA  NA  NA  NA  NA  NA  NA  1.55870831
-## 4   NA  NA  NA  NA  NA  NA  NA  NA  0.07050839
-## 5   NA  NA  NA  NA  NA  NA  NA  NA  0.12928774
-## 6   NA  NA  NA  NA  NA  NA  NA  NA  1.71506499
-## 7   NA  NA  NA  NA  NA  NA  NA  NA  0.46091621
-## 8   NA  NA  NA  NA  NA  NA  NA  NA -1.26506123
-## 9   NA  NA  NA  NA  NA  NA  NA  NA -0.68685285
-## 10  NA  NA  NA  NA  NA  NA  NA  NA -0.44566197</code></pre>
+##   y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
+## 1  NA  NA  NA  NA  NA  NA  NA  NA -0.56047565
+## 2  NA  NA  NA  NA  NA  NA  NA  NA -0.23017749
+## 3  NA  NA  NA  NA  NA  NA  NA  NA  1.55870831
+## 4  NA  NA  NA  NA  NA  NA  NA  NA  0.07050839
+## 5  NA  NA  NA  NA  NA  NA  NA  NA  0.12928774
+## 6  NA  NA  NA  NA  NA  NA  NA  NA  1.71506499</code></pre>
 </div>
 <div id="specify-the-model-type" class="section level2" number="3.2">
 <h2><span class="header-section-number">3.2</span> 2. Specify the model
@@ -574,17 +570,13 @@ default, we just get one, but we can get more with the <code>nsim</code>
 argument.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">head</span>(out[[<span class="dv">1</span>]])</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
-##    y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
-## 1    1   1   1   1   1   1   1   1 -0.56047565
-## 2    0   0   0   0   0   0   0   0 -0.23017749
-## 3    0   0   0   0   0   0   0   0  1.55870831
-## 4    0   0   0   0   0   0   0   0  0.07050839
-## 5    0   0   0   0   0   0   0   0  0.12928774
-## 6    1   0   0   0   0   0   0   0  1.71506499
-## 7    0   0   0   0   0   0   0   0  0.46091621
-## 8    0   0   0   0   0   0   0   0 -1.26506123
-## 9    1   1   1   0   1   0   1   0 -0.68685285
-## 10   1   0   0   1   1   0   0   0 -0.44566197</code></pre>
+##   y.1 y.2 y.3 y.4 y.5 y.6 y.7 y.8        elev
+## 1   1   1   1   1   1   1   1   1 -0.56047565
+## 2   0   0   0   0   0   0   0   0 -0.23017749
+## 3   0   0   0   0   0   0   0   0  1.55870831
+## 4   0   0   0   0   0   0   0   0  0.07050839
+## 5   0   0   0   0   0   0   0   0  0.12928774
+## 6   1   0   0   0   0   0   0   0  1.71506499</code></pre>
 <p>The simulated <code>unmarkedFrame</code> now contains <code>y</code>
 values and is ready to use.</p>
 </div>
@@ -648,28 +640,20 @@ information.</p>
 <span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>                        <span class="at">dist.breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">25</span>,<span class="dv">50</span>,<span class="dv">75</span>,<span class="dv">100</span>), <span class="at">unitsIn =</span> <span class="st">&#39;m&#39;</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">head</span>(umf)</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
-##    yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
-## 1       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 2       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 3       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 4       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 5       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 6       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 7       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 8       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 9       NA      NA      NA      NA     NA     NA     NA     NA     NA
-## 10      NA      NA      NA      NA     NA     NA     NA     NA     NA
-##           elev      wind.1     wind.2      wind.3      wind.4      wind.5
-## 1  -0.56047565 -0.71040656  0.2568837 -0.24669188 -0.34754260 -0.95161857
-## 2  -0.23017749 -0.04502772 -0.7849045 -1.66794194 -0.38022652  0.91899661
-## 3   1.55870831 -0.57534696  0.6079643 -1.61788271 -0.05556197  0.51940720
-## 4   0.07050839  0.30115336  0.1056762 -0.64070601 -0.84970435 -1.02412879
-## 5   0.12928774  0.11764660 -0.9474746 -0.49055744 -0.25609219  1.84386201
-## 6   1.71506499 -0.65194990  0.2353866  0.07796085 -0.96185663 -0.07130809
-## 7   0.46091621  1.44455086  0.4515041  0.04123292 -0.42249683 -2.05324722
-## 8  -1.26506123  1.13133721 -1.4606401  0.73994751  1.90910357 -1.44389316
-## 9  -0.68685285  0.70178434 -0.2621975 -1.57214416 -1.51466765 -1.60153617
-## 10 -0.44566197 -0.53090652 -1.4617556  0.68791677  2.10010894 -1.28703048</code></pre>
+##   yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
+## 1      NA      NA      NA      NA     NA     NA     NA     NA     NA
+## 2      NA      NA      NA      NA     NA     NA     NA     NA     NA
+## 3      NA      NA      NA      NA     NA     NA     NA     NA     NA
+## 4      NA      NA      NA      NA     NA     NA     NA     NA     NA
+## 5      NA      NA      NA      NA     NA     NA     NA     NA     NA
+## 6      NA      NA      NA      NA     NA     NA     NA     NA     NA
+##          elev      wind.1     wind.2      wind.3      wind.4      wind.5
+## 1 -0.56047565 -0.71040656  0.2568837 -0.24669188 -0.34754260 -0.95161857
+## 2 -0.23017749 -0.04502772 -0.7849045 -1.66794194 -0.38022652  0.91899661
+## 3  1.55870831 -0.57534696  0.6079643 -1.61788271 -0.05556197  0.51940720
+## 4  0.07050839  0.30115336  0.1056762 -0.64070601 -0.84970435 -1.02412879
+## 5  0.12928774  0.11764660 -0.9474746 -0.49055744 -0.25609219  1.84386201
+## 6  1.71506499 -0.65194990  0.2353866  0.07796085 -0.96185663 -0.07130809</code></pre>
 </div>
 <div id="arguments-sent-to-gdistremoval" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> 2. Arguments sent to
@@ -742,53 +726,37 @@ to provide the <code>model</code> argument because
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">lapply</span>(out, head)</span></code></pre></div>
 <pre><code>## [[1]]
 ## Data frame representation of unmarkedFrame object.
-##    yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
-## 1        0       1       0       0      1      0      0      0      0
-## 2        1       0       1       2      1      1      1      0      1
-## 3        4       6       7       3      7      3      5      2      3
-## 4        1       0       1       0      0      0      0      1      1
-## 5        0       0       1       0      1      0      0      0      0
-## 6        0       0       0       0      0      0      0      0      0
-## 7        3       3       0       1      1      0      1      3      2
-## 8        0       0       0       0      0      0      0      0      0
-## 9        0       0       0       0      0      0      0      0      0
-## 10       0       0       0       0      0      0      0      0      0
-##           elev      wind.1     wind.2      wind.3      wind.4      wind.5
-## 1  -0.56047565 -0.71040656  0.2568837 -0.24669188 -0.34754260 -0.95161857
-## 2  -0.23017749 -0.04502772 -0.7849045 -1.66794194 -0.38022652  0.91899661
-## 3   1.55870831 -0.57534696  0.6079643 -1.61788271 -0.05556197  0.51940720
-## 4   0.07050839  0.30115336  0.1056762 -0.64070601 -0.84970435 -1.02412879
-## 5   0.12928774  0.11764660 -0.9474746 -0.49055744 -0.25609219  1.84386201
-## 6   1.71506499 -0.65194990  0.2353866  0.07796085 -0.96185663 -0.07130809
-## 7   0.46091621  1.44455086  0.4515041  0.04123292 -0.42249683 -2.05324722
-## 8  -1.26506123  1.13133721 -1.4606401  0.73994751  1.90910357 -1.44389316
-## 9  -0.68685285  0.70178434 -0.2621975 -1.57214416 -1.51466765 -1.60153617
-## 10 -0.44566197 -0.53090652 -1.4617556  0.68791677  2.10010894 -1.28703048
+##   yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
+## 1       0       1       0       0      1      0      0      0      0
+## 2       1       0       1       2      1      1      1      0      1
+## 3       4       6       7       3      7      3      5      2      3
+## 4       1       0       1       0      0      0      0      1      1
+## 5       0       0       1       0      1      0      0      0      0
+## 6       0       0       0       0      0      0      0      0      0
+##          elev      wind.1     wind.2      wind.3      wind.4      wind.5
+## 1 -0.56047565 -0.71040656  0.2568837 -0.24669188 -0.34754260 -0.95161857
+## 2 -0.23017749 -0.04502772 -0.7849045 -1.66794194 -0.38022652  0.91899661
+## 3  1.55870831 -0.57534696  0.6079643 -1.61788271 -0.05556197  0.51940720
+## 4  0.07050839  0.30115336  0.1056762 -0.64070601 -0.84970435 -1.02412879
+## 5  0.12928774  0.11764660 -0.9474746 -0.49055744 -0.25609219  1.84386201
+## 6  1.71506499 -0.65194990  0.2353866  0.07796085 -0.96185663 -0.07130809
 ## 
 ## [[2]]
 ## Data frame representation of unmarkedFrame object.
-##    yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
-## 1        0       1       0       0      1      0      0      0      0
-## 2        0       1       0       0      0      1      0      0      0
-## 3        2       1       2       1      4      2      0      0      0
-## 4        0       0       0       0      0      0      0      0      0
-## 5        1       1       0       1      1      1      0      1      0
-## 6        0       0       0       0      0      0      0      0      0
-## 7        1       1       1       0      1      0      2      0      0
-## 8        0       0       0       0      0      0      0      0      0
-## 9        0       0       0       1      1      0      0      0      0
-## 10       0       0       0       0      0      0      0      0      0
-##           elev      wind.1     wind.2      wind.3      wind.4      wind.5
-## 1  -0.56047565 -0.71040656  0.2568837 -0.24669188 -0.34754260 -0.95161857
-## 2  -0.23017749 -0.04502772 -0.7849045 -1.66794194 -0.38022652  0.91899661
-## 3   1.55870831 -0.57534696  0.6079643 -1.61788271 -0.05556197  0.51940720
-## 4   0.07050839  0.30115336  0.1056762 -0.64070601 -0.84970435 -1.02412879
-## 5   0.12928774  0.11764660 -0.9474746 -0.49055744 -0.25609219  1.84386201
-## 6   1.71506499 -0.65194990  0.2353866  0.07796085 -0.96185663 -0.07130809
-## 7   0.46091621  1.44455086  0.4515041  0.04123292 -0.42249683 -2.05324722
-## 8  -1.26506123  1.13133721 -1.4606401  0.73994751  1.90910357 -1.44389316
-## 9  -0.68685285  0.70178434 -0.2621975 -1.57214416 -1.51466765 -1.60153617
-## 10 -0.44566197 -0.53090652 -1.4617556  0.68791677  2.10010894 -1.28703048</code></pre>
+##   yDist.1 yDist.2 yDist.3 yDist.4 yRem.1 yRem.2 yRem.3 yRem.4 yRem.5
+## 1       0       1       0       0      1      0      0      0      0
+## 2       0       1       0       0      0      1      0      0      0
+## 3       2       1       2       1      4      2      0      0      0
+## 4       0       0       0       0      0      0      0      0      0
+## 5       1       1       0       1      1      1      0      1      0
+## 6       0       0       0       0      0      0      0      0      0
+##          elev      wind.1     wind.2      wind.3      wind.4      wind.5
+## 1 -0.56047565 -0.71040656  0.2568837 -0.24669188 -0.34754260 -0.95161857
+## 2 -0.23017749 -0.04502772 -0.7849045 -1.66794194 -0.38022652  0.91899661
+## 3  1.55870831 -0.57534696  0.6079643 -1.61788271 -0.05556197  0.51940720
+## 4  0.07050839  0.30115336  0.1056762 -0.64070601 -0.84970435 -1.02412879
+## 5  0.12928774  0.11764660 -0.9474746 -0.49055744 -0.25609219  1.84386201
+## 6  1.71506499 -0.65194990  0.2353866  0.07796085 -0.96185663 -0.07130809</code></pre>
 </div>
 <div id="fit-model-to-simulated-dataset" class="section level2" number="4.5">
 <h2><span class="header-section-number">4.5</span> Fit model to

@@ -421,17 +421,13 @@ format the data.</p>
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">siteCovs</span>(umf) <span class="ot">&lt;-</span> sc</span>
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">head</span>(umf)</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
-##    y.1 y.2 y.3         ele      forest date.1 date.2 date.3
-## 1    0   0   0 -1.15390803 -1.14710440     34     59     65
-## 2    0   0   0 -1.15390803 -0.49668159     17     33     65
-## 3   NA  NA  NA -0.21745379 -0.09920098     NA     NA     NA
-## 4    0   0   0 -0.37352950 -0.93029679     29     59     65
-## 5    0   0   0 -0.06137809  0.00920282     24     45     65
-## 6   NA  NA  NA -0.99783232 -1.18323900     NA     NA     NA
-## 7    0   0   0 -0.68568091 -1.03870060     26     54     74
-## 8    0   0   0 -0.84175662  0.91256783     23     43     71
-## 9    0   0   0 -0.99783232 -1.07483520     21     36     56
-## 10   0   0   0 -0.99783232 -0.78575839     37     62     75</code></pre>
+##   y.1 y.2 y.3         ele      forest date.1 date.2 date.3
+## 1   0   0   0 -1.15390803 -1.14710440     34     59     65
+## 2   0   0   0 -1.15390803 -0.49668159     17     33     65
+## 3  NA  NA  NA -0.21745379 -0.09920098     NA     NA     NA
+## 4   0   0   0 -0.37352950 -0.93029679     29     59     65
+## 5   0   0   0 -0.06137809  0.00920282     24     45     65
+## 6  NA  NA  NA -0.99783232 -1.18323900     NA     NA     NA</code></pre>
 <p>Notice that the site covariates, elevation and forest, were
 standardized using the <code>scale</code> function. Standardization
 isn’t always necessary, but it can make it easier to find the maximum
@@ -442,7 +438,9 @@ standard deviation. The reason for this is explained below.</p>
 several models corresponding to competing hypotheses, but for
 simplicity, we stick with this single model.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>(fm.occu <span class="ot">&lt;-</span> <span class="fu">occu</span>(<span class="sc">~</span>date <span class="sc">~</span>ele <span class="sc">+</span> <span class="fu">I</span>(ele<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> forest, umf))</span></code></pre></div>
-<pre><code>## Warning: 22 sites have been discarded because of missing data.</code></pre>
+<pre><code>## Warning: Site(s)
+## 3,6,38,63,71,106,116,118,125,126,152,163,168,178,181,197,199,212,218,220,238,257
+## dropped due to missing values</code></pre>
 <pre><code>## 
 ## Call:
 ## occu(formula = ~date ~ ele + I(ele^2) + forest, data = umf)
@@ -607,17 +605,13 @@ is the code to format the data and fit the model.</p>
 <span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>                          <span class="at">unitsIn=</span><span class="st">&quot;m&quot;</span>, <span class="at">survey=</span><span class="st">&quot;point&quot;</span>)</span>
 <span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="fu">head</span>(jayumf)</span></code></pre></div>
 <pre><code>## Data frame representation of unmarkedFrame object.
-##    y.1 y.2 y.3   elevation     forest  chaparral     area
-## 1    0   0   2 -1.20607849 -0.3309618 -0.1218243 28.27433
-## 2    0   0   0 -0.36132054 -0.4429552  0.8384709 28.27433
-## 3    0   0   0 -0.45797193 -0.3738751  2.1319298 28.27433
-## 4    0   0   0 -0.14196112  1.3908065 -0.2737078 28.27433
-## 5    0   0   0 -0.72588125 -0.4869152 -1.1562240 28.27433
-## 6    0   0   0  0.01704522  0.6706992  0.2989173 28.27433
-## 7    0   0   0 -0.11866710 -0.2671150  1.0326122 28.27433
-## 8    0   0   0 -0.76411740 -0.4921486 -0.9332983 28.27433
-## 9    0   0   0  0.40065595  0.5440524 -1.0759952 28.27433
-## 10   0   0   0 -0.24030211 -0.4921486 -1.1023299 28.27433</code></pre>
+##   y.1 y.2 y.3   elevation     forest  chaparral     area
+## 1   0   0   2 -1.20607849 -0.3309618 -0.1218243 28.27433
+## 2   0   0   0 -0.36132054 -0.4429552  0.8384709 28.27433
+## 3   0   0   0 -0.45797193 -0.3738751  2.1319298 28.27433
+## 4   0   0   0 -0.14196112  1.3908065 -0.2737078 28.27433
+## 5   0   0   0 -0.72588125 -0.4869152 -1.1562240 28.27433
+## 6   0   0   0  0.01704522  0.6706992  0.2989173 28.27433</code></pre>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>fm1 <span class="ot">&lt;-</span> <span class="fu">distsamp</span>(<span class="sc">~</span>chaparral <span class="sc">~</span>chaparral <span class="sc">+</span> elevation <span class="sc">+</span> <span class="fu">offset</span>(<span class="fu">log</span>(area)),</span>
 <span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>                jayumf, <span class="at">keyfun=</span><span class="st">&quot;halfnorm&quot;</span>, <span class="at">output=</span><span class="st">&quot;abund&quot;</span>,</span>
 <span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>                <span class="at">starts=</span><span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.8</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="fl">4.5</span>,<span class="dv">0</span>))</span>

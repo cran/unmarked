@@ -1,3 +1,13 @@
+# unmarked 1.5.1
+
+* Rewrite colext likelihood in TMB to improve speed and fix missing values bugs
+* Internal refactoring to facilitate long term maintenance. Saved model objects (e.g., in an .Rdata file) for certain model types will no longer work with some methods.
+* Informative error when a user attempts to use nested formula functions such as I(scale())
+* Better generation of random effects for simulated datasets
+* Fix deprecated arma::is_finite warnings from CRAN
+* Remove some deprecated simulate/power analysis functions
+* Minor bugfixes
+
 # unmarked 1.5.0
 
 * Add community occupancy model (occuComm)

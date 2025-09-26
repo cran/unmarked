@@ -31,19 +31,29 @@ wt <- unmarkedFrameOccu(y = y, siteCovs = siteCovs, obsCovs = obsCovs)
 summary(wt)
 
 ## -----------------------------------------------------------------------------
-wt <- csvToUMF(system.file("csv","widewt.csv", package="unmarked"),
-               long = FALSE, type = "unmarkedFrameOccu")
+pcru_raw <- read.csv(system.file("csv","frog2001pcru.csv", package="unmarked"))
 
-## -----------------------------------------------------------------------------
-pcru <- csvToUMF(system.file("csv","frog2001pcru.csv", package="unmarked"),
-                 long = TRUE, type = "unmarkedFrameOccu")
-
-## -----------------------------------------------------------------------------
-obsCovs(pcru) <- scale(obsCovs(pcru))
+sites <- unique(pcru_raw$RouteNumStopNum)
+M <- length(sites)
+J <- max(table(pcru_raw$RouteNumStopNum))
+y <- JulianDate <- MinAfterSunset <- Wind <- Sky <- Temperature <- matrix(NA, M, J)
+for (i in 1:length(sites)){
+  datsub <- pcru_raw[pcru_raw$RouteNumStopNum == sites[i],]
+  n <- nrow(datsub)
+  y[i,1:n] <- datsub$Pcru
+  JulianDate[i,1:n] <- datsub$JulianDate
+  MinAfterSunset[i,1:n] <- datsub$MinAfterSunset
+  Wind[i,1:n] <- datsub$Wind
+  Sky[i,1:n] <- datsub$Sky
+  Temperature[i,1:n] <- datsub$Temperature
+}
+obscovs <- list(JulianDate = JulianDate, MinAfterSunset = MinAfterSunset,
+                Wind = Wind, Sky = Sky, Temperature = Temperature)
+pcru <- unmarkedFrameOccu(y = y, obsCovs = obscovs)
 
 ## -----------------------------------------------------------------------------
 fm1 <- occu(~1 ~1, pcru)
-fm2 <- occu(~ MinAfterSunset + Temperature ~ 1, pcru)
+fm2 <- occu(~ scale(MinAfterSunset) + scale(Temperature) ~ 1, pcru)
 fm2
 
 ## -----------------------------------------------------------------------------

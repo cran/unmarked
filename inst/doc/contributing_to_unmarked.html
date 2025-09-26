@@ -396,7 +396,7 @@ functions to show simpler examples that may be easier to understand.</p>
 <li><p>Before you start coding, you should use git to version your
 code:</p>
 <ul>
-<li>Fork the <code>unmarked</code> <a href="https://github.com/biodiverse/unmarked">repository</a> on
+<li>Fork the <code>unmarked</code> <a href="https://github.com/ecoverseR/unmarked">repository</a> on
 Github</li>
 <li>Make a new branch with your new function as the name</li>
 <li>Add the new code</li>
@@ -444,44 +444,45 @@ breaks).</p>
 ## Extends: &quot;unmarkedFrameOrNULL&quot;
 ## 
 ## Known Subclasses: 
-## Class &quot;unmarkedMultFrame&quot;, directly
+## Class &quot;unmarkedFrameOccuCOP&quot;, directly
 ## Class &quot;unmarkedFrameDS&quot;, directly
+## Class &quot;unmarkedFrameMPois&quot;, directly
 ## Class &quot;unmarkedFrameOccu&quot;, directly
+## Class &quot;unmarkedFrameOccuComm&quot;, directly
 ## Class &quot;unmarkedFrameOccuFP&quot;, directly
 ## Class &quot;unmarkedFrameOccuMulti&quot;, directly
 ## Class &quot;unmarkedFramePCount&quot;, directly
-## Class &quot;unmarkedFrameMPois&quot;, directly
-## Class &quot;unmarkedFrameOccuCOP&quot;, directly
-## Class &quot;unmarkedFrameOccuComm&quot;, directly
+## Class &quot;unmarkedMultFrame&quot;, directly
 ## Class &quot;unmarkedFrameOccuMS&quot;, by class &quot;unmarkedMultFrame&quot;, distance 2
 ## Class &quot;unmarkedFrameOccuTTD&quot;, by class &quot;unmarkedMultFrame&quot;, distance 2
 ## Class &quot;unmarkedFrameG3&quot;, by class &quot;unmarkedMultFrame&quot;, distance 2
-## Class &quot;unmarkedFramePCO&quot;, by class &quot;unmarkedMultFrame&quot;, distance 2
-## Class &quot;unmarkedFrameGDR&quot;, by class &quot;unmarkedMultFrame&quot;, distance 2
-## Class &quot;unmarkedFrameGMM&quot;, by class &quot;unmarkedMultFrame&quot;, distance 3
-## Class &quot;unmarkedFrameGDS&quot;, by class &quot;unmarkedMultFrame&quot;, distance 3
-## Class &quot;unmarkedFrameGPC&quot;, by class &quot;unmarkedMultFrame&quot;, distance 3
-## Class &quot;unmarkedFrameGOccu&quot;, by class &quot;unmarkedMultFrame&quot;, distance 3
-## Class &quot;unmarkedFrameMMO&quot;, by class &quot;unmarkedMultFrame&quot;, distance 4
-## Class &quot;unmarkedFrameDSO&quot;, by class &quot;unmarkedMultFrame&quot;, distance 4</code></pre>
+## Class &quot;unmarkedFrameGMM&quot;, by class &quot;unmarkedFrameG3&quot;, distance 3
+## Class &quot;unmarkedFrameGDS&quot;, by class &quot;unmarkedFrameG3&quot;, distance 3
+## Class &quot;unmarkedFrameGPC&quot;, by class &quot;unmarkedFrameG3&quot;, distance 3
+## Class &quot;unmarkedFrameGOccu&quot;, by class &quot;unmarkedFrameG3&quot;, distance 3
+## Class &quot;unmarkedFrameGDR&quot;, by class &quot;unmarkedFrameG3&quot;, distance 3
+## Class &quot;unmarkedFrameDailMadsen&quot;, by class &quot;unmarkedMultFrame&quot;, distance 2
+## Class &quot;unmarkedFrameDSO&quot;, by class &quot;unmarkedFrameDailMadsen&quot;, distance 3
+## Class &quot;unmarkedFrameMMO&quot;, by class &quot;unmarkedFrameDailMadsen&quot;, distance 3
+## Class &quot;unmarkedFramePCO&quot;, by class &quot;unmarkedFrameDailMadsen&quot;, distance 3</code></pre>
 <p>You can have more information about each <code>unmarkedFrame</code>
 subclass by looking at the documentation of the function that was
 written to create the <code>unmarkedFrame</code> object of this
-subclass, for example with <code>?unmarkedFrameGDR</code>, or on the <a href="https://biodiverse.github.io/unmarked/reference/unmarkedFrameGDR.html">package’s
+subclass, for example with <code>?unmarkedFrameGDR</code>, or on the <a href="https://ecoverseR.github.io/unmarked/reference/unmarkedFrameGDR.html">package’s
 website</a>.</p>
 <div id="define-the-unmarkedframe-subclass-for-this-model" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Define the
 <code>unmarkedFrame</code> subclass for this model</h2>
 <ul>
 <li>All <code>unmarkedFrame</code> subclasses are children of the
-<code>umarkedFrame</code> class, defined <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R#L24-L30">here</a>.</li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R#L65-L66">Example
+<code>umarkedFrame</code> class, defined <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R#L24-L30">here</a>.</li>
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R#L65-L66">Example
 with <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L1-L11">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L1-L11">Example
 with <code>gdistremoval</code></a></li>
-<li>All <code>unmarkedFrame</code> subclasses need to pass the <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R#L4-L19">validunmarkedFrame</a>
+<li>All <code>unmarkedFrame</code> subclasses need to pass the <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R#L4-L19">validunmarkedFrame</a>
 validity check. You may want to add complementary validity check, like,
-for example, the <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R#L43-L62">`unmarkedFrameDS
+for example, the <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R#L43-L62">`unmarkedFrameDS
 subclass</a>.</li>
 </ul>
 </div>
@@ -489,9 +490,9 @@ subclass</a>.</li>
 <h2><span class="header-section-number">1.2</span> Write the function
 that creates the <code>unmarkedFrame</code> object</h2>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R#L232-L239">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R#L232-L239">Example
 with <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L13-L50">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L13-L50">Example
 with <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -501,7 +502,7 @@ associated with the <code>unmarkedFrame</code> object</h2>
 <p>Note that you may not have to write all of the S4 methods below. Most
 of them will work without having to re-write them, but you should test
 it to verify it. All the methods associated with
-<code>unmarkedFrame</code> objects are listed in the <a href="https://biodiverse.github.io/unmarked/reference/unmarkedFrame-class.html"><code>unmarkedFrame</code>
+<code>unmarkedFrame</code> objects are listed in the <a href="https://ecoverseR.github.io/unmarked/reference/unmarkedFrame-class.html"><code>unmarkedFrame</code>
 class documentation</a> accessible with
 <code>help(&quot;unmarkedFrame-class&quot;)</code>.</p>
 <div id="specific-methods" class="section level3 unnumbered">
@@ -511,19 +512,19 @@ class documentation</a> accessible with
 <li>Subsetting the <code>unmarkedFrame</code> object:
 <code>umf[i, ]</code>, <code>umf[, j]</code> and <code>umf[i, j]</code>
 <ul>
-<li>Example with <code>occu</code>: <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R#L1126-L1235">code
+<li>Example with <code>occu</code>: <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R#L1126-L1235">code
 for <code>unmarkedFrame</code> mother class</a>, as used to subset an
 <code>unmarkedFrameOccu</code> object.</li>
-<li>Example with <code>gdistremoval</code>: <a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L67-L120"><code>umf[i, ]</code>
-when <code>i</code> is numeric</a>, <a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L122-L126"><code>umf[i, ]</code>
-when <code>i</code> is logical</a>, <a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L128-L174"><code>umf[i, j]</code></a></li>
+<li>Example with <code>gdistremoval</code>: <a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L67-L120"><code>umf[i, ]</code>
+when <code>i</code> is numeric</a>, <a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L122-L126"><code>umf[i, ]</code>
+when <code>i</code> is logical</a>, <a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L128-L174"><code>umf[i, j]</code></a></li>
 </ul></li>
 </ul>
 </div>
 <div id="generic-methods" class="section level3 unnumbered">
 <h3 class="unnumbered">Generic methods</h3>
 <p>Here are methods that you should test but probably will not have to
-rewrite. They are defined in the <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFrame.R"><code>unmarkedFrame.R</code></a>
+rewrite. They are defined in the <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFrame.R"><code>unmarkedFrame.R</code></a>
 file, for the <code>unmarkedFrame</code> mother class.</p>
 <ul>
 <li><code>getY</code></li>
@@ -559,9 +560,9 @@ attribute you added to your <code>unmarkedFrame</code> subclass.</p>
 the <code>unmarkedFrame</code> object, maximising the likelihood, and
 formatting the outputs.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/occu.R#L4-L161">Example:
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/occu.R#L4-L161">Example:
 the <code>occu()</code> function</a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L257-L472">Example:
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L257-L472">Example:
 the <code>gdistremoval()</code> function</a></li>
 </ul>
 <div id="inputs-of-the-fitting-function" class="section level2" number="2.1">
@@ -600,9 +601,9 @@ user warnings if covariates are missing, etc.</li>
 <p>Writing the <code>getDesign</code> method is frequently the most
 tedious and difficult part of the work adding a new function.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/getDesign.R#L10-L153">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/getDesign.R#L10-L153">Example
 for <code>occu</code></a>, as used for <code>occu</code></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L177-L253">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L177-L253">Example
 for <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -631,7 +632,7 @@ likelihood, as they may not be familiar with other languages. This
 likelihood function can be used only for <strong>fixed-effects
 models</strong>.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/occu.R#L65-L74">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/occu.R#L65-L74">Example
 for <code>occu</code></a></li>
 <li><code>gdistremoval</code> doesn’t have an R version of the
 likelihood function</li>
@@ -656,9 +657,9 @@ can compile and load the function with
 like you would use a R function:
 <code>nll_yourmodel(params=params, arg1=arg1)</code>.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/src/nll_occu.cpp">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/src/nll_occu.cpp">Example
 for <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/src/nll_gdistremoval.cpp">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/src/nll_gdistremoval.cpp">Example
 for <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -669,7 +670,7 @@ function: for random effects</h3>
 <p>#TODO</p>
 </blockquote>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/src/TMB/tmb_gdistremoval.hpp">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/src/TMB/tmb_gdistremoval.hpp">Example
 for <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -685,16 +686,16 @@ data</h2>
 <code>unmarkedEstimate</code> per submodel (<em>e.g.</em> state,
 detection). These objects include the parameter estimates and other
 information about link functions etc.</p>
-<p>The <code>unmarkedEstimate</code> class is defined <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedEstimate.R#L5-L26">here</a>
+<p>The <code>unmarkedEstimate</code> class is defined <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedEstimate.R#L5-L26">here</a>
 in the <code>unmarkedEstimate.R</code> file, and the
-<code>unmarkedEstimate</code> function is defined <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedEstimate.R#L86-L100">here</a>,
+<code>unmarkedEstimate</code> function is defined <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedEstimate.R#L86-L100">here</a>,
 and is used to create new <code>unmarkedEstimate</code> objects. You
 normally will not need to create <code>unmarkedEstimate</code>
 subclass.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/occu.R#L132-L139">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/occu.R#L132-L139">Example
 for the state estimate for <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L429-L431C72">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L429-L431C72">Example
 for the lambda estimate for <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -705,19 +706,19 @@ for the lambda estimate for <code>gdistremoval</code></a></li>
 your model. The main component of <code>unmarkedFit</code> objects is a
 list of the <code>unmarkedEstimates</code> described above.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFit.R#L1-L14">Definition
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFit.R#L1-L14">Definition
 of the <code>unmarkedFit</code> mother class</a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFit.R#L68-L70">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFit.R#L68-L70">Example
 of the <code>unmarkedFitOccu</code> subclass definition</a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L255">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L255">Example
 of the <code>unmarkedFitGDR</code> subclass definition</a></li>
 </ul>
 <p>After you defined your <code>unmarkedFit</code> subclass, you can
 create the object in your fitting function.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/occu.R#L153-L158">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/occu.R#L153-L158">Example
 of the <code>unmarkedFitOccu</code> object creation</a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L466-L470">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L466-L470">Example
 of the <code>unmarkedFitGDR</code> object creation</a></li>
 </ul>
 <p>The fitting function return this <code>unmarkedFit</code> object.</p>
@@ -747,7 +748,7 @@ operating on the output of your model. Like for the methods associated
 with an <code>unmarkedFrame</code> object <a href="#methods-unmarkedFrame">above</a>, you probably will not have to
 re-write all of them, but you should test them to see if they work. All
 the methods associated with <code>unmarkedFit</code> objects are listed
-in the <a href="https://biodiverse.github.io/unmarked/reference/unmarkedFit-class.html"><code>unmarkedFit</code>
+in the <a href="https://ecoverseR.github.io/unmarked/reference/unmarkedFit-class.html"><code>unmarkedFit</code>
 class documentation</a> accessible with
 <code>help(&quot;unmarkedFit-class&quot;)</code>.</p>
 <div id="specific-methods-1" class="section level3 unnumbered">
@@ -756,7 +757,7 @@ class documentation</a> accessible with
 model.</p>
 <div id="getp" class="section level4 unnumbered">
 <h4 class="unnumbered"><code>getP</code></h4>
-<p>The <code>getP</code> method (<a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFit.R#L1475-L1492">defined
+<p>The <code>getP</code> method (<a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFit.R#L1475-L1492">defined
 here</a>) “back-transforms” the detection parameter (<span class="math inline">\(p\)</span> the detection probability or <span class="math inline">\(\lambda\)</span> the detection rate, depending on
 the model). It returns a matrix of the estimated detection parameters.
 It is called by several other methods that are useful to extract
@@ -764,26 +765,26 @@ information from the <code>unmarkedFit</code> object.</p>
 <ul>
 <li>For <code>occu</code>, the generic method for
 <code>unmarkedFit</code> objects is called.</li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L476-L537">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L476-L537">Example
 for <code>gdistremoval</code></a></li>
 </ul>
 </div>
 <div id="simulate" class="section level4 unnumbered">
 <h4 class="unnumbered"><code>simulate</code></h4>
-<p>The generic <code>simulate</code> method (<a href="https://github.com/biodiverse/unmarked/blob/master/R/simulate.R#L62C33-L86">defined
+<p>The generic <code>simulate</code> method (<a href="https://github.com/ecoverseR/unmarked/blob/master/R/simulate.R#L62C33-L86">defined
 here</a>) calls the <code>simulate_fit</code> method that depends on the
 class of the <code>unmarkedFit</code> object, which depends on the
 model.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/simulate.R#L158-L165">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/simulate.R#L158-L165">Example
 of <code>simulate_fit</code> method for <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/simulate.R#L536-L558">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/simulate.R#L536-L558">Example
 of <code>simulate_fit</code> method for
 <code>gdistremoval</code></a></li>
 </ul>
 <p>The <code>simulate</code> method can be used in two ways:</p>
 <ul>
-<li>to generate datasets from scratch (<a href="https://biodiverse.github.io/unmarked/articles/simulate.html">see
+<li>to generate datasets from scratch (<a href="https://ecoverseR.github.io/unmarked/articles/simulate.html">see
 the “Simulating datasets” vignette</a>)</li>
 <li>to generate datasets from a fitted model (with
 <code>simulate(object = my_unmarkedFit_object)</code>).</li>
@@ -793,12 +794,12 @@ the “Simulating datasets” vignette</a>)</li>
 <div id="plot" class="section level4 unnumbered">
 <h4 class="unnumbered"><code>plot</code></h4>
 <p>This method plots the results of your model. The generic
-<code>plot</code> method for <code>unmarkedFit</code> (<a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFit.R#L1346-L1352">defined
+<code>plot</code> method for <code>unmarkedFit</code> (<a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFit.R#L1346-L1352">defined
 here</a>) plot the residuals of the model.</p>
 <ul>
 <li>For <code>occu</code>, the generic method for
 <code>unmarkedFit</code> objects is called.</li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/R/gdistremoval.R#L837-L853">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/R/gdistremoval.R#L837-L853">Example
 for <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -806,7 +807,7 @@ for <code>gdistremoval</code></a></li>
 <div id="generic-methods-1" class="section level3 unnumbered">
 <h3 class="unnumbered">Generic methods</h3>
 <p>Here are methods that you should test but probably will not have to
-rewrite. They are defined in the <a href="https://github.com/biodiverse/unmarked/blob/master/R/unmarkedFit.R"><code>unmarkedFit.R</code></a>
+rewrite. They are defined in the <a href="https://github.com/ecoverseR/unmarked/blob/master/R/unmarkedFit.R"><code>unmarkedFit.R</code></a>
 file, for the <code>unmarkedFit</code> mother class.</p>
 <ul>
 <li><code>[</code></li>
@@ -850,13 +851,13 @@ positives</li>
 <h1><span class="header-section-number">4</span> Update the
 <code>NAMESPACE</code> file</h1>
 <ul>
-<li>Add your fitting function to the functions export <a href="https://github.com/biodiverse/unmarked/blob/master/NAMESPACE#L23-L27">here</a></li>
+<li>Add your fitting function to the functions export <a href="https://github.com/ecoverseR/unmarked/blob/master/NAMESPACE#L23-L27">here</a></li>
 <li>Add the new subclasses (<code>unmarkedFrame</code>,
-<code>unmarkedFit</code>) to the classes export <a href="https://github.com/biodiverse/unmarked/blob/master/NAMESPACE#L31-L43">here</a></li>
+<code>unmarkedFit</code>) to the classes export <a href="https://github.com/ecoverseR/unmarked/blob/master/NAMESPACE#L31-L43">here</a></li>
 <li>Add the function you wrote to create your <code>unmarkedFrame</code>
-object to the functions export <a href="https://github.com/biodiverse/unmarked/blob/master/NAMESPACE#L58-L64">here</a></li>
+object to the functions export <a href="https://github.com/ecoverseR/unmarked/blob/master/NAMESPACE#L58-L64">here</a></li>
 <li>If you wrote new methods, for example to <a href="#Methods-to-access-new-attributes">access new attributes for
-objects of a subclass</a>, add them to the methods export <a href="https://github.com/biodiverse/unmarked/blob/master/NAMESPACE#L45-L54">here</a></li>
+objects of a subclass</a>, add them to the methods export <a href="https://github.com/ecoverseR/unmarked/blob/master/NAMESPACE#L45-L54">here</a></li>
 <li>If required, export other functions you created that may be called
 by users of the package</li>
 </ul>
@@ -873,9 +874,9 @@ the tests of your file easily by clicking on the “Run tests” button. You
 can run all the tests by clicking on the “Test” button in the Build
 pane.</p>
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/tests/testthat/test_occu.R">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/tests/testthat/test_occu.R">Example
 for <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/tests/testthat/test_gdistremoval.R">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/tests/testthat/test_gdistremoval.R">Example
 for <code>gdistremoval</code></a></li>
 </ul>
 </div>
@@ -889,30 +890,30 @@ format your documentation.</p>
 <ul>
 <li>The most important, your fitting function!
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/man/occu.Rd">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/man/occu.Rd">Example
 for <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/man/gdistremoval.Rd">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/man/gdistremoval.Rd">Example
 for <code>gdistremoval</code></a></li>
 </ul></li>
 <li>Your <code>unmarkedFrame</code> constructor function
 <ul>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/man/occu.Rd">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/man/occu.Rd">Example
 for <code>occu</code></a></li>
-<li><a href="https://github.com/biodiverse/unmarked/blob/master/man/gdistremoval.Rd">Example
+<li><a href="https://github.com/ecoverseR/unmarked/blob/master/man/gdistremoval.Rd">Example
 for <code>gdistremoval</code></a></li>
 </ul></li>
-<li>Add your fitting function to the reference of all functions to <a href="https://github.com/biodiverse/unmarked/blob/master/_pkgdown.yml">_pkgdown.yml</a></li>
+<li>Add your fitting function to the reference of all functions to <a href="https://github.com/ecoverseR/unmarked/blob/master/_pkgdown.yml">_pkgdown.yml</a></li>
 </ul>
 <p>Depending on how much you had to add, you may also need to update
 existing files:</p>
 <ul>
 <li>If you added specific methods for your new
-<code>unmarkedFrame</code> class: add them to <a href="https://github.com/biodiverse/unmarked/blob/master/man/unmarkedFrame-class.Rd">unmarkedFrame-class.Rd</a></li>
+<code>unmarkedFrame</code> class: add them to <a href="https://github.com/ecoverseR/unmarked/blob/master/man/unmarkedFrame-class.Rd">unmarkedFrame-class.Rd</a></li>
 <li>If you added specific methods for your new <code>unmarkedFit</code>
-class: add them to <a href="https://github.com/biodiverse/unmarked/blob/master/man/unmarkedFit-class.Rd">unmarkedFit-class.Rd</a>.
-The same goes for your new <code>unmarkedFitList</code> class in <a href="https://github.com/biodiverse/unmarked/blob/master/man/unmarkedFitList-class.rd">unmarkedFitList-class.Rd</a>.</li>
+class: add them to <a href="https://github.com/ecoverseR/unmarked/blob/master/man/unmarkedFit-class.Rd">unmarkedFit-class.Rd</a>.
+The same goes for your new <code>unmarkedFitList</code> class in <a href="https://github.com/ecoverseR/unmarked/blob/master/man/unmarkedFitList-class.rd">unmarkedFitList-class.Rd</a>.</li>
 <li>Add any specific function, method or class you created. For example,
-specific distance-sampling functions are documented in <a href="https://github.com/biodiverse/unmarked/blob/master/man/detFuns.Rd">detFuns.Rd</a>.</li>
+specific distance-sampling functions are documented in <a href="https://github.com/ecoverseR/unmarked/blob/master/man/detFuns.Rd">detFuns.Rd</a>.</li>
 </ul>
 </div>
 <div id="add-to-unmarked" class="section level1" number="7">

@@ -498,6 +498,8 @@ analysis, the function <code>unmarkedFrameOccu</code> is used.</p>
 <div id="importing-and-formatting-data" class="section level2" number="3.1">
 <h2><span class="header-section-number">3.1</span> Importing and
 formatting data</h2>
+<p>Two examples of reading in data from a CSV and formatting for
+unmarked. First, from a CSV in “wide” format:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(unmarked)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;widewt.csv&quot;</span>, <span class="at">package=</span><span class="st">&quot;unmarked&quot;</span>))</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>y <span class="ot">&lt;-</span> wt[,<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>]</span>
@@ -518,59 +520,71 @@ formatting data</h2>
 ##  483  182   46 
 ## 
 ## Site-level covariates:
-##       elev               forest              length      
-##  Min.   :-1.436125   Min.   :-1.265352   Min.   :0.1823  
-##  1st Qu.:-0.940726   1st Qu.:-0.974355   1st Qu.:1.4351  
-##  Median :-0.166666   Median :-0.064987   Median :1.6094  
-##  Mean   : 0.007612   Mean   : 0.000088   Mean   :1.5924  
-##  3rd Qu.: 0.994425   3rd Qu.: 0.808005   3rd Qu.:1.7750  
-##  Max.   : 2.434177   Max.   : 2.299367   Max.   :2.2407  
+##       elev               forest               length      
+##  Min.   :-1.436125   Min.   :-1.265e+00   Min.   :0.1823  
+##  1st Qu.:-0.940726   1st Qu.:-9.744e-01   1st Qu.:1.4351  
+##  Median :-0.166666   Median :-6.499e-02   Median :1.6094  
+##  Mean   : 0.007612   Mean   : 8.798e-05   Mean   :1.5924  
+##  3rd Qu.: 0.994425   3rd Qu.: 8.080e-01   3rd Qu.:1.7750  
+##  Max.   : 2.434177   Max.   : 2.299e+00   Max.   :2.2407  
 ## 
 ## Observation-level covariates:
-##       date               ivel        
-##  Min.   :-2.90434   Min.   :-1.7533  
-##  1st Qu.:-1.11862   1st Qu.:-0.6660  
-##  Median :-0.11862   Median :-0.1395  
-##  Mean   :-0.00022   Mean   : 0.0000  
-##  3rd Qu.: 1.30995   3rd Qu.: 0.5493  
-##  Max.   : 3.80995   Max.   : 5.9795  
-##  NA&#39;s   :42         NA&#39;s   :46</code></pre>
-<p>Alternatively, the convenience function <code>csvToUMF</code> can be
-used</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="fu">csvToUMF</span>(<span class="fu">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;widewt.csv&quot;</span>, <span class="at">package=</span><span class="st">&quot;unmarked&quot;</span>),</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>               <span class="at">long =</span> <span class="cn">FALSE</span>, <span class="at">type =</span> <span class="st">&quot;unmarkedFrameOccu&quot;</span>)</span></code></pre></div>
-<p>If not all sites have the same numbers of observations, then manual
-importation of data in long format can be tricky. <code>csvToUMF</code>
-seamlessly handles this situation.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>pcru <span class="ot">&lt;-</span> <span class="fu">csvToUMF</span>(<span class="fu">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;frog2001pcru.csv&quot;</span>, <span class="at">package=</span><span class="st">&quot;unmarked&quot;</span>),</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>                 <span class="at">long =</span> <span class="cn">TRUE</span>, <span class="at">type =</span> <span class="st">&quot;unmarkedFrameOccu&quot;</span>)</span></code></pre></div>
-<p>To help stabilize the numerical optimization algorithm, we recommend
-standardizing the covariates.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">obsCovs</span>(pcru) <span class="ot">&lt;-</span> <span class="fu">scale</span>(<span class="fu">obsCovs</span>(pcru))</span></code></pre></div>
+##       date                ivel        
+##  Min.   :-2.904339   Min.   :-1.7533  
+##  1st Qu.:-1.118624   1st Qu.:-0.6660  
+##  Median :-0.118624   Median :-0.1395  
+##  Mean   :-0.000217   Mean   : 0.0000  
+##  3rd Qu.: 1.309947   3rd Qu.: 0.5493  
+##  Max.   : 3.809947   Max.   : 5.9795  
+##  NA&#39;s   :42          NA&#39;s   :46</code></pre>
+<p>Next, a CSV in “long” format:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>pcru_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">system.file</span>(<span class="st">&quot;csv&quot;</span>,<span class="st">&quot;frog2001pcru.csv&quot;</span>, <span class="at">package=</span><span class="st">&quot;unmarked&quot;</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>sites <span class="ot">&lt;-</span> <span class="fu">unique</span>(pcru_raw<span class="sc">$</span>RouteNumStopNum)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">length</span>(sites)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>J <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">table</span>(pcru_raw<span class="sc">$</span>RouteNumStopNum))</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>y <span class="ot">&lt;-</span> JulianDate <span class="ot">&lt;-</span> MinAfterSunset <span class="ot">&lt;-</span> Wind <span class="ot">&lt;-</span> Sky <span class="ot">&lt;-</span> Temperature <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, M, J)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(sites)){</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  datsub <span class="ot">&lt;-</span> pcru_raw[pcru_raw<span class="sc">$</span>RouteNumStopNum <span class="sc">==</span> sites[i],]</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(datsub)</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  y[i,<span class="dv">1</span><span class="sc">:</span>n] <span class="ot">&lt;-</span> datsub<span class="sc">$</span>Pcru</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  JulianDate[i,<span class="dv">1</span><span class="sc">:</span>n] <span class="ot">&lt;-</span> datsub<span class="sc">$</span>JulianDate</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  MinAfterSunset[i,<span class="dv">1</span><span class="sc">:</span>n] <span class="ot">&lt;-</span> datsub<span class="sc">$</span>MinAfterSunset</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  Wind[i,<span class="dv">1</span><span class="sc">:</span>n] <span class="ot">&lt;-</span> datsub<span class="sc">$</span>Wind</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  Sky[i,<span class="dv">1</span><span class="sc">:</span>n] <span class="ot">&lt;-</span> datsub<span class="sc">$</span>Sky</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  Temperature[i,<span class="dv">1</span><span class="sc">:</span>n] <span class="ot">&lt;-</span> datsub<span class="sc">$</span>Temperature</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>}</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>obscovs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">JulianDate =</span> JulianDate, <span class="at">MinAfterSunset =</span> MinAfterSunset,</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>                <span class="at">Wind =</span> Wind, <span class="at">Sky =</span> Sky, <span class="at">Temperature =</span> Temperature)</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>pcru <span class="ot">&lt;-</span> <span class="fu">unmarkedFrameOccu</span>(<span class="at">y =</span> y, <span class="at">obsCovs =</span> obscovs)</span></code></pre></div>
 </div>
 <div id="fitting-models" class="section level2" number="3.2">
 <h2><span class="header-section-number">3.2</span> Fitting models</h2>
-<p>Occupancy models can then be fit with the occu() function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>fm1 <span class="ot">&lt;-</span> <span class="fu">occu</span>(<span class="sc">~</span><span class="dv">1</span> <span class="sc">~</span><span class="dv">1</span>, pcru)</span></code></pre></div>
-<pre><code>## Warning in truncateToBinary(designMats$y): Some observations were &gt; 1.  These
-## were truncated to 1.</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>fm2 <span class="ot">&lt;-</span> <span class="fu">occu</span>(<span class="sc">~</span> MinAfterSunset <span class="sc">+</span> Temperature <span class="sc">~</span> <span class="dv">1</span>, pcru)</span></code></pre></div>
-<pre><code>## Warning in truncateToBinary(designMats$y): Some observations were &gt; 1.  These
-## were truncated to 1.</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>fm2</span></code></pre></div>
+<p>Occupancy models can then be fit with the occu() function. To help
+stabilize the numerical optimization algorithm, we recommend
+standardizing covariates. The best way to do this is to use the
+<code>scale()</code> function on covariates inside your formulas.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>fm1 <span class="ot">&lt;-</span> <span class="fu">occu</span>(<span class="sc">~</span><span class="dv">1</span> <span class="sc">~</span><span class="dv">1</span>, pcru)</span></code></pre></div>
+<pre><code>## Warning in truncateToBinary(dm$y): Some observations were &gt; 1.  These were
+## truncated to 1.</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>fm2 <span class="ot">&lt;-</span> <span class="fu">occu</span>(<span class="sc">~</span> <span class="fu">scale</span>(MinAfterSunset) <span class="sc">+</span> <span class="fu">scale</span>(Temperature) <span class="sc">~</span> <span class="dv">1</span>, pcru)</span></code></pre></div>
+<pre><code>## Warning in truncateToBinary(dm$y): Some observations were &gt; 1.  These were
+## truncated to 1.</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>fm2</span></code></pre></div>
 <pre><code>## 
 ## Call:
-## occu(formula = ~MinAfterSunset + Temperature ~ 1, data = pcru)
+## occu(formula = ~scale(MinAfterSunset) + scale(Temperature) ~ 
+##     1, data = pcru)
 ## 
 ## Occupancy (logit-scale):
 ##  Estimate    SE    z  P(&gt;|z|)
 ##      1.54 0.292 5.26 1.42e-07
 ## 
 ## Detection (logit-scale):
-##                Estimate    SE      z  P(&gt;|z|)
-## (Intercept)      0.2098 0.206  1.017 3.09e-01
-## MinAfterSunset  -0.0855 0.160 -0.536 5.92e-01
-## Temperature     -1.8936 0.291 -6.508 7.60e-11
+##                       Estimate    SE      z  P(&gt;|z|)
+## (Intercept)             0.2098 0.206  1.017 3.09e-01
+## scale(MinAfterSunset)  -0.0855 0.160 -0.536 5.92e-01
+## scale(Temperature)     -1.8936 0.291 -6.508 7.60e-11
 ## 
 ## AIC: 356.7591 
 ## Number of sites: 130</code></pre>
@@ -589,7 +603,7 @@ using <code>predict</code>, which also returns a 95% confidence
 interval. Since there are no occupancy covariates, all sites have the
 same occupancy estimate, and we can look at just the first row of the
 output.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">predict</span>(fm2, <span class="st">&#39;state&#39;</span>)[<span class="dv">1</span>,]</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">predict</span>(fm2, <span class="st">&#39;state&#39;</span>)[<span class="dv">1</span>,]</span></code></pre></div>
 <pre><code>##   Predicted         SE     lower     upper
 ## 1 0.8230724 0.04254069 0.7240711 0.8918579</code></pre>
 <p>The expected probability that a site was occupied is 0.823. This
@@ -606,75 +620,75 @@ quantity, and so we need to be provide values of our covariates to
 obtain an estimate of <span class="math inline">\(p\)</span>. Here, we
 request the probability of detection given a site is occupied and all
 covariates are set to 0.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>nd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">MinAfterSunset =</span> <span class="dv">0</span>, <span class="at">Temperature =</span> <span class="dv">0</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">predict</span>(fm2, <span class="at">type =</span> <span class="st">&#39;det&#39;</span>, <span class="at">newdata =</span> nd, <span class="at">appendData =</span> <span class="cn">TRUE</span>), <span class="dv">2</span>)</span></code></pre></div>
-<pre><code>##   Predicted   SE lower upper MinAfterSunset Temperature
-## 1      0.55 0.05  0.45  0.65              0           0</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>nd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">MinAfterSunset =</span> <span class="dv">0</span>, <span class="at">Temperature =</span> <span class="dv">0</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">predict</span>(fm2, <span class="at">type =</span> <span class="st">&#39;det&#39;</span>, <span class="at">newdata =</span> nd, <span class="at">appendData =</span> <span class="cn">TRUE</span>), <span class="dv">2</span>)</span></code></pre></div>
+<pre><code>##   Predicted SE lower upper MinAfterSunset Temperature
+## 1         1  0  0.98     1              0           0</code></pre>
 <p>Thus, we can say that the expected probability of detection was 0.552
 when time of day and temperature are fixed at their mean value. The
 <code>predict</code> metho can also be used to obtain estimates of
 parameters at a range of specific covariate values.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>nd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">MinAfterSunset =</span> <span class="dv">0</span>, <span class="at">Temperature =</span> <span class="sc">-</span><span class="dv">2</span><span class="sc">:</span><span class="dv">2</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">predict</span>(fm2, <span class="at">type =</span> <span class="st">&#39;det&#39;</span>, <span class="at">newdata =</span> nd, <span class="at">appendData=</span><span class="cn">TRUE</span>), <span class="dv">2</span>)</span></code></pre></div>
-<pre><code>##   Predicted   SE lower upper MinAfterSunset Temperature
-## 1      0.98 0.01  0.93  1.00              0          -2
-## 2      0.89 0.04  0.78  0.95              0          -1
-## 3      0.55 0.05  0.45  0.65              0           0
-## 4      0.16 0.03  0.10  0.23              0           1
-## 5      0.03 0.01  0.01  0.07              0           2</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>nd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">MinAfterSunset =</span> <span class="dv">0</span>, <span class="at">Temperature =</span> <span class="sc">-</span><span class="dv">2</span><span class="sc">:</span><span class="dv">2</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">predict</span>(fm2, <span class="at">type =</span> <span class="st">&#39;det&#39;</span>, <span class="at">newdata =</span> nd, <span class="at">appendData=</span><span class="cn">TRUE</span>), <span class="dv">2</span>)</span></code></pre></div>
+<pre><code>##   Predicted SE lower upper MinAfterSunset Temperature
+## 1      1.00  0  0.99     1              0          -2
+## 2      1.00  0  0.99     1              0          -1
+## 3      1.00  0  0.98     1              0           0
+## 4      1.00  0  0.98     1              0           1
+## 5      0.99  0  0.97     1              0           2</code></pre>
 <p>Confidence intervals are requested with <code>confint</code>, using
 either the asymptotic normal approximation or profiling.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">confint</span>(fm2, <span class="at">type=</span><span class="st">&#39;det&#39;</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">confint</span>(fm2, <span class="at">type=</span><span class="st">&#39;det&#39;</span>, <span class="at">method =</span> <span class="st">&quot;profile&quot;</span>)</span></code></pre></div>
-<pre><code>##                        0.025      0.975
-## p(Int)            -0.1946871  0.6142292
-## p(MinAfterSunset) -0.3985642  0.2274722
-## p(Temperature)    -2.4638797 -1.3233511</code></pre>
-<pre><code>##                        0.025      0.975
-## p(Int)            -0.1929210  0.6208837
-## p(MinAfterSunset) -0.4044794  0.2244221
-## p(Temperature)    -2.5189984 -1.3789261</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">confint</span>(fm2, <span class="at">type=</span><span class="st">&#39;det&#39;</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">confint</span>(fm2, <span class="at">type=</span><span class="st">&#39;det&#39;</span>, <span class="at">method =</span> <span class="st">&quot;profile&quot;</span>)</span></code></pre></div>
+<pre><code>##                               0.025      0.975
+## p(Int)                   -0.1946872  0.6142292
+## p(scale(MinAfterSunset)) -0.3985642  0.2274722
+## p(scale(Temperature))    -2.4638797 -1.3233511</code></pre>
+<pre><code>##                               0.025      0.975
+## p(Int)                   -0.1929210  0.6208837
+## p(scale(MinAfterSunset)) -0.4044794  0.2244221
+## p(scale(Temperature))    -2.5189984 -1.3789261</code></pre>
 </div>
 <div id="model-selection-and-model-fit" class="section level2" number="3.4">
 <h2><span class="header-section-number">3.4</span> Model selection and
 model fit</h2>
 <p>Model selection and multi-model inference can be implemented after
 organizing models using the <code>fitList</code> function.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>fms <span class="ot">&lt;-</span> <span class="fu">fitList</span>(<span class="st">&#39;psi(.)p(.)&#39;</span> <span class="ot">=</span> fm1, <span class="st">&#39;psi(.)p(Time+Temp)&#39;</span> <span class="ot">=</span> fm2)</span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">modSel</span>(fms)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>fms <span class="ot">&lt;-</span> <span class="fu">fitList</span>(<span class="st">&#39;psi(.)p(.)&#39;</span> <span class="ot">=</span> fm1, <span class="st">&#39;psi(.)p(Time+Temp)&#39;</span> <span class="ot">=</span> fm2)</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">modSel</span>(fms)</span></code></pre></div>
 <pre><code>##                    nPars    AIC  delta   AICwt cumltvWt
 ## psi(.)p(Time+Temp)     4 356.76   0.00 1.0e+00     1.00
 ## psi(.)p(.)             2 461.00 104.25 2.3e-23     1.00</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">predict</span>(fms, <span class="at">type=</span><span class="st">&#39;det&#39;</span>, <span class="at">newdata =</span> nd)</span></code></pre></div>
-<pre><code>##    Predicted         SE     lower      upper
-## 1 0.98196076 0.01266193 0.9306044 0.99549474
-## 2 0.89123189 0.04248804 0.7763166 0.95084836
-## 3 0.55225129 0.05102660 0.4514814 0.64890493
-## 4 0.15658708 0.03298276 0.1021713 0.23248007
-## 5 0.02718682 0.01326263 0.0103505 0.06948653</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">predict</span>(fms, <span class="at">type=</span><span class="st">&#39;det&#39;</span>, <span class="at">newdata =</span> nd)</span></code></pre></div>
+<pre><code>##   Predicted          SE     lower     upper
+## 1 0.9986698 0.001488063 0.9881751 0.9998518
+## 2 0.9981420 0.001987729 0.9850156 0.9997723
+## 3 0.9974055 0.002649463 0.9810172 0.9996504
+## 4 0.9963781 0.003522940 0.9759617 0.9994638
+## 5 0.9949460 0.004671453 0.9695782 0.9991783</code></pre>
 <p>The parametric bootstrap can be used to check the adequacy of model
 fit. Here we use a <span class="math inline">\(\chi^2\)</span> statistic
 appropriate for binary data.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>chisq <span class="ot">&lt;-</span> <span class="cf">function</span>(fm) {</span>
-<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>    umf <span class="ot">&lt;-</span> fm<span class="sc">@</span>data</span>
-<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>    y <span class="ot">&lt;-</span> umf<span class="sc">@</span>y</span>
-<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>    y[y<span class="sc">&gt;</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>    fv <span class="ot">&lt;-</span> <span class="fu">fitted</span>(fm)</span>
-<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a>    <span class="fu">sum</span>((y<span class="sc">-</span>fv)<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span>(fv<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>fv)), <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
-<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a>    }</span>
-<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a></span>
-<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a>(pb <span class="ot">&lt;-</span> <span class="fu">parboot</span>(fm2, <span class="at">statistic=</span>chisq, <span class="at">nsim=</span><span class="dv">100</span>, <span class="at">parallel=</span><span class="cn">FALSE</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>chisq <span class="ot">&lt;-</span> <span class="cf">function</span>(fm) {</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>    umf <span class="ot">&lt;-</span> fm<span class="sc">@</span>data</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>    y <span class="ot">&lt;-</span> umf<span class="sc">@</span>y</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>    y[y<span class="sc">&gt;</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>    fv <span class="ot">&lt;-</span> <span class="fu">fitted</span>(fm)</span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>    <span class="fu">sum</span>((y<span class="sc">-</span>fv)<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span>(fv<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>fv)), <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a>    }</span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a>(pb <span class="ot">&lt;-</span> <span class="fu">parboot</span>(fm2, <span class="at">statistic=</span>chisq, <span class="at">nsim=</span><span class="dv">100</span>, <span class="at">parallel=</span><span class="cn">FALSE</span>))</span></code></pre></div>
 <pre><code>## 
 ## Call: parboot(object = fm2, statistic = chisq, nsim = 100, parallel = FALSE)
 ## 
 ## Parametric Bootstrap Statistics:
 ##    t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B &gt; t0)
-## 1 356           17.2             18.3        0.139
+## 1 356             22             17.4       0.0693
 ## 
 ## t_B quantiles:
 ##       0% 2.5% 25% 50% 75% 97.5% 100%
-## [1,] 309  311 325 337 348   381  404
+## [1,] 303  308 322 331 345   375  403
 ## 
 ## t0 = Original statistic computed from data
 ## t_B = Vector of bootstrap samples</code></pre>
@@ -703,9 +717,9 @@ can be obtained by applying the <code>bup</code> function to the
 estimates of the posterior distributions returned by the
 <code>ranef</code> function. The following code returns an estimate of
 PAO using EBUP.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>re <span class="ot">&lt;-</span> <span class="fu">ranef</span>(fm2)</span>
-<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>EBUP <span class="ot">&lt;-</span> <span class="fu">bup</span>(re, <span class="at">stat=</span><span class="st">&quot;mode&quot;</span>)</span>
-<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a><span class="fu">sum</span>(EBUP) <span class="sc">/</span> <span class="fu">numSites</span>(pcru)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>re <span class="ot">&lt;-</span> <span class="fu">ranef</span>(fm2)</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>EBUP <span class="ot">&lt;-</span> <span class="fu">bup</span>(re, <span class="at">stat=</span><span class="st">&quot;mode&quot;</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="fu">sum</span>(EBUP) <span class="sc">/</span> <span class="fu">numSites</span>(pcru)</span></code></pre></div>
 <pre><code>## [1] 0.8076923</code></pre>
 <p>Note that this is similar, but slightly lower than the
 population-level estimate of <span class="math inline">\(\psi\)</span>
