@@ -104,7 +104,7 @@ test_that("pcountOpen can fit a null model",{
 
 
 test_that("pcountOpen handles NAs",{
-
+  skip_on_ci()
   y1 <- matrix(c(
       NA, 2, 1, 4,
       3, NA, 2, 1,

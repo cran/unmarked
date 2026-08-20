@@ -1,6 +1,6 @@
 Package: unmarked
-Version: 1.5.1
-Date: 2025-09-25
+Version: 1.5.2
+Date: 2026-08-19
 Type: Package
 Title: Models for Data from Unmarked Animals
 Authors@R: c(
@@ -34,7 +34,7 @@ URL: https://groups.google.com/d/forum/unmarked,
 BugReports: https://github.com/ecoverseR/unmarked/issues
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2025-09-25 15:47:13 UTC; ken
+Packaged: 2026-08-19 14:04:51 UTC; ken
 Author: Richard Chandler [aut],
   Ken Kellner [cre, aut],
   Ian Fiske [aut],
@@ -51,4 +51,4 @@ Author: Richard Chandler [aut],
   Chris Baker [ctb]
 Maintainer: Ken Kellner <contact@kenkellner.com>
 Repository: CRAN
-Date/Publication: 2025-09-26 22:40:02 UTC
+Date/Publication: 2026-08-20 05:20:02 UTC
